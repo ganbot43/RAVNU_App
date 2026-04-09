@@ -1,19 +1,18 @@
-//
-//  SupervisorViewController.swift
-//  RAVNU_Proyecto
-//
-//  Created by XCODE on 8/04/26.
-//
-
 import UIKit
 
 class SupervisorViewController: UIViewController {
 
+    @IBOutlet weak var lblNombreBienvenido: UILabel!
+    var nombreBienvenido: String?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        lblNombreBienvenido.text = "Bienvenido \(nombreBienvenido ?? "")!"
     }
 
     @IBAction func btnSalir(_ sender: UIButton) {
         cerrarSesionUniversal()
     }
 }
+
+

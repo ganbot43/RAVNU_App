@@ -177,16 +177,28 @@
                                     <action selector="btnSalir:" destination="tM7-xw-eIb" eventType="touchUpInside" id="uh4-en-2tL"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bienvenido:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PEK-Jp-fp8">
+                                <rect key="frame" x="24" y="174" width="345" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="kdq-qU-9ls"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="jAp-PB-dgY" firstAttribute="top" secondItem="kdq-qU-9ls" secondAttribute="top" constant="40" id="3DT-Tp-SgM"/>
+                            <constraint firstItem="PEK-Jp-fp8" firstAttribute="leading" secondItem="kdq-qU-9ls" secondAttribute="leading" constant="24" id="F1A-RD-XZP"/>
                             <constraint firstItem="kdq-qU-9ls" firstAttribute="trailing" secondItem="jAp-PB-dgY" secondAttribute="trailing" constant="40" id="HdW-Dt-zxT"/>
+                            <constraint firstItem="PEK-Jp-fp8" firstAttribute="top" secondItem="jAp-PB-dgY" secondAttribute="bottom" constant="40" id="JTD-vW-ba8"/>
+                            <constraint firstItem="kdq-qU-9ls" firstAttribute="trailing" secondItem="PEK-Jp-fp8" secondAttribute="trailing" constant="24" id="lLq-bA-3gl"/>
                             <constraint firstItem="jAp-PB-dgY" firstAttribute="leading" secondItem="kdq-qU-9ls" secondAttribute="leading" constant="40" id="t3t-8e-9xo"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="oCQ-SP-c3H"/>
+                    <connections>
+                        <outlet property="lblNombreBienvenido" destination="PEK-Jp-fp8" id="Pjb-CK-Qb3"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="5J5-6Q-bSf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -208,16 +220,28 @@
                                     <action selector="btnSalir:" destination="vGo-Y3-bPy" eventType="touchUpInside" id="zRp-qx-16d"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bienvenido:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WgM-bI-fr5">
+                                <rect key="frame" x="24" y="174" width="345" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="QQK-4L-oOp"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="QQK-4L-oOp" firstAttribute="trailing" secondItem="Bzp-jq-qey" secondAttribute="trailing" constant="40" id="Cru-yN-F0j"/>
                             <constraint firstItem="Bzp-jq-qey" firstAttribute="top" secondItem="QQK-4L-oOp" secondAttribute="top" constant="40" id="R9D-0q-JPc"/>
+                            <constraint firstItem="WgM-bI-fr5" firstAttribute="leading" secondItem="QQK-4L-oOp" secondAttribute="leading" constant="24" id="S1V-e1-pg3"/>
+                            <constraint firstItem="WgM-bI-fr5" firstAttribute="top" secondItem="Bzp-jq-qey" secondAttribute="bottom" constant="40" id="pdZ-wc-L9k"/>
+                            <constraint firstItem="QQK-4L-oOp" firstAttribute="trailing" secondItem="WgM-bI-fr5" secondAttribute="trailing" constant="24" id="pgG-Zh-25F"/>
                             <constraint firstItem="Bzp-jq-qey" firstAttribute="leading" secondItem="QQK-4L-oOp" secondAttribute="leading" constant="40" id="raD-oo-F7V"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="5hX-yv-fAv"/>
+                    <connections>
+                        <outlet property="lblNombreBienvenido" destination="WgM-bI-fr5" id="LMH-5j-RGO"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="OTc-rH-zyI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -232,13 +256,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sXb-tc-UgZ">
-                                <rect key="frame" x="40" y="99" width="313" height="34.333333333333371"/>
+                                <rect key="frame" x="40" y="99" width="313" height="34.333333333333343"/>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Cerrar Sesion"/>
                                 <connections>
                                     <action selector="btnSalir:" destination="x09-qe-Lad" eventType="touchUpInside" id="J19-qh-mav"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bienvenido:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cMG-bd-J3E">
+                                <rect key="frame" x="24" y="173.33333333333334" width="245" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="fiN-Xl-m2l"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -246,9 +276,15 @@
                             <constraint firstItem="fiN-Xl-m2l" firstAttribute="trailing" secondItem="sXb-tc-UgZ" secondAttribute="trailing" constant="40" id="8tq-jF-YJc"/>
                             <constraint firstItem="sXb-tc-UgZ" firstAttribute="top" secondItem="fiN-Xl-m2l" secondAttribute="top" constant="40" id="AwA-Sf-TpM"/>
                             <constraint firstItem="sXb-tc-UgZ" firstAttribute="leading" secondItem="fiN-Xl-m2l" secondAttribute="leading" constant="40" id="DeP-TP-cmX"/>
+                            <constraint firstItem="fiN-Xl-m2l" firstAttribute="trailing" secondItem="cMG-bd-J3E" secondAttribute="trailing" constant="124" id="JrB-O4-bsn"/>
+                            <constraint firstItem="cMG-bd-J3E" firstAttribute="leading" secondItem="fiN-Xl-m2l" secondAttribute="leading" constant="24" id="fa0-aZ-XG1"/>
+                            <constraint firstItem="cMG-bd-J3E" firstAttribute="top" secondItem="sXb-tc-UgZ" secondAttribute="bottom" constant="40" id="k9J-aR-SWF"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="PiK-50-sMc"/>
+                    <connections>
+                        <outlet property="lblNombreBienvenido" destination="cMG-bd-J3E" id="P7q-LZ-mvH"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Z0H-tJ-Zi2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -270,16 +306,28 @@
                                     <action selector="btnSalir:" destination="wzZ-yh-Sh8" eventType="touchUpInside" id="g9S-BV-Tx4"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bienvenido:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="azQ-RH-Qwk">
+                                <rect key="frame" x="24" y="174" width="345" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="mpu-TY-QBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="ccE-uv-6Ev" firstAttribute="top" secondItem="mpu-TY-QBY" secondAttribute="top" constant="40" id="7Br-re-n3L"/>
+                            <constraint firstItem="azQ-RH-Qwk" firstAttribute="top" secondItem="ccE-uv-6Ev" secondAttribute="bottom" constant="40" id="Hca-mG-1Vs"/>
+                            <constraint firstItem="mpu-TY-QBY" firstAttribute="trailing" secondItem="azQ-RH-Qwk" secondAttribute="trailing" constant="24" id="mcZ-4U-vng"/>
+                            <constraint firstItem="azQ-RH-Qwk" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="oNh-gR-pH8"/>
                             <constraint firstItem="mpu-TY-QBY" firstAttribute="trailing" secondItem="ccE-uv-6Ev" secondAttribute="trailing" constant="40" id="s3p-fA-B19"/>
                             <constraint firstItem="ccE-uv-6Ev" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="40" id="wmf-vl-lxs"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="1Lv-CX-No7"/>
+                    <connections>
+                        <outlet property="lblNombreBienvenido" destination="azQ-RH-Qwk" id="ove-Bv-OQL"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6Dc-7i-1nI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
