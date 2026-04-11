@@ -1,4 +1,5 @@
 import UIKit
+import CoreData
 
 class LoginViewController: UIViewController {
 
@@ -9,15 +10,31 @@ class LoginViewController: UIViewController {
     @IBOutlet weak var btnSelectorRol: UIButton!
     
     var rolSeleccionado: String = ""
+    private lazy var contexto: NSManagedObjectContext? = {
+        (UIApplication.shared.delegate as? AppDelegate)?.persistentContainer.viewContext
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        seedUsuariosInicialesSiEsNecesario()
         
         let roles = [
-            UIAction(title: "Administrador", handler: { _ in self.rolSeleccionado = "Admin" }),
-            UIAction(title: "Cajero", handler: { _ in self.rolSeleccionado = "Cajero" }),
-            UIAction(title: "Supervisor", handler: { _ in self.rolSeleccionado = "Super" }),
-            UIAction(title: "Almacenero", handler: { _ in self.rolSeleccionado = "Almacen" })
+            UIAction(title: "Administrador", handler: { _ in
+                self.rolSeleccionado = "Admin"
+                self.btnSelectorRol.setTitle("Administrador", for: .normal)
+            }),
+            UIAction(title: "Cajero", handler: { _ in
+                self.rolSeleccionado = "Cajero"
+                self.btnSelectorRol.setTitle("Cajero", for: .normal)
+            }),
+            UIAction(title: "Supervisor", handler: { _ in
+                self.rolSeleccionado = "Super"
+                self.btnSelectorRol.setTitle("Supervisor", for: .normal)
+            }),
+            UIAction(title: "Almacenero", handler: { _ in
+                self.rolSeleccionado = "Almacen"
+                self.btnSelectorRol.setTitle("Almacenero", for: .normal)
+            })
         ]
         
         btnSelectorRol.menu = UIMenu(title: "Seleccione su cargo", children: roles)
@@ -29,33 +46,33 @@ class LoginViewController: UIViewController {
     @IBAction func btnIngresar(_ sender: UIButton) {
         guard let usuario = txtUsuario.text, !usuario.isEmpty,
               let password = txtContraseña.text, !password.isEmpty else {
-            print("Faltan datos")
+            mostrarAlerta(mensaje: "Completa usuario y contraseña.")
             return
         }
         
-        if usuario == "Ruth" && password == "1234" {
-            
-            let datos = "\(usuario) - \(rolSeleccionado)"
-            
-            switch rolSeleccionado {
-            case "Admin":
-                self.performSegue(withIdentifier: "verAdmin", sender: datos)
-
-            case "Cajero":
-                self.performSegue(withIdentifier: "verCajero", sender: datos)
-                
-            case "Super":
-                self.performSegue(withIdentifier: "verSuper", sender: datos)
-                
-            case "Almacen":
-                self.performSegue(withIdentifier: "verAlmacen", sender: datos)
-                
-            default:
-                print("Selecciona un rol primero")
-            }
-            
-        } else {
-            print("Credenciales incorrectas")
+        guard !rolSeleccionado.isEmpty else {
+            mostrarAlerta(mensaje: "Selecciona un rol antes de ingresar.")
+            return
+        }
+        
+        guard let login = buscarLogin(usuario: usuario, contrasena: password, rol: rolSeleccionado) else {
+            mostrarAlerta(mensaje: "Credenciales incorrectas para el rol seleccionado.")
+            return
+        }
+        
+        let datos = "\(login.usuario ?? usuario) - \(login.rol ?? rolSeleccionado)"
+        
+        switch rolSeleccionado {
+        case "Admin":
+            performSegue(withIdentifier: "verAdmin", sender: datos)
+        case "Cajero":
+            performSegue(withIdentifier: "verCajero", sender: datos)
+        case "Super":
+            performSegue(withIdentifier: "verSuper", sender: datos)
+        case "Almacen":
+            performSegue(withIdentifier: "verAlmacen", sender: datos)
+        default:
+            mostrarAlerta(mensaje: "Rol no valido.")
         }
     }
     
@@ -74,7 +91,65 @@ class LoginViewController: UIViewController {
             bienvenida.nombreBienvenido = sender as? String
         }
     }
+    
+    private func buscarLogin(usuario: String, contrasena: String, rol: String) -> LoginEntity? {
+        guard let contexto else { return nil }
+        
+        let request: NSFetchRequest<LoginEntity> = LoginEntity.fetchRequest()
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(
+            format: "usuario ==[c] %@ AND contrasena == %@ AND rol == %@",
+            usuario,
+            contrasena,
+            rol
+        )
+        
+        do {
+            return try contexto.fetch(request).first
+        } catch {
+            print("Error consultando Core Data: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    private func seedUsuariosInicialesSiEsNecesario() {
+        guard let contexto else { return }
+        
+        let request: NSFetchRequest<LoginEntity> = LoginEntity.fetchRequest()
+        request.fetchLimit = 1
+        
+        do {
+            let existeData = try contexto.count(for: request) > 0
+            guard !existeData else { return }
+            
+            let usuariosIniciales = [
+                ("Ruth", "1234", "Admin"),
+                ("Ruth", "1234", "Cajero"),
+                ("Ruth", "1234", "Super"),
+                ("Ruth", "1234", "Almacen")
+            ]
+            
+            for usuario in usuariosIniciales {
+                let nuevoLogin = LoginEntity(context: contexto)
+                nuevoLogin.id = UUID()
+                nuevoLogin.usuario = usuario.0
+                nuevoLogin.contrasena = usuario.1
+                nuevoLogin.rol = usuario.2
+            }
+            
+            try contexto.save()
+        } catch {
+            print("Error guardando usuarios iniciales: \(error.localizedDescription)")
+        }
+    }
+    
+    private func mostrarAlerta(mensaje: String) {
+        let alerta = UIAlertController(title: "Login", message: mensaje, preferredStyle: .alert)
+        alerta.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alerta, animated: true)
+    }
 }
+
 extension UIViewController {
     func cerrarSesionUniversal() {
         print("Cerrando sesión de Ruth...")
