@@ -6,7 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4DD98B532F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD98B522F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift */; };
+		4DD98B542F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD98B512F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		4DD98B512F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4DD98B522F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		AE42C8912F86B08A001C9095 /* RAVNU_Proyecto.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RAVNU_Proyecto.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -45,6 +52,8 @@
 		AE42C8882F86B08A001C9095 = {
 			isa = PBXGroup;
 			children = (
+				4DD98B512F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift */,
+				4DD98B522F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift */,
 				AE42C8932F86B08A001C9095 /* RAVNU_Proyecto */,
 				AE42C8922F86B08A001C9095 /* Products */,
 			);
@@ -132,6 +141,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4DD98B532F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift in Sources */,
+				4DD98B542F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
