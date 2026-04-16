@@ -80,18 +80,23 @@ class LoginViewController: UIViewController {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        configurarBienvenida(en: segue.destination, nombre: sender as? String)
+    }
 
-        if let bienvenida = segue.destination as? AdministradorViewController {
-            bienvenida.nombreBienvenido = sender as? String
-        }
-        if let bienvenida = segue.destination as? CajeroViewController {
-            bienvenida.nombreBienvenido = sender as? String
-        }
-        if let bienvenida = segue.destination as? SupervisorViewController {
-            bienvenida.nombreBienvenido = sender as? String
-        }
-        if let bienvenida = segue.destination as? AlmaceneroViewController {
-            bienvenida.nombreBienvenido = sender as? String
+    private func configurarBienvenida(en destination: UIViewController, nombre: String?) {
+        if let bienvenida = destination as? AdministradorViewController {
+            bienvenida.nombreBienvenido = nombre
+        } else if let bienvenida = destination as? CajeroViewController {
+            bienvenida.nombreBienvenido = nombre
+        } else if let bienvenida = destination as? SupervisorViewController {
+            bienvenida.nombreBienvenido = nombre
+        } else if let bienvenida = destination as? AlmaceneroViewController {
+            bienvenida.nombreBienvenido = nombre
+        } else if let tabBarController = destination as? UITabBarController {
+            tabBarController.viewControllers?.forEach { configurarBienvenida(en: $0, nombre: nombre) }
+        } else if let navigationController = destination as? UINavigationController,
+                  let topViewController = navigationController.topViewController {
+            configurarBienvenida(en: topViewController, nombre: nombre)
         }
     }
     

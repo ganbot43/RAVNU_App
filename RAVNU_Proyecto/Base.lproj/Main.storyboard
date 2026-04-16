@@ -977,6 +977,7 @@
                             <constraint firstItem="emptyStateView-001" firstAttribute="leading" secondItem="pXl-SR-WUP" secondAttribute="leading" constant="24" id="ev-ld-001"/>
                             <constraint firstItem="emptyStateView-001" firstAttribute="top" secondItem="tbl-Vt-001" secondAttribute="top" constant="100" id="ev-tp-001"/>
                             <constraint firstAttribute="trailing" secondItem="emptyStateView-001" secondAttribute="trailing" constant="24" id="ev-tr-001"/>
+                            <constraint firstItem="emptyStateView-001" firstAttribute="height" constant="124" id="ev-ht-001"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="0c3-8o-bVG" secondAttribute="trailing" constant="24" id="phS-8I-njy"/>
                             <constraint firstItem="DwQ-6s-j0O" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="0c3-8o-bVG" secondAttribute="trailing" constant="16" id="tD0-Ya-5mf"/>
                             <constraint firstAttribute="bottom" secondItem="tbl-Vt-001" secondAttribute="bottom" id="tv-bt-001"/>
@@ -1044,17 +1045,17 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V3Q-n5-S2p">
                                                 <rect key="frame" x="24" y="196.66666666666669" width="345" height="44"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="• 5,100L disponibles" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M6c-JE-H91">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="• 5,100L disponibles" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M6c-JE-H91">
                                                         <rect key="frame" x="16" y="13" width="131" height="18"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                                         <color key="textColor" red="0.31372549019607843" green="0.65098039215686276" blue="0.46274509803921571" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Main" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j9m-QM-L71">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Main" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j9m-QM-L71">
                                                         <rect key="frame" x="155" y="13.666666666666629" width="30" height="17"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                         <color key="textColor" systemColor="systemGrayColor"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Restante: 5,060L" textAlignment="right" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M6s-z0-3pP">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Restante: 5,060L" textAlignment="right" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M6s-z0-3pP">
                                                         <rect key="frame" x="236" y="13.666666666666629" width="93" height="17"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                                         <color key="textColor" red="0.47450980392156861" green="0.52156862745098043" blue="0.62745098039215685" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1152,11 +1153,11 @@
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                                         <color key="textColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Primera fecha de vencimiento" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k0w-tk-N8v">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Primera fecha de vencimiento" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k0w-tk-N8v">
                                                         <rect key="frame" x="16" y="92.666666666666742" width="205" height="20.333333333333329"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="25 Jul, 2025" textAlignment="right" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vw5-zh-z10">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="25 Jul, 2025" textAlignment="right" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vw5-zh-z10">
                                                         <rect key="frame" x="248" y="91" width="81" height="24"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                                         <color key="textColor" red="0.2627450980392157" green="0.29019607843137257" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1230,6 +1231,8 @@
                                                     <constraint firstItem="Y9x-TP-Vs9" firstAttribute="leading" secondItem="l4A-I8-Mj0" secondAttribute="trailing" constant="18" id="af-5"/>
                                                     <constraint firstItem="Y9x-TP-Vs9" firstAttribute="centerY" secondItem="l4A-I8-Mj0" secondAttribute="centerY" id="af-6"/>
                                                     <constraint firstItem="Y9x-TP-Vs9" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="j32-Vw-Q8h" secondAttribute="trailing" constant="-16" id="af-7"/>
+                                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="i7t-RE-H21" secondAttribute="trailing" constant="16" id="af-8"/>
+                                                    <constraint firstItem="Y9x-TP-Vs9" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="l4A-I8-Mj0" secondAttribute="trailing" constant="18" id="af-9"/>
                                                 </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -1261,10 +1264,12 @@
                                             <constraint firstItem="V3Q-n5-S2p" firstAttribute="height" constant="44" id="st-14"/>
                                             <constraint firstItem="L4x-sK-k4F" firstAttribute="top" secondItem="V3Q-n5-S2p" secondAttribute="bottom" constant="16" id="st-15"/>
                                             <constraint firstItem="L4x-sK-k4F" firstAttribute="leading" secondItem="n9v-0Q-rp3" secondAttribute="leading" constant="24" id="st-16"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="L4x-sK-k4F" secondAttribute="trailing" constant="24" id="st-16b"/>
                                             <constraint firstItem="N0h-aL-mD2" firstAttribute="top" secondItem="L4x-sK-k4F" secondAttribute="bottom" constant="8" id="st-17"/>
                                             <constraint firstItem="N0h-aL-mD2" firstAttribute="leading" secondItem="n9v-0Q-rp3" secondAttribute="leading" constant="24" id="st-18"/>
                                             <constraint firstAttribute="trailing" secondItem="N0h-aL-mD2" secondAttribute="trailing" constant="24" id="st-19"/>
                                             <constraint firstItem="m0v-T7-XA2" firstAttribute="top" secondItem="n9v-0Q-rp3" secondAttribute="top" constant="20" id="st-2"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="m0v-T7-XA2" secondAttribute="trailing" constant="24" id="st-2b"/>
                                             <constraint firstItem="f4J-xL-9O6" firstAttribute="top" secondItem="N0h-aL-mD2" secondAttribute="bottom" constant="28" id="st-20"/>
                                             <constraint firstItem="f4J-xL-9O6" firstAttribute="leading" secondItem="n9v-0Q-rp3" secondAttribute="leading" constant="24" id="st-21"/>
                                             <constraint firstAttribute="trailing" secondItem="f4J-xL-9O6" secondAttribute="trailing" constant="24" id="st-22"/>
@@ -1289,6 +1294,7 @@
                                             <constraint firstAttribute="trailing" secondItem="Sox-Ke-GlT" secondAttribute="trailing" constant="24" id="st-5"/>
                                             <constraint firstItem="k8N-0z-BHE" firstAttribute="top" secondItem="Sox-Ke-GlT" secondAttribute="bottom" constant="16" id="st-6"/>
                                             <constraint firstItem="k8N-0z-BHE" firstAttribute="leading" secondItem="n9v-0Q-rp3" secondAttribute="leading" constant="24" id="st-7"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="k8N-0z-BHE" secondAttribute="trailing" constant="24" id="st-7b"/>
                                             <constraint firstItem="zZS-jV-vTk" firstAttribute="top" secondItem="k8N-0z-BHE" secondAttribute="bottom" constant="8" id="st-8"/>
                                             <constraint firstItem="zZS-jV-vTk" firstAttribute="leading" secondItem="n9v-0Q-rp3" secondAttribute="leading" constant="24" id="st-9"/>
                                         </constraints>
@@ -1323,6 +1329,8 @@
                             <constraint firstItem="H2p-P4-sd8" firstAttribute="top" secondItem="cAR-hD-fec" secondAttribute="top" constant="8" id="md-2"/>
                             <constraint firstItem="ug1-Y8-VfM" firstAttribute="centerX" secondItem="R0S-5f-VDP" secondAttribute="centerX" id="md-3"/>
                             <constraint firstItem="ug1-Y8-VfM" firstAttribute="centerY" secondItem="H2p-P4-sd8" secondAttribute="centerY" id="md-4"/>
+                            <constraint firstItem="ug1-Y8-VfM" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="H2p-P4-sd8" secondAttribute="trailing" constant="12" id="md-4b"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="ug1-Y8-VfM" secondAttribute="trailing" constant="24" id="md-4c"/>
                             <constraint firstItem="M1r-jL-x10" firstAttribute="top" secondItem="H2p-P4-sd8" secondAttribute="bottom" constant="20" id="md-5"/>
                             <constraint firstItem="M1r-jL-x10" firstAttribute="leading" secondItem="R0S-5f-VDP" secondAttribute="leading" id="md-6"/>
                             <constraint firstAttribute="trailing" secondItem="M1r-jL-x10" secondAttribute="trailing" id="md-7"/>
@@ -1465,26 +1473,31 @@
                                             <constraint firstAttribute="trailing" secondItem="mc-type-001" secondAttribute="trailing" constant="24" id="mc-c-003"/>
                                             <constraint firstItem="mc-lbl-001" firstAttribute="top" secondItem="mc-type-001" secondAttribute="bottom" constant="22" id="mc-c-004"/>
                                             <constraint firstItem="mc-lbl-001" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-005"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="mc-lbl-001" secondAttribute="trailing" constant="24" id="mc-c-005b"/>
                                             <constraint firstItem="mc-txt-001" firstAttribute="top" secondItem="mc-lbl-001" secondAttribute="bottom" constant="8" id="mc-c-006"/>
                                             <constraint firstItem="mc-txt-001" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-007"/>
                                             <constraint firstAttribute="trailing" secondItem="mc-txt-001" secondAttribute="trailing" constant="24" id="mc-c-008"/>
                                             <constraint firstItem="mc-lbl-002" firstAttribute="top" secondItem="mc-txt-001" secondAttribute="bottom" constant="20" id="mc-c-009"/>
                                             <constraint firstItem="mc-lbl-002" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-010"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="mc-lbl-002" secondAttribute="trailing" constant="24" id="mc-c-010b"/>
                                             <constraint firstItem="mc-txt-002" firstAttribute="top" secondItem="mc-lbl-002" secondAttribute="bottom" constant="8" id="mc-c-011"/>
                                             <constraint firstItem="mc-txt-002" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-012"/>
                                             <constraint firstAttribute="trailing" secondItem="mc-txt-002" secondAttribute="trailing" constant="24" id="mc-c-013"/>
                                             <constraint firstItem="mc-lbl-003" firstAttribute="top" secondItem="mc-txt-002" secondAttribute="bottom" constant="20" id="mc-c-014"/>
                                             <constraint firstItem="mc-lbl-003" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-015"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="mc-lbl-003" secondAttribute="trailing" constant="24" id="mc-c-015b"/>
                                             <constraint firstItem="mc-txt-003" firstAttribute="top" secondItem="mc-lbl-003" secondAttribute="bottom" constant="8" id="mc-c-016"/>
                                             <constraint firstItem="mc-txt-003" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-017"/>
                                             <constraint firstAttribute="trailing" secondItem="mc-txt-003" secondAttribute="trailing" constant="24" id="mc-c-018"/>
                                             <constraint firstItem="mc-lbl-004" firstAttribute="top" secondItem="mc-txt-003" secondAttribute="bottom" constant="20" id="mc-c-019"/>
                                             <constraint firstItem="mc-lbl-004" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-020"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="mc-lbl-004" secondAttribute="trailing" constant="24" id="mc-c-020b"/>
                                             <constraint firstItem="mc-txt-004" firstAttribute="top" secondItem="mc-lbl-004" secondAttribute="bottom" constant="8" id="mc-c-021"/>
                                             <constraint firstItem="mc-txt-004" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-022"/>
                                             <constraint firstAttribute="trailing" secondItem="mc-txt-004" secondAttribute="trailing" constant="24" id="mc-c-023"/>
                                             <constraint firstItem="mc-lbl-005" firstAttribute="top" secondItem="mc-txt-004" secondAttribute="bottom" constant="20" id="mc-c-024"/>
                                             <constraint firstItem="mc-lbl-005" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-025"/>
+                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="mc-lbl-005" secondAttribute="trailing" constant="24" id="mc-c-025b"/>
                                             <constraint firstItem="mc-txt-005" firstAttribute="top" secondItem="mc-lbl-005" secondAttribute="bottom" constant="8" id="mc-c-026"/>
                                             <constraint firstItem="mc-txt-005" firstAttribute="leading" secondItem="mc-content-001" secondAttribute="leading" constant="24" id="mc-c-027"/>
                                             <constraint firstAttribute="trailing" secondItem="mc-txt-005" secondAttribute="trailing" constant="24" id="mc-c-028"/>
@@ -1511,6 +1524,8 @@
                             <constraint firstItem="mc-cancel-001" firstAttribute="top" secondItem="Jfu-2I-acF" secondAttribute="top" constant="8" id="mc-r-002"/>
                             <constraint firstItem="mc-title-001" firstAttribute="centerX" secondItem="pGi-4z-d2D" secondAttribute="centerX" id="mc-r-003"/>
                             <constraint firstItem="mc-title-001" firstAttribute="centerY" secondItem="mc-cancel-001" secondAttribute="centerY" id="mc-r-004"/>
+                            <constraint firstItem="mc-title-001" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="mc-cancel-001" secondAttribute="trailing" constant="12" id="mc-r-004b"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="mc-title-001" secondAttribute="trailing" constant="24" id="mc-r-004c"/>
                             <constraint firstItem="mc-scroll-001" firstAttribute="top" secondItem="mc-cancel-001" secondAttribute="bottom" constant="20" id="mc-r-005"/>
                             <constraint firstItem="mc-scroll-001" firstAttribute="leading" secondItem="pGi-4z-d2D" secondAttribute="leading" id="mc-r-006"/>
                             <constraint firstAttribute="trailing" secondItem="mc-scroll-001" secondAttribute="trailing" id="mc-r-007"/>
@@ -1620,7 +1635,7 @@
                                 <rect key="frame" x="24" y="194.66666666666666" width="345" height="63.999999999999972"/>
                                 <textInputTraits key="textInputTraits"/>
                             </searchBar>
-                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="cl-filters-001">
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="cl-filters-001">
                                 <rect key="frame" x="24" y="266.66666666666669" width="345" height="45.333333333333314"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cl-filter-001">
@@ -1668,16 +1683,16 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cl-analytics-001">
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cl-analytics-001">
                                 <rect key="frame" x="0.0" y="307" width="393" height="545"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cl-analytics-content-001">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cl-analytics-content-001">
                                         <rect key="frame" x="0.0" y="0.0" width="393" height="510"/>
                                         <subviews>
-                                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" distribution="fillEqually" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="cl-analytics-stack-001">
+                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="cl-analytics-stack-001">
                                                 <rect key="frame" x="24" y="16" width="345" height="120"/>
                                                 <subviews>
-                                                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cl-card-001">
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cl-card-001">
                                                         <rect key="frame" x="0.0" y="0.0" width="107" height="120"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="TOTAL" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cl-card-lbl-001">
@@ -1697,6 +1712,8 @@
                                                             <constraint firstItem="cl-card-lbl-001" firstAttribute="top" secondItem="cl-card-001" secondAttribute="top" constant="18" id="cl-a-002"/>
                                                             <constraint firstItem="cl-total-001" firstAttribute="leading" secondItem="cl-card-001" secondAttribute="leading" constant="16" id="cl-a-003"/>
                                                             <constraint firstItem="cl-total-001" firstAttribute="top" secondItem="cl-card-lbl-001" secondAttribute="bottom" constant="14" id="cl-a-004"/>
+                                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-card-lbl-001" secondAttribute="trailing" constant="16" id="cl-a-013"/>
+                                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-total-001" secondAttribute="trailing" constant="16" id="cl-a-014"/>
                                                         </constraints>
                                                         <userDefinedRuntimeAttributes>
                                                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -1704,7 +1721,7 @@
                                                             </userDefinedRuntimeAttribute>
                                                         </userDefinedRuntimeAttributes>
                                                     </view>
-                                                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cl-card-002">
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cl-card-002">
                                                         <rect key="frame" x="119" y="0.0" width="107" height="120"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="ACTIVOS" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cl-card-lbl-002">
@@ -1724,6 +1741,8 @@
                                                             <constraint firstItem="cl-card-lbl-002" firstAttribute="top" secondItem="cl-card-002" secondAttribute="top" constant="18" id="cl-a-006"/>
                                                             <constraint firstItem="cl-activos-001" firstAttribute="leading" secondItem="cl-card-002" secondAttribute="leading" constant="16" id="cl-a-007"/>
                                                             <constraint firstItem="cl-activos-001" firstAttribute="top" secondItem="cl-card-lbl-002" secondAttribute="bottom" constant="14" id="cl-a-008"/>
+                                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-card-lbl-002" secondAttribute="trailing" constant="16" id="cl-a-015"/>
+                                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-activos-001" secondAttribute="trailing" constant="16" id="cl-a-016"/>
                                                         </constraints>
                                                         <userDefinedRuntimeAttributes>
                                                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -1731,7 +1750,7 @@
                                                             </userDefinedRuntimeAttribute>
                                                         </userDefinedRuntimeAttributes>
                                                     </view>
-                                                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cl-card-003">
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cl-card-003">
                                                         <rect key="frame" x="238" y="0.0" width="107" height="120"/>
                                                         <subviews>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="RIESGO" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cl-card-lbl-003">
@@ -1751,6 +1770,8 @@
                                                             <constraint firstItem="cl-card-lbl-003" firstAttribute="top" secondItem="cl-card-003" secondAttribute="top" constant="18" id="cl-a-010"/>
                                                             <constraint firstItem="cl-riesgo-001" firstAttribute="leading" secondItem="cl-card-003" secondAttribute="leading" constant="16" id="cl-a-011"/>
                                                             <constraint firstItem="cl-riesgo-001" firstAttribute="top" secondItem="cl-card-lbl-003" secondAttribute="bottom" constant="14" id="cl-a-012"/>
+                                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-card-lbl-003" secondAttribute="trailing" constant="16" id="cl-a-017"/>
+                                                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-riesgo-001" secondAttribute="trailing" constant="16" id="cl-a-018"/>
                                                         </constraints>
                                                         <userDefinedRuntimeAttributes>
                                                             <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -1760,7 +1781,7 @@
                                                     </view>
                                                 </subviews>
                                             </stackView>
-                                            <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cl-block-001">
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cl-block-001">
                                                 <rect key="frame" x="24" y="160" width="345" height="124"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Clientes Bloqueados" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cl-block-lbl-001">
@@ -1780,6 +1801,8 @@
                                                     <constraint firstItem="cl-block-lbl-001" firstAttribute="top" secondItem="cl-block-001" secondAttribute="top" constant="18" id="cl-b-002"/>
                                                     <constraint firstItem="cl-bloq-001" firstAttribute="leading" secondItem="cl-block-001" secondAttribute="leading" constant="16" id="cl-b-003"/>
                                                     <constraint firstItem="cl-bloq-001" firstAttribute="top" secondItem="cl-block-lbl-001" secondAttribute="bottom" constant="12" id="cl-b-004"/>
+                                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-block-lbl-001" secondAttribute="trailing" constant="16" id="cl-b-005"/>
+                                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-bloq-001" secondAttribute="trailing" constant="16" id="cl-b-006"/>
                                                 </constraints>
                                                 <userDefinedRuntimeAttributes>
                                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -1792,9 +1815,11 @@
                                             <constraint firstItem="cl-analytics-stack-001" firstAttribute="top" secondItem="cl-analytics-content-001" secondAttribute="top" constant="16" id="cl-s-001"/>
                                             <constraint firstItem="cl-analytics-stack-001" firstAttribute="leading" secondItem="cl-analytics-content-001" secondAttribute="leading" constant="24" id="cl-s-002"/>
                                             <constraint firstAttribute="trailing" secondItem="cl-analytics-stack-001" secondAttribute="trailing" constant="24" id="cl-s-003"/>
+                                            <constraint firstItem="cl-analytics-stack-001" firstAttribute="height" constant="120" id="cl-s-008"/>
                                             <constraint firstItem="cl-block-001" firstAttribute="top" secondItem="cl-analytics-stack-001" secondAttribute="bottom" constant="24" id="cl-s-004"/>
                                             <constraint firstItem="cl-block-001" firstAttribute="leading" secondItem="cl-analytics-content-001" secondAttribute="leading" constant="24" id="cl-s-005"/>
                                             <constraint firstAttribute="trailing" secondItem="cl-block-001" secondAttribute="trailing" constant="24" id="cl-s-006"/>
+                                            <constraint firstItem="cl-block-001" firstAttribute="height" constant="124" id="cl-s-009"/>
                                             <constraint firstAttribute="bottom" secondItem="cl-block-001" secondAttribute="bottom" constant="226" id="cl-s-007"/>
                                         </constraints>
                                     </view>
@@ -1805,13 +1830,14 @@
                                     <constraint firstAttribute="trailing" secondItem="cl-analytics-content-001" secondAttribute="trailing" id="cl-sa-003"/>
                                     <constraint firstAttribute="bottom" secondItem="cl-analytics-content-001" secondAttribute="bottom" id="cl-sa-004"/>
                                     <constraint firstItem="cl-analytics-content-001" firstAttribute="width" secondItem="cl-analytics-001" secondAttribute="width" id="cl-sa-005"/>
+                                    <constraint firstItem="cl-analytics-content-001" firstAttribute="height" constant="510" id="cl-sa-006"/>
                                 </constraints>
                             </scrollView>
                             <tableView hidden="YES" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="104" estimatedRowHeight="104" sectionHeaderHeight="22" sectionFooterHeight="22" translatesAutoresizingMaskIntoConstraints="NO" id="cl-table-001">
                                 <rect key="frame" x="24" y="328" width="345" height="524"/>
                                 <color key="backgroundColor" red="0.96470588235294119" green="0.97254901960784312" blue="0.99215686274509807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </tableView>
-                            <view hidden="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cl-empty-001">
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cl-empty-001">
                                 <rect key="frame" x="24" y="407" width="345" height="132"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="No hay clientes registrados" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cl-empty-lbl-001">
@@ -1831,6 +1857,11 @@
                                     <constraint firstItem="cl-empty-lbl-001" firstAttribute="top" secondItem="cl-empty-001" secondAttribute="top" constant="44" id="cl-e-002"/>
                                     <constraint firstItem="cl-empty-lbl-002" firstAttribute="centerX" secondItem="cl-empty-001" secondAttribute="centerX" id="cl-e-003"/>
                                     <constraint firstItem="cl-empty-lbl-002" firstAttribute="top" secondItem="cl-empty-lbl-001" secondAttribute="bottom" constant="8" id="cl-e-004"/>
+                                    <constraint firstItem="cl-empty-001" firstAttribute="height" constant="132" id="cl-e-005"/>
+                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-empty-lbl-001" secondAttribute="trailing" constant="16" id="cl-e-006"/>
+                                    <constraint firstItem="cl-empty-lbl-001" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="cl-empty-001" secondAttribute="leading" constant="16" id="cl-e-007"/>
+                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cl-empty-lbl-002" secondAttribute="trailing" constant="16" id="cl-e-008"/>
+                                    <constraint firstItem="cl-empty-lbl-002" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="cl-empty-001" secondAttribute="leading" constant="16" id="cl-e-009"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -1844,10 +1875,12 @@
                         <constraints>
                             <constraint firstItem="cl-title-001" firstAttribute="top" secondItem="pla-dr-vNu" secondAttribute="top" constant="8" id="cl-r-001"/>
                             <constraint firstItem="cl-title-001" firstAttribute="leading" secondItem="pla-dr-vNu" secondAttribute="leading" constant="24" id="cl-r-002"/>
+                            <constraint firstItem="cl-add-001" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="cl-title-001" secondAttribute="trailing" constant="12" id="cl-r-002b"/>
                             <constraint firstItem="cl-subtitle-001" firstAttribute="top" secondItem="cl-title-001" secondAttribute="bottom" constant="6" id="cl-r-003"/>
                             <constraint firstItem="cl-subtitle-001" firstAttribute="leading" secondItem="pla-dr-vNu" secondAttribute="leading" constant="24" id="cl-r-004"/>
                             <constraint firstItem="cl-add-001" firstAttribute="trailing" secondItem="pla-dr-vNu" secondAttribute="trailing" constant="-24" id="cl-r-005"/>
                             <constraint firstItem="cl-add-001" firstAttribute="centerY" secondItem="cl-title-001" secondAttribute="centerY" constant="4" id="cl-r-006"/>
+                            <constraint firstItem="cl-filters-001" firstAttribute="height" constant="45.333333333333314" id="cl-r-013b"/>
                             <constraint firstItem="cl-tabs-bg-001" firstAttribute="top" secondItem="cl-subtitle-001" secondAttribute="bottom" constant="16" id="cl-r-007"/>
                             <constraint firstItem="cl-tabs-bg-001" firstAttribute="leading" secondItem="pla-dr-vNu" secondAttribute="leading" constant="24" id="cl-r-008"/>
                             <constraint firstAttribute="trailing" secondItem="cl-tabs-bg-001" secondAttribute="trailing" constant="24" id="cl-r-009"/>
@@ -1898,15 +1931,316 @@
         <!--Más-->
         <scene sceneID="3af-fP-2ua">
             <objects>
-                <viewController id="obY-Cn-DhB" sceneMemberID="viewController">
+                <viewController id="obY-Cn-DhB" customClass="MasViewController" customModule="RAVNU_Proyecto" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="v28-nC-o3W">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Mas" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-title-001">
+                                <rect key="frame" x="24" y="67" width="58" height="40.666666666666657"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="34"/>
+                                <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Modulos de gestion" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-subtitle-001">
+                                <rect key="frame" x="24" y="113.66666666666667" width="132" height="17.000000000000014"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-logout-001">
+                                <rect key="frame" x="322" y="75.333333333333329" width="47" height="32"/>
+                                <buttonConfiguration key="configuration" style="filled" title="Salir">
+                                    <fontDescription key="titleFontDescription" type="boldSystem" pointSize="13"/>
+                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="btnCerrarSesion:" destination="obY-Cn-DhB" eventType="touchUpInside" id="mas-act-logout"/>
+                                </connections>
+                            </button>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mas-scroll-001">
+                                <rect key="frame" x="0.0" y="146.66666666666666" width="393" height="705.33333333333337"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mas-content-001">
+                                        <rect key="frame" x="0.0" y="0.0" width="393" height="620"/>
+                                        <subviews>
+                                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="fill" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="mas-main-stack-001">
+                                                <rect key="frame" x="24" y="0.0" width="345" height="498"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mas-profile-card-001">
+                                                        <rect key="frame" x="0.0" y="0.0" width="345" height="78"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="center" text="AD" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-initials-001">
+                                                                <rect key="frame" x="18" y="18" width="42" height="42"/>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Administrador RAVNU" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-name-001">
+                                                                <rect key="frame" x="74" y="17" width="201" height="20.333333333333332"/>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Administrador" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-role-001">
+                                                                <rect key="frame" x="74" y="41.333333333333336" width="201" height="16.666666666666664"/>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
+                                                                <color key="textColor" white="1" alpha="0.88" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            </label>
+                                                        </subviews>
+                                                        <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <constraints>
+                                                            <constraint firstItem="mas-initials-001" firstAttribute="leading" secondItem="mas-profile-card-001" secondAttribute="leading" constant="18" id="mas-pc-001"/>
+                                                            <constraint firstItem="mas-initials-001" firstAttribute="centerY" secondItem="mas-profile-card-001" secondAttribute="centerY" id="mas-pc-002"/>
+                                                            <constraint firstItem="mas-name-001" firstAttribute="leading" secondItem="mas-initials-001" secondAttribute="trailing" constant="14" id="mas-pc-005"/>
+                                                            <constraint firstAttribute="trailing" secondItem="mas-name-001" secondAttribute="trailing" constant="18" id="mas-pc-006"/>
+                                                            <constraint firstItem="mas-name-001" firstAttribute="top" secondItem="mas-profile-card-001" secondAttribute="top" constant="17" id="mas-pc-007"/>
+                                                            <constraint firstItem="mas-role-001" firstAttribute="leading" secondItem="mas-name-001" secondAttribute="leading" id="mas-pc-008"/>
+                                                            <constraint firstAttribute="trailing" secondItem="mas-role-001" secondAttribute="trailing" constant="18" id="mas-pc-009"/>
+                                                            <constraint firstItem="mas-role-001" firstAttribute="top" secondItem="mas-name-001" secondAttribute="bottom" constant="4" id="mas-pc-010"/>
+                                                            <constraint firstItem="mas-profile-card-001" firstAttribute="height" constant="78" id="mas-pc-011"/>
+                                                            <constraint firstItem="mas-initials-001" firstAttribute="top" secondItem="mas-profile-card-001" secondAttribute="top" constant="18" id="mas-pc-012"/>
+                                                            <constraint firstItem="mas-profile-card-001" firstAttribute="bottom" secondItem="mas-initials-001" secondAttribute="bottom" constant="18" id="mas-pc-013"/>
+                                                            <constraint firstItem="mas-initials-001" firstAttribute="width" secondItem="mas-initials-001" secondAttribute="height" multiplier="1:1" id="mas-pc-014"/>
+                                                        </constraints>
+                                                        <userDefinedRuntimeAttributes>
+                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                <real key="value" value="20"/>
+                                                            </userDefinedRuntimeAttribute>
+                                                        </userDefinedRuntimeAttributes>
+                                                    </view>
+                                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="fill" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="mas-admin-stack-001">
+                                                        <rect key="frame" x="0.0" y="90" width="345" height="232"/>
+                                                        <subviews>
+                                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mas-tes-card-001">
+                                                                <rect key="frame" x="0.0" y="0.0" width="345" height="128"/>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="TESORERIA" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-tes-title-001">
+                                                                        <rect key="frame" x="16" y="18" width="313" height="15.666666666666664"/>
+                                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                                                        <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Flujo de caja" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-tes-detail-001">
+                                                                        <rect key="frame" x="16" y="41.666666666666664" width="313" height="16.666666666666664"/>
+                                                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                                        <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin datos de caja" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-tes-value-001">
+                                                                        <rect key="frame" x="16" y="72.333333333333329" width="313" height="24"/>
+                                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                                                        <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    </label>
+                                                                </subviews>
+                                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                <constraints>
+                                                                    <constraint firstItem="mas-tes-title-001" firstAttribute="top" secondItem="mas-tes-card-001" secondAttribute="top" constant="18" id="mas-tes-001"/>
+                                                                    <constraint firstItem="mas-tes-title-001" firstAttribute="leading" secondItem="mas-tes-card-001" secondAttribute="leading" constant="16" id="mas-tes-002"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="mas-tes-title-001" secondAttribute="trailing" constant="16" id="mas-tes-003"/>
+                                                                    <constraint firstItem="mas-tes-detail-001" firstAttribute="top" secondItem="mas-tes-title-001" secondAttribute="bottom" constant="8" id="mas-tes-004"/>
+                                                                    <constraint firstItem="mas-tes-detail-001" firstAttribute="leading" secondItem="mas-tes-card-001" secondAttribute="leading" constant="16" id="mas-tes-005"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="mas-tes-detail-001" secondAttribute="trailing" constant="16" id="mas-tes-006"/>
+                                                                    <constraint firstItem="mas-tes-value-001" firstAttribute="top" secondItem="mas-tes-detail-001" secondAttribute="bottom" constant="14" id="mas-tes-007"/>
+                                                                    <constraint firstItem="mas-tes-value-001" firstAttribute="leading" secondItem="mas-tes-card-001" secondAttribute="leading" constant="16" id="mas-tes-008"/>
+                                                                    <constraint firstAttribute="trailing" secondItem="mas-tes-value-001" secondAttribute="trailing" constant="16" id="mas-tes-009"/>
+                                                                    <constraint firstItem="mas-tes-card-001" firstAttribute="height" constant="128" id="mas-tes-010"/>
+                                                                </constraints>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                        <real key="value" value="20"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
+                                                            </view>
+                                                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" alignment="fill" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="mas-admin-row-001">
+                                                                <rect key="frame" x="0.0" y="140" width="345" height="92"/>
+                                                                <subviews>
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mas-compras-card-001">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="166.66666666666666" height="92"/>
+                                                                        <subviews>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="COMPRAS" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-compras-title-001">
+                                                                                <rect key="frame" x="16" y="18" width="134.66666666666666" height="15.666666666666664"/>
+                                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                                                                <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                            </label>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="S/ --" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-compras-value-001">
+                                                                                <rect key="frame" x="16" y="48" width="134.66666666666666" height="24"/>
+                                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                                                                <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                            </label>
+                                                                        </subviews>
+                                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <constraints>
+                                                                            <constraint firstItem="mas-compras-title-001" firstAttribute="top" secondItem="mas-compras-card-001" secondAttribute="top" constant="18" id="mas-comp-001"/>
+                                                                            <constraint firstItem="mas-compras-title-001" firstAttribute="leading" secondItem="mas-compras-card-001" secondAttribute="leading" constant="16" id="mas-comp-002"/>
+                                                                            <constraint firstAttribute="trailing" secondItem="mas-compras-title-001" secondAttribute="trailing" constant="16" id="mas-comp-003"/>
+                                                                            <constraint firstItem="mas-compras-value-001" firstAttribute="top" secondItem="mas-compras-title-001" secondAttribute="bottom" constant="14" id="mas-comp-004"/>
+                                                                            <constraint firstItem="mas-compras-value-001" firstAttribute="leading" secondItem="mas-compras-card-001" secondAttribute="leading" constant="16" id="mas-comp-005"/>
+                                                                            <constraint firstAttribute="trailing" secondItem="mas-compras-value-001" secondAttribute="trailing" constant="16" id="mas-comp-006"/>
+                                                                        </constraints>
+                                                                        <userDefinedRuntimeAttributes>
+                                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                                <real key="value" value="20"/>
+                                                                            </userDefinedRuntimeAttribute>
+                                                                        </userDefinedRuntimeAttributes>
+                                                                    </view>
+                                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mas-rrhh-card-001">
+                                                                        <rect key="frame" x="178.66666666666663" y="0.0" width="166.33333333333337" height="92"/>
+                                                                        <subviews>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="RRHH" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-rrhh-title-001">
+                                                                                <rect key="frame" x="16" y="18" width="134.33333333333334" height="15.666666666666664"/>
+                                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                                                                <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                            </label>
+                                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Equipo" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-rrhh-value-001">
+                                                                                <rect key="frame" x="16" y="48" width="134.33333333333334" height="24"/>
+                                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
+                                                                                <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                            </label>
+                                                                        </subviews>
+                                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                        <constraints>
+                                                                            <constraint firstItem="mas-rrhh-title-001" firstAttribute="top" secondItem="mas-rrhh-card-001" secondAttribute="top" constant="18" id="mas-rrhh-001"/>
+                                                                            <constraint firstItem="mas-rrhh-title-001" firstAttribute="leading" secondItem="mas-rrhh-card-001" secondAttribute="leading" constant="16" id="mas-rrhh-002"/>
+                                                                            <constraint firstAttribute="trailing" secondItem="mas-rrhh-title-001" secondAttribute="trailing" constant="16" id="mas-rrhh-003"/>
+                                                                            <constraint firstItem="mas-rrhh-value-001" firstAttribute="top" secondItem="mas-rrhh-title-001" secondAttribute="bottom" constant="14" id="mas-rrhh-004"/>
+                                                                            <constraint firstItem="mas-rrhh-value-001" firstAttribute="leading" secondItem="mas-rrhh-card-001" secondAttribute="leading" constant="16" id="mas-rrhh-005"/>
+                                                                            <constraint firstAttribute="trailing" secondItem="mas-rrhh-value-001" secondAttribute="trailing" constant="16" id="mas-rrhh-006"/>
+                                                                        </constraints>
+                                                                        <userDefinedRuntimeAttributes>
+                                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                                <real key="value" value="20"/>
+                                                                            </userDefinedRuntimeAttribute>
+                                                                        </userDefinedRuntimeAttributes>
+                                                                    </view>
+                                                                </subviews>
+                                                                <constraints>
+                                                            <constraint firstItem="mas-admin-row-001" firstAttribute="height" constant="92" id="mas-row-001"/>
+                                                                    <constraint firstItem="mas-compras-card-001" firstAttribute="height" constant="92" id="mas-row-002"/>
+                                                                    <constraint firstItem="mas-rrhh-card-001" firstAttribute="height" constant="92" id="mas-row-003"/>
+                                                                    <constraint firstItem="mas-compras-card-001" firstAttribute="width" secondItem="mas-rrhh-card-001" secondAttribute="width" id="mas-row-004"/>
+                                                                </constraints>
+                                                            </stackView>
+                                                        </subviews>
+                                                        <constraints>
+                                                            <constraint firstItem="mas-admin-stack-001" firstAttribute="height" constant="232" id="mas-admin-stack-h"/>
+                                                        </constraints>
+                                                    </stackView>
+                                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-card-001">
+                                                        <rect key="frame" x="0.0" y="334" width="345" height="164"/>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="COBROS" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-title-001">
+                                                                <rect key="frame" x="16" y="18" width="313" height="15.666666666666664"/>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                                                <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="S/ --" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-total-001">
+                                                                <rect key="frame" x="16" y="45.666666666666664" width="313" height="31.333333333333336"/>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="26"/>
+                                                                <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin vencidos" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-vencidos-001">
+                                                                <rect key="frame" x="16" y="89" width="313" height="16.666666666666671"/>
+                                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
+                                                                <color key="textColor" red="0.72156862745098038" green="0.25490196078431371" blue="0.27843137254901962" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin pendientes" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-pendientes-001">
+                                                                <rect key="frame" x="16" y="113.66666666666667" width="313" height="16.666666666666671"/>
+                                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                                <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            </label>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Revisa y cobra cuotas desde este modulo." lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-detail-001">
+                                                                <rect key="frame" x="16" y="138.33333333333331" width="225" height="16.666666666666686"/>
+                                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                                <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            </label>
+                                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-btn-001">
+                                                                <rect key="frame" x="257" y="128" width="72" height="28"/>
+                                                                <buttonConfiguration key="configuration" style="filled" title="Ver">
+                                                                    <fontDescription key="titleFontDescription" type="boldSystem" pointSize="13"/>
+                                                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                </buttonConfiguration>
+                                                                <connections>
+                                                                    <action selector="btnIrCuotas:" destination="obY-Cn-DhB" eventType="touchUpInside" id="mas-act-cobros"/>
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstItem="mas-cobros-title-001" firstAttribute="top" secondItem="mas-cobros-card-001" secondAttribute="top" constant="18" id="mas-cob-001"/>
+                                                            <constraint firstItem="mas-cobros-title-001" firstAttribute="leading" secondItem="mas-cobros-card-001" secondAttribute="leading" constant="16" id="mas-cob-002"/>
+                                                            <constraint firstAttribute="trailing" secondItem="mas-cobros-title-001" secondAttribute="trailing" constant="16" id="mas-cob-003"/>
+                                                            <constraint firstItem="mas-cobros-total-001" firstAttribute="top" secondItem="mas-cobros-title-001" secondAttribute="bottom" constant="12" id="mas-cob-004"/>
+                                                            <constraint firstItem="mas-cobros-total-001" firstAttribute="leading" secondItem="mas-cobros-card-001" secondAttribute="leading" constant="16" id="mas-cob-005"/>
+                                                            <constraint firstAttribute="trailing" secondItem="mas-cobros-total-001" secondAttribute="trailing" constant="16" id="mas-cob-006"/>
+                                                            <constraint firstItem="mas-cobros-vencidos-001" firstAttribute="top" secondItem="mas-cobros-total-001" secondAttribute="bottom" constant="12" id="mas-cob-007"/>
+                                                            <constraint firstItem="mas-cobros-vencidos-001" firstAttribute="leading" secondItem="mas-cobros-card-001" secondAttribute="leading" constant="16" id="mas-cob-008"/>
+                                                            <constraint firstAttribute="trailing" secondItem="mas-cobros-vencidos-001" secondAttribute="trailing" constant="16" id="mas-cob-009"/>
+                                                            <constraint firstItem="mas-cobros-pendientes-001" firstAttribute="top" secondItem="mas-cobros-vencidos-001" secondAttribute="bottom" constant="8" id="mas-cob-010"/>
+                                                            <constraint firstItem="mas-cobros-pendientes-001" firstAttribute="leading" secondItem="mas-cobros-card-001" secondAttribute="leading" constant="16" id="mas-cob-011"/>
+                                                            <constraint firstAttribute="trailing" secondItem="mas-cobros-pendientes-001" secondAttribute="trailing" constant="16" id="mas-cob-012"/>
+                                                            <constraint firstItem="mas-cobros-detail-001" firstAttribute="top" secondItem="mas-cobros-pendientes-001" secondAttribute="bottom" constant="8" id="mas-cob-013"/>
+                                                            <constraint firstItem="mas-cobros-detail-001" firstAttribute="leading" secondItem="mas-cobros-card-001" secondAttribute="leading" constant="16" id="mas-cob-014"/>
+                                                            <constraint firstItem="mas-cobros-btn-001" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="mas-cobros-detail-001" secondAttribute="trailing" constant="12" id="mas-cob-015"/>
+                                                            <constraint firstAttribute="trailing" secondItem="mas-cobros-btn-001" secondAttribute="trailing" constant="16" id="mas-cob-016"/>
+                                                            <constraint firstItem="mas-cobros-btn-001" firstAttribute="centerY" secondItem="mas-cobros-detail-001" secondAttribute="centerY" id="mas-cob-017"/>
+                                                            <constraint firstItem="mas-cobros-card-001" firstAttribute="height" constant="164" id="mas-cob-018"/>
+                                                        </constraints>
+                                                        <userDefinedRuntimeAttributes>
+                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                <real key="value" value="20"/>
+                                                            </userDefinedRuntimeAttribute>
+                                                        </userDefinedRuntimeAttributes>
+                                                    </view>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="mas-main-stack-001" firstAttribute="height" constant="498" id="mas-main-stack-h"/>
+                                                </constraints>
+                                            </stackView>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="mas-main-stack-001" firstAttribute="top" secondItem="mas-content-001" secondAttribute="top" id="mas-content-c1"/>
+                                            <constraint firstItem="mas-main-stack-001" firstAttribute="leading" secondItem="mas-content-001" secondAttribute="leading" constant="24" id="mas-content-c2"/>
+                                            <constraint firstAttribute="trailing" secondItem="mas-main-stack-001" secondAttribute="trailing" constant="24" id="mas-content-c3"/>
+                                            <constraint firstAttribute="bottom" secondItem="mas-main-stack-001" secondAttribute="bottom" constant="24" id="mas-content-c4"/>
+                                            <constraint firstItem="mas-content-001" firstAttribute="height" constant="522" id="mas-content-c5"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="mas-content-001" firstAttribute="top" secondItem="mas-scroll-001" secondAttribute="top" id="mas-scroll-c1"/>
+                                    <constraint firstItem="mas-content-001" firstAttribute="leading" secondItem="mas-scroll-001" secondAttribute="leading" id="mas-scroll-c2"/>
+                                    <constraint firstAttribute="trailing" secondItem="mas-content-001" secondAttribute="trailing" id="mas-scroll-c3"/>
+                                    <constraint firstAttribute="bottom" secondItem="mas-content-001" secondAttribute="bottom" id="mas-scroll-c4"/>
+                                    <constraint firstItem="mas-content-001" firstAttribute="width" secondItem="mas-scroll-001" secondAttribute="width" id="mas-scroll-c5"/>
+                                </constraints>
+                            </scrollView>
+                        </subviews>
                         <viewLayoutGuide key="safeArea" id="NEn-40-akP"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <color key="backgroundColor" red="0.96470588235294119" green="0.97254901960784312" blue="0.99215686274509807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="mas-title-001" firstAttribute="top" secondItem="NEn-40-akP" secondAttribute="top" constant="8" id="mas-root-001"/>
+                            <constraint firstItem="mas-title-001" firstAttribute="leading" secondItem="NEn-40-akP" secondAttribute="leading" constant="24" id="mas-root-002"/>
+                            <constraint firstItem="mas-title-001" firstAttribute="trailing" relation="lessThanOrEqual" secondItem="mas-logout-001" secondAttribute="leading" constant="-12" id="mas-root-002b"/>
+                            <constraint firstItem="mas-subtitle-001" firstAttribute="top" secondItem="mas-title-001" secondAttribute="bottom" constant="6" id="mas-root-003"/>
+                            <constraint firstItem="mas-subtitle-001" firstAttribute="leading" secondItem="NEn-40-akP" secondAttribute="leading" constant="24" id="mas-root-004"/>
+                            <constraint firstItem="mas-logout-001" firstAttribute="trailing" secondItem="NEn-40-akP" secondAttribute="trailing" constant="-24" id="mas-root-005"/>
+                            <constraint firstItem="mas-logout-001" firstAttribute="centerY" secondItem="mas-title-001" secondAttribute="centerY" constant="4" id="mas-root-006"/>
+                            <constraint firstItem="mas-logout-001" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="mas-title-001" secondAttribute="trailing" constant="12" id="mas-root-007"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="mas-subtitle-001" secondAttribute="trailing" constant="24" id="mas-root-008"/>
+                            <constraint firstItem="mas-scroll-001" firstAttribute="top" secondItem="mas-subtitle-001" secondAttribute="bottom" constant="16" id="mas-root-009"/>
+                            <constraint firstItem="mas-scroll-001" firstAttribute="leading" secondItem="v28-nC-o3W" secondAttribute="leading" id="mas-root-010"/>
+                            <constraint firstAttribute="trailing" secondItem="mas-scroll-001" secondAttribute="trailing" id="mas-root-011"/>
+                            <constraint firstAttribute="bottom" secondItem="mas-scroll-001" secondAttribute="bottom" id="mas-root-012"/>
+                        </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="Más" image="ellipsis" catalog="system" id="mRF-h5-9lu"/>
                     <connections>
+                        <outlet property="lblCobrosTotal" destination="mas-cobros-total-001" id="mas-out-001"/>
+                        <outlet property="lblDetalleCobros" destination="mas-cobros-detail-001" id="mas-out-002"/>
+                        <outlet property="lblDetalleTesoreria" destination="mas-tes-detail-001" id="mas-out-003"/>
+                        <outlet property="lblIniciales" destination="mas-initials-001" id="mas-out-004"/>
+                        <outlet property="lblNombre" destination="mas-name-001" id="mas-out-005"/>
+                        <outlet property="lblPendientes" destination="mas-cobros-pendientes-001" id="mas-out-006"/>
+                        <outlet property="lblRol" destination="mas-role-001" id="mas-out-007"/>
+                        <outlet property="lblVencidos" destination="mas-cobros-vencidos-001" id="mas-out-008"/>
+                        <outlet property="stackModulosAdmin" destination="mas-admin-stack-001" id="mas-out-009"/>
                         <segue destination="Mw1-zJ-K1J" kind="show" identifier="mostrarPantallaCuotas" id="3f2-6W-eue"/>
                     </connections>
                 </viewController>
@@ -1954,7 +2288,7 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Hdr-17-xEG">
-                                <rect key="frame" x="24" y="153.33333333333331" width="345" height="131.33333333333331"/>
+                                <rect key="frame" x="24" y="153.33333333333331" width="345" height="154"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RESUMEN DE CAJA" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Br0-Ue-sDh">
                                         <rect key="frame" x="20" y="20" width="133.66666666666666" height="17"/>
@@ -1968,8 +2302,14 @@
                                         <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sin ventas ni cobros registrados" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-sum-001">
+                                        <rect key="frame" x="20" y="91" width="305" height="17"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <color key="textColor" white="1" alpha="0.81999999999999995" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bienvenido:" textAlignment="natural" lineBreakMode="wordWrap" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="azQ-RH-Qwk">
-                                        <rect key="frame" x="20" y="99" width="305" height="20.333333333333329"/>
+                                        <rect key="frame" x="20" y="116" width="305" height="20.333333333333329"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                         <color key="textColor" white="1" alpha="0.92000000000000004" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <nil key="highlightedColor"/>
@@ -1981,7 +2321,10 @@
                                     <constraint firstItem="Br0-Ue-sDh" firstAttribute="leading" secondItem="Hdr-17-xEG" secondAttribute="leading" constant="20" id="5Tn-KQ-DWU"/>
                                     <constraint firstItem="Kfk-5t-878" firstAttribute="top" secondItem="Br0-Ue-sDh" secondAttribute="bottom" constant="10" id="Qh6-Qr-O1H"/>
                                     <constraint firstItem="Kfk-5t-878" firstAttribute="leading" secondItem="Hdr-17-xEG" secondAttribute="leading" constant="20" id="arD-31-Aw3"/>
-                                    <constraint firstItem="azQ-RH-Qwk" firstAttribute="top" secondItem="Kfk-5t-878" secondAttribute="bottom" constant="16" id="jT8-5w-t5D"/>
+                                    <constraint firstItem="cjR-sum-001" firstAttribute="top" secondItem="Kfk-5t-878" secondAttribute="bottom" constant="8" id="cjR-con-001"/>
+                                    <constraint firstItem="cjR-sum-001" firstAttribute="leading" secondItem="Hdr-17-xEG" secondAttribute="leading" constant="20" id="cjR-con-002"/>
+                                    <constraint firstAttribute="trailing" secondItem="cjR-sum-001" secondAttribute="trailing" constant="20" id="cjR-con-003"/>
+                                    <constraint firstItem="azQ-RH-Qwk" firstAttribute="top" secondItem="cjR-sum-001" secondAttribute="bottom" constant="8" id="jT8-5w-t5D"/>
                                     <constraint firstAttribute="bottom" secondItem="azQ-RH-Qwk" secondAttribute="bottom" constant="12" id="mWF-Vz-tPH"/>
                                     <constraint firstItem="azQ-RH-Qwk" firstAttribute="leading" secondItem="Hdr-17-xEG" secondAttribute="leading" constant="20" id="qQ4-pN-1xS"/>
                                     <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="Br0-Ue-sDh" secondAttribute="trailing" constant="20" id="v8V-58-7qS"/>
@@ -1994,13 +2337,267 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="MÉTRICAS CLAVE" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-metric-title">
+                                <rect key="frame" x="24" y="331.33333333333331" width="112" height="14.333333333333314"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="12"/>
+                                <color key="textColor" systemColor="systemGrayColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-metric-stack">
+                                <rect key="frame" x="24" y="353.66666666666669" width="345" height="105"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-card-sales">
+                                        <rect key="frame" x="0.0" y="0.0" width="80.25" height="105"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Vendido" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-sales-title">
+                                                <rect key="frame" x="12" y="18" width="56.25" height="14.333333333333336"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <color key="textColor" systemColor="systemGrayColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="--" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-sales-value">
+                                                <rect key="frame" x="12" y="42.333333333333314" width="56.25" height="21.666666666666657"/>
+                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                                                <color key="textColor" red="0.19215686274509805" green="0.43137254901960786" blue="0.98431372549019602" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin ventas" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-sales-detail">
+                                                <rect key="frame" x="12" y="72" width="56.25" height="13"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                                <color key="textColor" systemColor="systemGrayColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="cjR-sales-title" firstAttribute="top" secondItem="cjR-card-sales" secondAttribute="top" constant="18" id="cjR-sales-c1"/>
+                                            <constraint firstItem="cjR-sales-title" firstAttribute="leading" secondItem="cjR-card-sales" secondAttribute="leading" constant="12" id="cjR-sales-c2"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-sales-title" secondAttribute="trailing" constant="12" id="cjR-sales-c3"/>
+                                            <constraint firstItem="cjR-sales-value" firstAttribute="top" secondItem="cjR-sales-title" secondAttribute="bottom" constant="10" id="cjR-sales-c4"/>
+                                            <constraint firstItem="cjR-sales-value" firstAttribute="leading" secondItem="cjR-card-sales" secondAttribute="leading" constant="12" id="cjR-sales-c5"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-sales-value" secondAttribute="trailing" constant="12" id="cjR-sales-c6"/>
+                                            <constraint firstItem="cjR-sales-detail" firstAttribute="top" secondItem="cjR-sales-value" secondAttribute="bottom" constant="8" id="cjR-sales-c7"/>
+                                            <constraint firstItem="cjR-sales-detail" firstAttribute="leading" secondItem="cjR-card-sales" secondAttribute="leading" constant="12" id="cjR-sales-c8"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-sales-detail" secondAttribute="trailing" constant="12" id="cjR-sales-c9"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <real key="value" value="14"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-card-paid">
+                                        <rect key="frame" x="88.25" y="0.0" width="80.25" height="105"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Cobrado" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-paid-title">
+                                                <rect key="frame" x="12" y="18" width="56.25" height="14.333333333333336"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <color key="textColor" systemColor="systemGrayColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="--" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-paid-value">
+                                                <rect key="frame" x="12" y="42.333333333333314" width="56.25" height="21.666666666666657"/>
+                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                                                <color key="textColor" red="0.14901960784313725" green="0.65098039215686276" blue="0.39215686274509803" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin cobros" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-paid-detail">
+                                                <rect key="frame" x="12" y="72" width="56.25" height="13"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                                <color key="textColor" systemColor="systemGrayColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="cjR-paid-title" firstAttribute="top" secondItem="cjR-card-paid" secondAttribute="top" constant="18" id="cjR-paid-c1"/>
+                                            <constraint firstItem="cjR-paid-title" firstAttribute="leading" secondItem="cjR-card-paid" secondAttribute="leading" constant="12" id="cjR-paid-c2"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-paid-title" secondAttribute="trailing" constant="12" id="cjR-paid-c3"/>
+                                            <constraint firstItem="cjR-paid-value" firstAttribute="top" secondItem="cjR-paid-title" secondAttribute="bottom" constant="10" id="cjR-paid-c4"/>
+                                            <constraint firstItem="cjR-paid-value" firstAttribute="leading" secondItem="cjR-card-paid" secondAttribute="leading" constant="12" id="cjR-paid-c5"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-paid-value" secondAttribute="trailing" constant="12" id="cjR-paid-c6"/>
+                                            <constraint firstItem="cjR-paid-detail" firstAttribute="top" secondItem="cjR-paid-value" secondAttribute="bottom" constant="8" id="cjR-paid-c7"/>
+                                            <constraint firstItem="cjR-paid-detail" firstAttribute="leading" secondItem="cjR-card-paid" secondAttribute="leading" constant="12" id="cjR-paid-c8"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-paid-detail" secondAttribute="trailing" constant="12" id="cjR-paid-c9"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <real key="value" value="14"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-card-pending">
+                                        <rect key="frame" x="176.5" y="0.0" width="80.25" height="105"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Por cobrar" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-pending-title">
+                                                <rect key="frame" x="12" y="18" width="56.25" height="14.333333333333336"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <color key="textColor" systemColor="systemGrayColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="--" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-pending-value">
+                                                <rect key="frame" x="12" y="42.333333333333314" width="56.25" height="21.666666666666657"/>
+                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                                                <color key="textColor" red="0.92549019607843142" green="0.50588235294117645" blue="0.086274509803921567" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin cuotas" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-pending-detail">
+                                                <rect key="frame" x="12" y="72" width="56.25" height="13"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                                <color key="textColor" systemColor="systemGrayColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="cjR-pending-title" firstAttribute="top" secondItem="cjR-card-pending" secondAttribute="top" constant="18" id="cjR-pending-c1"/>
+                                            <constraint firstItem="cjR-pending-title" firstAttribute="leading" secondItem="cjR-card-pending" secondAttribute="leading" constant="12" id="cjR-pending-c2"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-pending-title" secondAttribute="trailing" constant="12" id="cjR-pending-c3"/>
+                                            <constraint firstItem="cjR-pending-value" firstAttribute="top" secondItem="cjR-pending-title" secondAttribute="bottom" constant="10" id="cjR-pending-c4"/>
+                                            <constraint firstItem="cjR-pending-value" firstAttribute="leading" secondItem="cjR-card-pending" secondAttribute="leading" constant="12" id="cjR-pending-c5"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-pending-value" secondAttribute="trailing" constant="12" id="cjR-pending-c6"/>
+                                            <constraint firstItem="cjR-pending-detail" firstAttribute="top" secondItem="cjR-pending-value" secondAttribute="bottom" constant="8" id="cjR-pending-c7"/>
+                                            <constraint firstItem="cjR-pending-detail" firstAttribute="leading" secondItem="cjR-card-pending" secondAttribute="leading" constant="12" id="cjR-pending-c8"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-pending-detail" secondAttribute="trailing" constant="12" id="cjR-pending-c9"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <real key="value" value="14"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-card-stock">
+                                        <rect key="frame" x="264.75" y="0.0" width="80.25" height="105"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Stock" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-stock-title">
+                                                <rect key="frame" x="12" y="18" width="56.25" height="14.333333333333336"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                                                <color key="textColor" systemColor="systemGrayColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="--" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-stock-value">
+                                                <rect key="frame" x="12" y="42.333333333333314" width="56.25" height="21.666666666666657"/>
+                                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
+                                                <color key="textColor" systemColor="systemRedColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin alertas" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-stock-detail">
+                                                <rect key="frame" x="12" y="72" width="56.25" height="13"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="11"/>
+                                                <color key="textColor" systemColor="systemGrayColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <constraints>
+                                            <constraint firstItem="cjR-stock-title" firstAttribute="top" secondItem="cjR-card-stock" secondAttribute="top" constant="18" id="cjR-stock-c1"/>
+                                            <constraint firstItem="cjR-stock-title" firstAttribute="leading" secondItem="cjR-card-stock" secondAttribute="leading" constant="12" id="cjR-stock-c2"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-stock-title" secondAttribute="trailing" constant="12" id="cjR-stock-c3"/>
+                                            <constraint firstItem="cjR-stock-value" firstAttribute="top" secondItem="cjR-stock-title" secondAttribute="bottom" constant="10" id="cjR-stock-c4"/>
+                                            <constraint firstItem="cjR-stock-value" firstAttribute="leading" secondItem="cjR-card-stock" secondAttribute="leading" constant="12" id="cjR-stock-c5"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-stock-value" secondAttribute="trailing" constant="12" id="cjR-stock-c6"/>
+                                            <constraint firstItem="cjR-stock-detail" firstAttribute="top" secondItem="cjR-stock-value" secondAttribute="bottom" constant="8" id="cjR-stock-c7"/>
+                                            <constraint firstItem="cjR-stock-detail" firstAttribute="leading" secondItem="cjR-card-stock" secondAttribute="leading" constant="12" id="cjR-stock-c8"/>
+                                            <constraint firstAttribute="trailing" secondItem="cjR-stock-detail" secondAttribute="trailing" constant="12" id="cjR-stock-c9"/>
+                                        </constraints>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                <real key="value" value="14"/>
+                                            </userDefinedRuntimeAttribute>
+                                        </userDefinedRuntimeAttributes>
+                                    </view>
+                                </subviews>
+                            </stackView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="VENTAS ESTA SEMANA" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-week-title">
+                                <rect key="frame" x="24" y="478.66666666666669" width="139" height="14.333333333333314"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="12"/>
+                                <color key="textColor" systemColor="systemGrayColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-week-card">
+                                <rect key="frame" x="24" y="501" width="345" height="94"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Total semanal" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-week-card-title">
+                                        <rect key="frame" x="18" y="18" width="309" height="17"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <color key="textColor" systemColor="systemGrayColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="S/ --" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.69999999999999996" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-week-value">
+                                        <rect key="frame" x="18" y="43" width="309" height="27"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="22"/>
+                                        <color key="textColor" red="0.19215686274509805" green="0.43137254901960786" blue="0.98431372549019602" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin ventas esta semana" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-week-detail">
+                                        <rect key="frame" x="18" y="72" width="309" height="16"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                        <color key="textColor" systemColor="systemGrayColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="cjR-week-card-title" firstAttribute="top" secondItem="cjR-week-card" secondAttribute="top" constant="18" id="cjR-week-c1"/>
+                                    <constraint firstItem="cjR-week-card-title" firstAttribute="leading" secondItem="cjR-week-card" secondAttribute="leading" constant="18" id="cjR-week-c2"/>
+                                    <constraint firstAttribute="trailing" secondItem="cjR-week-card-title" secondAttribute="trailing" constant="18" id="cjR-week-c3"/>
+                                    <constraint firstItem="cjR-week-value" firstAttribute="top" secondItem="cjR-week-card-title" secondAttribute="bottom" constant="8" id="cjR-week-c4"/>
+                                    <constraint firstItem="cjR-week-value" firstAttribute="leading" secondItem="cjR-week-card" secondAttribute="leading" constant="18" id="cjR-week-c5"/>
+                                    <constraint firstAttribute="trailing" secondItem="cjR-week-value" secondAttribute="trailing" constant="18" id="cjR-week-c6"/>
+                                    <constraint firstItem="cjR-week-detail" firstAttribute="top" secondItem="cjR-week-value" secondAttribute="bottom" constant="4" id="cjR-week-c7"/>
+                                    <constraint firstItem="cjR-week-detail" firstAttribute="leading" secondItem="cjR-week-card" secondAttribute="leading" constant="18" id="cjR-week-c8"/>
+                                    <constraint firstAttribute="trailing" secondItem="cjR-week-detail" secondAttribute="trailing" constant="18" id="cjR-week-c9"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="14"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ALERTAS DE STOCK BAJO" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-stock-alert-title">
+                                <rect key="frame" x="24" y="615" width="158" height="14.333333333333371"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="12"/>
+                                <color key="textColor" systemColor="systemGrayColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-stock-alert-card">
+                                <rect key="frame" x="24" y="637.33333333333337" width="345" height="74"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Stock estable" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-stock-alert-value">
+                                        <rect key="frame" x="18" y="16" width="309" height="20.333333333333329"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                        <color key="textColor" red="0.050980392156862744" green="0.086274509803921567" blue="0.14509803921568629" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin productos por debajo del minimo" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-stock-alert-detail">
+                                        <rect key="frame" x="18" y="44.333333333333371" width="309" height="16.666666666666657"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <color key="textColor" systemColor="systemGrayColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="cjR-stock-alert-value" firstAttribute="top" secondItem="cjR-stock-alert-card" secondAttribute="top" constant="16" id="cjR-stock-alert-c1"/>
+                                    <constraint firstItem="cjR-stock-alert-value" firstAttribute="leading" secondItem="cjR-stock-alert-card" secondAttribute="leading" constant="18" id="cjR-stock-alert-c2"/>
+                                    <constraint firstAttribute="trailing" secondItem="cjR-stock-alert-value" secondAttribute="trailing" constant="18" id="cjR-stock-alert-c3"/>
+                                    <constraint firstItem="cjR-stock-alert-detail" firstAttribute="top" secondItem="cjR-stock-alert-value" secondAttribute="bottom" constant="8" id="cjR-stock-alert-c4"/>
+                                    <constraint firstItem="cjR-stock-alert-detail" firstAttribute="leading" secondItem="cjR-stock-alert-card" secondAttribute="leading" constant="18" id="cjR-stock-alert-c5"/>
+                                    <constraint firstAttribute="trailing" secondItem="cjR-stock-alert-detail" secondAttribute="trailing" constant="18" id="cjR-stock-alert-c6"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="14"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Movimientos recientes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="W3w-5i-Asw">
                                 <rect key="frame" x="24" y="308.66666666666669" width="213" height="24"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                 <color key="textColor" red="0.039215686270588239" green="0.12156862745098039" blue="0.27450980392156865" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" ambiguous="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="56" estimatedRowHeight="56" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="I0Z-31-tci">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="56" estimatedRowHeight="56" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="I0Z-31-tci">
                                 <rect key="frame" x="24" y="344.66666666666674" width="345" height="441"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
@@ -2034,6 +2631,37 @@
                                     <outlet property="delegate" destination="wzZ-yh-Sh8" id="oAE-aQ-H5r"/>
                                 </connections>
                             </tableView>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-empty-001">
+                                <rect key="frame" x="24" y="522.66666666666663" width="345" height="92"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sin movimientos recientes" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-empty-title">
+                                        <rect key="frame" x="20" y="26" width="305" height="20.333333333333329"/>
+                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                        <color key="textColor" red="0.050980392156862744" green="0.086274509803921567" blue="0.14509803921568629" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Las ventas y cobros aparecerán aquí." textAlignment="center" lineBreakMode="tailTruncation" adjustsFontSizeToFit="YES" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-empty-detail">
+                                        <rect key="frame" x="20" y="54.333333333333371" width="305" height="16.666666666666657"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <color key="textColor" systemColor="systemGrayColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="cjR-empty-title" firstAttribute="top" secondItem="cjR-empty-001" secondAttribute="top" constant="26" id="cjR-empty-c1"/>
+                                    <constraint firstItem="cjR-empty-title" firstAttribute="leading" secondItem="cjR-empty-001" secondAttribute="leading" constant="20" id="cjR-empty-c2"/>
+                                    <constraint firstAttribute="trailing" secondItem="cjR-empty-title" secondAttribute="trailing" constant="20" id="cjR-empty-c3"/>
+                                    <constraint firstItem="cjR-empty-detail" firstAttribute="top" secondItem="cjR-empty-title" secondAttribute="bottom" constant="8" id="cjR-empty-c4"/>
+                                    <constraint firstItem="cjR-empty-detail" firstAttribute="leading" secondItem="cjR-empty-001" secondAttribute="leading" constant="20" id="cjR-empty-c5"/>
+                                    <constraint firstAttribute="trailing" secondItem="cjR-empty-detail" secondAttribute="trailing" constant="20" id="cjR-empty-c6"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="14"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="mpu-TY-QBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -2042,7 +2670,28 @@
                             <constraint firstItem="Hdr-17-xEG" firstAttribute="top" secondItem="82N-uu-47u" secondAttribute="bottom" constant="24" id="5X7-Y7-B0g"/>
                             <constraint firstItem="82N-uu-47u" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="FAR-Dj-mtC"/>
                             <constraint firstItem="I0Z-31-tci" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="Gk8-q7-LQq"/>
-                            <constraint firstItem="W3w-5i-Asw" firstAttribute="top" secondItem="Hdr-17-xEG" secondAttribute="bottom" constant="24" id="J1D-5M-DLi"/>
+                            <constraint firstItem="cjR-metric-title" firstAttribute="top" secondItem="Hdr-17-xEG" secondAttribute="bottom" constant="18" id="cjR-main-c01"/>
+                            <constraint firstItem="cjR-metric-title" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c02"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cjR-metric-title" secondAttribute="trailing" constant="24" id="cjR-main-c03"/>
+                            <constraint firstItem="cjR-metric-stack" firstAttribute="top" secondItem="cjR-metric-title" secondAttribute="bottom" constant="8" id="cjR-main-c04"/>
+                            <constraint firstItem="cjR-metric-stack" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c05"/>
+                            <constraint firstAttribute="trailing" secondItem="cjR-metric-stack" secondAttribute="trailing" constant="24" id="cjR-main-c06"/>
+                            <constraint firstItem="cjR-metric-stack" firstAttribute="height" constant="105" id="cjR-main-c07"/>
+                            <constraint firstItem="cjR-week-title" firstAttribute="top" secondItem="cjR-metric-stack" secondAttribute="bottom" constant="20" id="cjR-main-c13"/>
+                            <constraint firstItem="cjR-week-title" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c14"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cjR-week-title" secondAttribute="trailing" constant="24" id="cjR-main-c15"/>
+                            <constraint firstItem="cjR-week-card" firstAttribute="top" secondItem="cjR-week-title" secondAttribute="bottom" constant="8" id="cjR-main-c16"/>
+                            <constraint firstItem="cjR-week-card" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c17"/>
+                            <constraint firstAttribute="trailing" secondItem="cjR-week-card" secondAttribute="trailing" constant="24" id="cjR-main-c18"/>
+                            <constraint firstItem="cjR-week-card" firstAttribute="height" constant="94" id="cjR-main-c19"/>
+                            <constraint firstItem="cjR-stock-alert-title" firstAttribute="top" secondItem="cjR-week-card" secondAttribute="bottom" constant="20" id="cjR-main-c20"/>
+                            <constraint firstItem="cjR-stock-alert-title" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c21"/>
+                            <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cjR-stock-alert-title" secondAttribute="trailing" constant="24" id="cjR-main-c22"/>
+                            <constraint firstItem="cjR-stock-alert-card" firstAttribute="top" secondItem="cjR-stock-alert-title" secondAttribute="bottom" constant="8" id="cjR-main-c23"/>
+                            <constraint firstItem="cjR-stock-alert-card" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c24"/>
+                            <constraint firstAttribute="trailing" secondItem="cjR-stock-alert-card" secondAttribute="trailing" constant="24" id="cjR-main-c25"/>
+                            <constraint firstItem="cjR-stock-alert-card" firstAttribute="height" constant="74" id="cjR-main-c26"/>
+                            <constraint firstItem="W3w-5i-Asw" firstAttribute="top" secondItem="cjR-stock-alert-card" secondAttribute="bottom" constant="20" id="J1D-5M-DLi"/>
                             <constraint firstItem="Hdr-17-xEG" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="KfR-tL-H8L"/>
                             <constraint firstItem="82N-uu-47u" firstAttribute="top" secondItem="SNs-fs-CeO" secondAttribute="bottom" constant="8" id="Mjt-cH-MqP"/>
                             <constraint firstAttribute="trailing" secondItem="I0Z-31-tci" secondAttribute="trailing" constant="24" id="TqI-aK-rIa"/>
@@ -2052,14 +2701,33 @@
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="SNs-fs-CeO" secondAttribute="trailing" constant="24" id="aG4-Ws-t0X"/>
                             <constraint firstAttribute="trailing" secondItem="Hdr-17-xEG" secondAttribute="trailing" constant="24" id="d8P-LN-WZw"/>
                             <constraint firstItem="I0Z-31-tci" firstAttribute="top" secondItem="W3w-5i-Asw" secondAttribute="bottom" constant="12" id="k3q-BM-DtE"/>
+                            <constraint firstItem="mpu-TY-QBY" firstAttribute="bottom" secondItem="I0Z-31-tci" secondAttribute="bottom" constant="8" id="cjR-main-c08"/>
+                            <constraint firstItem="cjR-empty-001" firstAttribute="top" secondItem="I0Z-31-tci" secondAttribute="top" constant="24" id="cjR-main-c09"/>
+                            <constraint firstItem="cjR-empty-001" firstAttribute="leading" secondItem="I0Z-31-tci" secondAttribute="leading" id="cjR-main-c10"/>
+                            <constraint firstItem="cjR-empty-001" firstAttribute="trailing" secondItem="I0Z-31-tci" secondAttribute="trailing" id="cjR-main-c11"/>
+                            <constraint firstItem="cjR-empty-001" firstAttribute="height" constant="92" id="cjR-main-c12"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="W3w-5i-Asw" secondAttribute="trailing" constant="24" id="mWl-HZ-hbS"/>
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="Inicio" image="house" catalog="system" id="AFn-9H-fHA"/>
                     <navigationItem key="navigationItem" id="1Lv-CX-No7"/>
                     <connections>
+                        <outlet property="emptyStateView" destination="cjR-empty-001" id="cjR-out-001"/>
+                        <outlet property="lblAlertaStockDetalle" destination="cjR-stock-alert-detail" id="cjR-out-011"/>
+                        <outlet property="lblAlertaStockTitulo" destination="cjR-stock-alert-value" id="cjR-out-012"/>
+                        <outlet property="lblCobradoHoy" destination="cjR-paid-value" id="cjR-out-002"/>
+                        <outlet property="lblCobradoHoyDetalle" destination="cjR-paid-detail" id="cjR-out-003"/>
                         <outlet property="lblNombreBienvenido" destination="azQ-RH-Qwk" id="ove-Bv-OQL"/>
+                        <outlet property="lblPendientes" destination="cjR-pending-value" id="cjR-out-004"/>
+                        <outlet property="lblPendientesDetalle" destination="cjR-pending-detail" id="cjR-out-005"/>
+                        <outlet property="lblResumenSecundario" destination="cjR-sum-001" id="cjR-out-006"/>
                         <outlet property="lblSaldoActual" destination="Kfk-5t-878" id="T38-tK-JZy"/>
+                        <outlet property="lblStockBajo" destination="cjR-stock-value" id="cjR-out-007"/>
+                        <outlet property="lblStockBajoDetalle" destination="cjR-stock-detail" id="cjR-out-008"/>
+                        <outlet property="lblVentasHoy" destination="cjR-sales-value" id="cjR-out-009"/>
+                        <outlet property="lblVentasHoyDetalle" destination="cjR-sales-detail" id="cjR-out-010"/>
+                        <outlet property="lblVentasSemana" destination="cjR-week-value" id="cjR-out-013"/>
+                        <outlet property="lblVentasSemanaDetalle" destination="cjR-week-detail" id="cjR-out-014"/>
                         <outlet property="tblCajero" destination="I0Z-31-tci" id="Qq0-ni-NLv"/>
                     </connections>
                 </viewController>

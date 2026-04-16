@@ -53,8 +53,44 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         tblClientes.tableFooterView = UIView()
         searchBar.delegate = self
         configureSearchBar()
+        configureAnalyticsView()
         loadClientes()
         showClientes()
+    }
+    
+    private func configureAnalyticsView() {
+        // Configurar el scroll view de analítica
+        analyticsScrollView.showsVerticalScrollIndicator = true
+        analyticsScrollView.showsHorizontalScrollIndicator = false
+        analyticsScrollView.alwaysBounceVertical = true
+        analyticsScrollView.contentInset = UIEdgeInsets(top: 16, left: 0, bottom: 16, right: 0)
+        
+        // Configurar estilos de las etiquetas de analítica
+        configureAnalyticsLabels()
+    }
+    
+    private func configureAnalyticsLabels() {
+        // Configurar título de resumen
+        if let lblResumen = lblResumenClientes {
+            lblResumen.font = .systemFont(ofSize: 14, weight: .regular)
+            lblResumen.textColor = UIColor(red: 0.596, green: 0.608, blue: 0.675, alpha: 1)
+            lblResumen.numberOfLines = 0
+            lblResumen.lineBreakMode = .byWordWrapping
+        }
+        
+        // Configurar labels de estadísticas (valores grandes)
+        for label in [lblTotalClientes, lblActivos, lblRiesgo, lblBloqueados].compactMap({ $0 }) {
+            label.font = .systemFont(ofSize: 48, weight: .bold)
+            label.textColor = UIColor(red: 0.188, green: 0.196, blue: 0.271, alpha: 1)
+            label.textAlignment = .left
+            label.adjustsFontSizeToFitWidth = true
+            label.minimumScaleFactor = 0.7
+        }
+        
+        // Aplicar colores específicos
+        lblActivos?.textColor = UIColor(red: 0.25, green: 0.80, blue: 0.42, alpha: 1)
+        lblRiesgo?.textColor = UIColor(red: 0.95, green: 0.67, blue: 0.04, alpha: 1)
+        lblBloqueados?.textColor = UIColor(red: 0.89, green: 0.24, blue: 0.24, alpha: 1)
     }
 
     override func viewWillAppear(_ animated: Bool) {
