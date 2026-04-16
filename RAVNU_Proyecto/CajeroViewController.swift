@@ -2,9 +2,6 @@ import CoreData
 import UIKit
 
 
-
-
-
 class CajeroViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
     @IBOutlet weak var lblNombreBienvenido: UILabel!
@@ -15,7 +12,6 @@ class CajeroViewController: UIViewController, UITableViewDataSource, UITableView
     
     var nombreBienvenido: String?
         
-        // 1. La lista empieza vacía
         var misVentas: [LoginEntity] = []
         
         let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext

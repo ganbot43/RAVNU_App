@@ -1,9 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24837" systemVersion="25E246" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="ClienteEntity" representedClassName="ClienteEntity" syncable="YES">
+        <attribute name="activo" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="creditoUsado" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="direccion" optional="YES" attributeType="String"/>
+        <attribute name="documento" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="limiteCredito" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="nombre" optional="YES" attributeType="String"/>
+        <attribute name="telefono" optional="YES" attributeType="String"/>
+        <relationship name="ventas" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="VentaEntity" inverseName="cliente" inverseEntity="VentaEntity"/>
+    </entity>
+    <entity name="CuotaEntity" representedClassName="CuotaEntity" syncable="YES">
+        <attribute name="fechaPago" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="fechaVencimiento" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="monto" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="numero" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="pagada" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <relationship name="venta" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="VentaEntity" inverseName="cuotas" inverseEntity="VentaEntity"/>
+    </entity>
     <entity name="LoginEntity" representedClassName="LoginEntity" syncable="YES">
         <attribute name="contrasena" attributeType="String"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="rol" attributeType="String"/>
         <attribute name="usuario" attributeType="String"/>
+    </entity>
+    <entity name="ProductoEntity" representedClassName="ProductoEntity" syncable="YES">
+        <attribute name="activo" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="nombre" optional="YES" attributeType="String"/>
+        <attribute name="precioPorLitro" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="stockLitros" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="tipo" optional="YES" attributeType="String"/>
+        <relationship name="ventas" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="VentaEntity" inverseName="producto" inverseEntity="VentaEntity"/>
+    </entity>
+    <entity name="VentaEntity" representedClassName="VentaEntity" syncable="YES">
+        <attribute name="cantidadLitros" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="estado" optional="YES" attributeType="String"/>
+        <attribute name="fechaVenta" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="metodoPago" optional="YES" attributeType="String"/>
+        <attribute name="precioUnitario" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="total" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="cliente" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ClienteEntity" inverseName="ventas" inverseEntity="ClienteEntity"/>
+        <relationship name="cuotas" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CuotaEntity" inverseName="venta" inverseEntity="CuotaEntity"/>
+        <relationship name="producto" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ProductoEntity" inverseName="ventas" inverseEntity="ProductoEntity"/>
     </entity>
 </model>

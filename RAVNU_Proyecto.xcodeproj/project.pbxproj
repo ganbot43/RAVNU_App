@@ -7,11 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4D20CE6D2F908D11009B29CC /* ProductoEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE6A2F908D11009B29CC /* ProductoEntity+CoreDataProperties.swift */; };
+		4D20CE6E2F908D11009B29CC /* VentaEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE6B2F908D11009B29CC /* VentaEntity+CoreDataClass.swift */; };
+		4D20CE6F2F908D11009B29CC /* CuotaEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE682F908D11009B29CC /* CuotaEntity+CoreDataProperties.swift */; };
+		4D20CE702F908D11009B29CC /* ClienteEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE652F908D11009B29CC /* ClienteEntity+CoreDataClass.swift */; };
+		4D20CE712F908D11009B29CC /* ClienteEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE662F908D11009B29CC /* ClienteEntity+CoreDataProperties.swift */; };
+		4D20CE722F908D11009B29CC /* ProductoEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE692F908D11009B29CC /* ProductoEntity+CoreDataClass.swift */; };
+		4D20CE732F908D11009B29CC /* CuotaEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE672F908D11009B29CC /* CuotaEntity+CoreDataClass.swift */; };
+		4D20CE742F908D11009B29CC /* VentaEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE6C2F908D11009B29CC /* VentaEntity+CoreDataProperties.swift */; };
 		4DD98B532F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD98B522F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift */; };
 		4DD98B542F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD98B512F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4D20CE652F908D11009B29CC /* ClienteEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClienteEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4D20CE662F908D11009B29CC /* ClienteEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ClienteEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4D20CE672F908D11009B29CC /* CuotaEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CuotaEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4D20CE682F908D11009B29CC /* CuotaEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CuotaEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4D20CE692F908D11009B29CC /* ProductoEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProductoEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4D20CE6A2F908D11009B29CC /* ProductoEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProductoEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4D20CE6B2F908D11009B29CC /* VentaEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VentaEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4D20CE6C2F908D11009B29CC /* VentaEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VentaEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		4DD98B512F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		4DD98B522F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		AE42C8912F86B08A001C9095 /* RAVNU_Proyecto.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RAVNU_Proyecto.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +68,14 @@
 		AE42C8882F86B08A001C9095 = {
 			isa = PBXGroup;
 			children = (
+				4D20CE652F908D11009B29CC /* ClienteEntity+CoreDataClass.swift */,
+				4D20CE662F908D11009B29CC /* ClienteEntity+CoreDataProperties.swift */,
+				4D20CE672F908D11009B29CC /* CuotaEntity+CoreDataClass.swift */,
+				4D20CE682F908D11009B29CC /* CuotaEntity+CoreDataProperties.swift */,
+				4D20CE692F908D11009B29CC /* ProductoEntity+CoreDataClass.swift */,
+				4D20CE6A2F908D11009B29CC /* ProductoEntity+CoreDataProperties.swift */,
+				4D20CE6B2F908D11009B29CC /* VentaEntity+CoreDataClass.swift */,
+				4D20CE6C2F908D11009B29CC /* VentaEntity+CoreDataProperties.swift */,
 				4DD98B512F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift */,
 				4DD98B522F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift */,
 				AE42C8932F86B08A001C9095 /* RAVNU_Proyecto */,
@@ -141,6 +165,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4D20CE6D2F908D11009B29CC /* ProductoEntity+CoreDataProperties.swift in Sources */,
+				4D20CE6E2F908D11009B29CC /* VentaEntity+CoreDataClass.swift in Sources */,
+				4D20CE6F2F908D11009B29CC /* CuotaEntity+CoreDataProperties.swift in Sources */,
+				4D20CE702F908D11009B29CC /* ClienteEntity+CoreDataClass.swift in Sources */,
+				4D20CE712F908D11009B29CC /* ClienteEntity+CoreDataProperties.swift in Sources */,
+				4D20CE722F908D11009B29CC /* ProductoEntity+CoreDataClass.swift in Sources */,
+				4D20CE732F908D11009B29CC /* CuotaEntity+CoreDataClass.swift in Sources */,
+				4D20CE742F908D11009B29CC /* VentaEntity+CoreDataProperties.swift in Sources */,
 				4DD98B532F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift in Sources */,
 				4DD98B542F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift in Sources */,
 			);
