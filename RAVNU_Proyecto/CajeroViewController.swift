@@ -37,7 +37,8 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
     private var ventas: [VentaEntity] = []
     private var cuotas: [CuotaEntity] = []
     private var productos: [ProductoEntity] = []
-    private var movimientos: [DashboardMovement] = []
+    private var stocks: [StockAlmacenEntity] = []
+    private var stockAlerts: [StockAlertItem] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,8 +55,11 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
     private func configureTableView() {
         tblCajero?.dataSource = self
         tblCajero?.delegate = self
-        tblCajero?.rowHeight = 72
+        tblCajero?.rowHeight = 78
         tblCajero?.tableFooterView = UIView()
+        tblCajero?.separatorStyle = .none
+        tblCajero?.backgroundColor = .clear
+        tblCajero?.showsVerticalScrollIndicator = false
     }
 
     private func configureInitialState() {
@@ -78,7 +82,7 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
         lblVentasSemanaDetalle?.text = "Sin ventas esta semana"
         lblAlertaStockTitulo?.text = "Stock estable"
         lblAlertaStockDetalle?.text = "Sin productos por debajo del minimo"
-        movimientos = []
+        stockAlerts = []
         tblCajero?.reloadData()
         emptyStateView?.isHidden = false
     }
@@ -88,6 +92,7 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
             ventas = try fetchVentas()
             cuotas = try fetchCuotas()
             productos = try fetchProductos()
+            stocks = try fetchStocks()
             updateDashboard()
         } catch {
             resetDashboardLabels()
@@ -112,6 +117,15 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
         return try context.fetch(request)
     }
 
+    private func fetchStocks() throws -> [StockAlmacenEntity] {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        request.sortDescriptors = [
+            NSSortDescriptor(key: "stockActual", ascending: true),
+            NSSortDescriptor(key: "producto.nombre", ascending: true)
+        ]
+        return try context.fetch(request)
+    }
+
     private func updateDashboard() {
         let salesToday = ventas.filter { venta in
             guard let fecha = venta.fechaVenta else { return false }
@@ -129,7 +143,7 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
             return Calendar.current.isDateInToday(fecha)
         }
         let pendingCuotas = cuotas.filter { !$0.pagada }
-        let lowStockProducts = productos.filter { $0.activo && $0.stockLitros <= 500 }
+        let lowStockItems = buildLowStockItems()
 
         let totalVentas = ventas.reduce(0) { $0 + $1.total }
         let totalVentasHoy = salesToday.reduce(0) { $0 + $1.total }
@@ -155,68 +169,41 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
         lblPendientes?.text = pendingCuotas.isEmpty ? "--" : "\(pendingCuotas.count)"
         lblPendientesDetalle?.text = pendingCuotas.isEmpty ? "Sin cuotas pendientes" : "\(formatCurrency(totalPendiente)) por cobrar"
 
-        lblStockBajo?.text = lowStockProducts.isEmpty ? "--" : "\(lowStockProducts.count)"
-        lblStockBajoDetalle?.text = lowStockProducts.isEmpty ? "Sin alertas de stock" : firstLowStockDescription(from: lowStockProducts)
-        lblAlertaStockTitulo?.text = lowStockProducts.isEmpty ? "Stock estable" : "\(lowStockProducts.count) alerta(s) de stock bajo"
-        lblAlertaStockDetalle?.text = lowStockProducts.isEmpty ? "Sin productos por debajo del minimo" : stockAlertDescription(from: lowStockProducts)
+        lblStockBajo?.text = lowStockItems.isEmpty ? "--" : "\(lowStockItems.count)"
+        lblStockBajoDetalle?.text = lowStockItems.isEmpty ? "Sin alertas de stock" : lowStockItems[0].shortDescription
+        lblAlertaStockTitulo?.text = lowStockItems.isEmpty ? "Stock estable" : "\(lowStockItems.count) producto(s) bajo mínimo"
+        lblAlertaStockDetalle?.text = lowStockItems.isEmpty ? "Sin productos por debajo del minimo" : lowStockItems.prefix(2).map { $0.shortDescription }.joined(separator: " · ")
 
-        movimientos = buildMovements(ventas: ventas, cuotas: cuotas).prefix(8).map { $0 }
+        stockAlerts = Array(lowStockItems.prefix(8))
         tblCajero?.reloadData()
-        emptyStateView?.isHidden = !movimientos.isEmpty
+        emptyStateView?.isHidden = !stockAlerts.isEmpty
     }
 
-    private func buildMovements(ventas: [VentaEntity], cuotas: [CuotaEntity]) -> [DashboardMovement] {
-        let salesMovements = ventas.compactMap { venta -> DashboardMovement? in
-            guard let fecha = venta.fechaVenta else { return nil }
-            let cliente = venta.cliente?.nombre ?? "Cliente"
-            let producto = venta.producto?.nombre ?? "Producto"
-            let detalle = "\(producto) • \(relativeDescription(for: fecha))"
-            return DashboardMovement(
-                title: "Venta a \(cliente)",
-                subtitle: detalle,
-                amount: formatCurrency(venta.total),
-                date: fecha,
-                accentColor: UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
-            )
-        }
-
-        let cuotaMovements = cuotas.compactMap { cuota -> DashboardMovement? in
-            let fecha = cuota.fechaPago ?? cuota.fechaVencimiento
-            guard let resolvedDate = fecha else { return nil }
-            let cliente = cuota.venta?.cliente?.nombre ?? "Cliente"
-            let estado = cuota.pagada ? "Cuota pagada" : "Cuota pendiente"
-            let detalle = "Cuota \(cuota.numero) • \(relativeDescription(for: resolvedDate))"
-            return DashboardMovement(
-                title: "\(estado) de \(cliente)",
-                subtitle: detalle,
-                amount: formatCurrency(cuota.monto),
-                date: resolvedDate,
-                accentColor: cuota.pagada
-                    ? UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1)
-                    : UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 1)
-            )
-        }
-
-        return (salesMovements + cuotaMovements).sorted { $0.date > $1.date }
-    }
-
-    private func firstLowStockDescription(from productos: [ProductoEntity]) -> String {
-        guard let producto = productos.first else {
-            return "Sin alertas de stock"
-        }
-        let stock = Int(producto.stockLitros.rounded())
-        return "\(producto.nombre ?? "Producto") con \(stock)L"
-    }
-
-    private func stockAlertDescription(from productos: [ProductoEntity]) -> String {
-        productos
-            .prefix(3)
-            .map { producto in
-                let nombre = producto.nombre ?? "Producto"
-                let stock = Int(producto.stockLitros.rounded())
-                return "\(nombre): \(stock)L"
+    private func buildLowStockItems() -> [StockAlertItem] {
+        if !stocks.isEmpty {
+            return stocks.compactMap { stock in
+                let minimum = stock.stockMinimo > 0 ? stock.stockMinimo : (stock.producto?.stockMinimo ?? 0)
+                guard minimum > 0, stock.stockActual < minimum else { return nil }
+                return StockAlertItem(
+                    productName: stock.producto?.nombre ?? "Producto",
+                    warehouseName: stock.almacen?.nombre ?? "Almacén",
+                    current: stock.stockActual,
+                    minimum: minimum,
+                    unit: stock.unidadMedida ?? stock.producto?.unidadMedida ?? "L"
+                )
             }
-            .joined(separator: " · ")
+        }
+
+        return productos.compactMap { producto in
+            guard producto.activo, producto.stockMinimo > 0, producto.stockLitros < producto.stockMinimo else { return nil }
+            return StockAlertItem(
+                productName: producto.nombre ?? "Producto",
+                warehouseName: "Red",
+                current: producto.stockLitros,
+                minimum: producto.stockMinimo,
+                unit: producto.unidadMedida ?? "L"
+            )
+        }
     }
 
     private func formatCurrency(_ value: Double) -> String {
@@ -239,26 +226,26 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        movimientos.count
+        stockAlerts.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "celdaCajero")
             ?? UITableViewCell(style: .subtitle, reuseIdentifier: "celdaCajero")
-        let movimiento = movimientos[indexPath.row]
+        let alert = stockAlerts[indexPath.row]
 
         var content = cell.defaultContentConfiguration()
-        content.text = movimiento.title
-        content.secondaryText = movimiento.subtitle
+        content.text = alert.productName
+        content.secondaryText = "\(formatQuantity(alert.current, unit: alert.unit)) · \(alert.warehouseName)"
         content.textProperties.font = .systemFont(ofSize: 15, weight: .semibold)
         content.secondaryTextProperties.color = .secondaryLabel
         cell.contentConfiguration = content
 
-        let amountLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 96, height: 24))
+        let amountLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 72, height: 24))
         amountLabel.textAlignment = .right
-        amountLabel.font = .systemFont(ofSize: 14, weight: .bold)
-        amountLabel.textColor = movimiento.accentColor
-        amountLabel.text = movimiento.amount
+        amountLabel.font = .systemFont(ofSize: 12, weight: .bold)
+        amountLabel.textColor = UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 1)
+        amountLabel.text = "Bajo"
 
         cell.accessoryView = amountLabel
         cell.backgroundColor = .white
@@ -268,15 +255,23 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
         return cell
     }
 
+    private func formatQuantity(_ value: Double, unit: String) -> String {
+        "\(Int(value.rounded()).formatted()) \(unit)"
+    }
+
     @IBAction private func btnSalir(_ sender: UIButton) {
         cerrarSesionUniversal()
     }
 }
 
-private struct DashboardMovement {
-    let title: String
-    let subtitle: String
-    let amount: String
-    let date: Date
-    let accentColor: UIColor
+private struct StockAlertItem {
+    let productName: String
+    let warehouseName: String
+    let current: Double
+    let minimum: Double
+    let unit: String
+
+    var shortDescription: String {
+        "\(productName): \(Int(current.rounded()).formatted()) \(unit)"
+    }
 }

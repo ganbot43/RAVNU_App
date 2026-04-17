@@ -1534,13 +1534,13 @@
                                             <constraint firstAttribute="width" constant="50" id="ew-001"/>
                                         </constraints>
                                     </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="No hay ventas registradas" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="emptyLabel-001">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No hay ventas registradas" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="emptyLabel-001">
                                         <rect key="frame" x="50.333333333333329" y="82" width="244.33333333333337" height="24"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                         <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" text="Las ventas aparecerán aquí cuando se registren." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="emptySubLabel-001">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Las ventas aparecerán aquí cuando se registren." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="emptySubLabel-001">
                                         <rect key="frame" x="24" y="114" width="297" height="17"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1601,8 +1601,29 @@
                         <outlet property="btnListaVentas" destination="K0p-Ld-GIC" id="ol-bl-002"/>
                         <outlet property="btnResumen" destination="e1I-F4-j9Q" id="ol-br-002"/>
                         <outlet property="emptyStateView" destination="emptyStateView-001" id="ol-ev-002"/>
+                        <outlet property="lblCreditoTotal" destination="Uou-Wm-6j6" id="vt-out-credit-total"/>
+                        <outlet property="lblEfectivoTotal" destination="e4m-SV-fvA" id="vt-out-cash-total"/>
+                        <outlet property="lblIngresosTotal" destination="Pfq-oH-1kr" id="vt-out-income-total"/>
+                        <outlet property="lblVentaRecienteCliente1" destination="9S1-Cu-B0y" id="vt-out-r1-client"/>
+                        <outlet property="lblVentaRecienteCliente2" destination="wgc-7B-fvs" id="vt-out-r2-client"/>
+                        <outlet property="lblVentaRecienteCliente3" destination="HoD-zs-rvb" id="vt-out-r3-client"/>
+                        <outlet property="lblVentaRecienteDetalle1" destination="ymE-Jb-3Xx" id="vt-out-r1-detail"/>
+                        <outlet property="lblVentaRecienteDetalle2" destination="S45-Ra-q5t" id="vt-out-r2-detail"/>
+                        <outlet property="lblVentaRecienteDetalle3" destination="T0j-4m-EMj" id="vt-out-r3-detail"/>
+                        <outlet property="lblVentaRecienteMetodo1" destination="qF8-S4-L6g" id="vt-out-r1-method"/>
+                        <outlet property="lblVentaRecienteMetodo2" destination="Ohc-vf-WK8" id="vt-out-r2-method"/>
+                        <outlet property="lblVentaRecienteMetodo3" destination="0Df-rX-GcG" id="vt-out-r3-method"/>
+                        <outlet property="lblVentaRecienteMonto1" destination="u7J-x6-z0T" id="vt-out-r1-amount"/>
+                        <outlet property="lblVentaRecienteMonto2" destination="1iL-EG-ztW" id="vt-out-r2-amount"/>
+                        <outlet property="lblVentaRecienteMonto3" destination="fgY-Kz-Nu2" id="vt-out-r3-amount"/>
+                        <outlet property="lblVentaRecienteProducto1" destination="Qbw-fW-Bj6" id="vt-out-r1-product"/>
+                        <outlet property="lblVentaRecienteProducto2" destination="eQo-Lw-r79" id="vt-out-r2-product"/>
+                        <outlet property="lblVentaRecienteProducto3" destination="GqQ-qs-D3y" id="vt-out-r3-product"/>
                         <outlet property="scrollViewResumen" destination="1AV-f0-M0H" id="ol-sv-002"/>
                         <outlet property="tblListaVentas" destination="tbl-Vt-001" id="ol-tv-002"/>
+                        <outlet property="ventaRecienteCard1" destination="du0-u9-l7N" id="vt-out-r1-card"/>
+                        <outlet property="ventaRecienteCard2" destination="6rQ-zY-XSU" id="vt-out-r2-card"/>
+                        <outlet property="ventaRecienteCard3" destination="A7i-ba-x8u" id="vt-out-r3-card"/>
                         <segue destination="yJ3-D0-g5O" kind="presentation" identifier="mostrarModalVenta" modalPresentationStyle="pageSheet" id="rjC-DR-zzF"/>
                     </connections>
                 </viewController>
@@ -1653,17 +1674,17 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="V3Q-n5-S2p">
                                                 <rect key="frame" x="24" y="196.66666666666669" width="345" height="44"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="• 5,100L disponibles" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M6c-JE-H91">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="• 5,100L disponibles" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M6c-JE-H91">
                                                         <rect key="frame" x="16" y="13" width="131" height="18"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                                         <color key="textColor" red="0.31372549019607843" green="0.65098039215686276" blue="0.46274509803921571" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Main" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j9m-QM-L71">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Main" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="j9m-QM-L71">
                                                         <rect key="frame" x="155" y="13.666666666666629" width="30" height="17"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                         <color key="textColor" systemColor="systemGrayColor"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Restante: 5,060L" textAlignment="right" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M6s-z0-3pP">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Restante: 5,060L" textAlignment="right" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="M6s-z0-3pP">
                                                         <rect key="frame" x="236" y="13.666666666666629" width="93" height="17"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                                         <color key="textColor" red="0.47450980392156861" green="0.52156862745098043" blue="0.62745098039215685" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -1761,11 +1782,11 @@
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                                         <color key="textColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Primera fecha de vencimiento" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k0w-tk-N8v">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Primera fecha de vencimiento" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k0w-tk-N8v">
                                                         <rect key="frame" x="16" y="92.666666666666742" width="205" height="20.333333333333329"/>
                                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="25 Jul, 2025" textAlignment="right" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vw5-zh-z10">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="25 Jul, 2025" textAlignment="right" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Vw5-zh-z10">
                                                         <rect key="frame" x="248" y="91" width="81" height="24"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                                         <color key="textColor" red="0.2627450980392157" green="0.29019607843137257" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -2213,12 +2234,12 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mq-cuota-card-001">
                                 <rect key="frame" x="24" y="231" width="345" height="132"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Cuota 2 de 3" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mq-cuota-title-001">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Cuota 2 de 3" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mq-cuota-title-001">
                                         <rect key="frame" x="20" y="22" width="202" height="20"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Vencido" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mq-status-001">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Vencido" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mq-status-001">
                                         <rect key="frame" x="270" y="20" width="55" height="24"/>
                                         <color key="backgroundColor" systemColor="systemRedColor"/>
                                         <constraints>
@@ -3571,13 +3592,19 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-scroll-001">
+                                <rect key="frame" x="0.0" y="59" width="393" height="759"/>
+                                <subviews>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-content-001">
+                                        <rect key="frame" x="0.0" y="0.0" width="393" height="950"/>
+                                        <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RAVNU" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SNs-fs-CeO">
                                 <rect key="frame" x="24.000000000000007" y="67" width="95.666666666666686" height="33.666666666666657"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
                                 <color key="textColor" red="0.039215686270588239" green="0.12156862745098039" blue="0.27450980392156865" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Panel de caja y seguimiento de movimientos" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="82N-uu-47u">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Gestión de Estaciones de Combustible" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="82N-uu-47u">
                                 <rect key="frame" x="24" y="108.66666666666667" width="336" height="20.333333333333329"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" systemColor="systemGrayColor"/>
@@ -3586,7 +3613,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Hdr-17-xEG">
                                 <rect key="frame" x="24" y="153" width="345" height="148.33333333333337"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RESUMEN DE CAJA" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Br0-Ue-sDh">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SALDO ACTUAL" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Br0-Ue-sDh">
                                         <rect key="frame" x="20" y="20" width="305" height="17"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                         <color key="textColor" white="1" alpha="0.78000000000000003" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -3765,7 +3792,7 @@
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-card-stock">
                                         <rect key="frame" x="264.66666666666669" y="0.0" width="80.333333333333314" height="105"/>
                                         <subviews>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Stock" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-stock-title">
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Stock Bajo" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-stock-title">
                                                 <rect key="frame" x="12.000000000000004" y="18" width="56.333333333333343" height="14.333333333333336"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                 <color key="textColor" systemColor="systemGrayColor"/>
@@ -3893,15 +3920,15 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </view>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Movimientos recientes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="W3w-5i-Asw">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Alertas de stock bajo" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="W3w-5i-Asw">
                                 <rect key="frame" x="24" y="719.33333333333337" width="213" height="24"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                 <color key="textColor" red="0.039215686270588239" green="0.12156862745098039" blue="0.27450980392156865" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="insetGrouped" separatorStyle="default" rowHeight="56" estimatedRowHeight="56" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="I0Z-31-tci">
+                            <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="56" estimatedRowHeight="56" sectionHeaderHeight="18" estimatedSectionHeaderHeight="-1" sectionFooterHeight="18" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="I0Z-31-tci">
                                 <rect key="frame" x="24" y="755.33333333333337" width="345" height="5.6666666666666288"/>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" red="0.96470588235294119" green="0.97254901960784312" blue="0.99215686274509807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="blue" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="celdaCajero" textLabel="HRF-pO-hxj" detailTextLabel="aWX-a4-DgG" style="IBUITableViewCellStyleValue1" id="23X-Ll-h2i">
                                         <rect key="frame" x="20" y="55.333332061767578" width="305" height="56"/>
@@ -3910,14 +3937,14 @@
                                             <rect key="frame" x="0.0" y="0.0" width="305" height="56"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="HRF-pO-hxj">
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Title" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="HRF-pO-hxj">
                                                     <rect key="frame" x="8" y="18" width="35" height="20.333333333333332"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
                                                     <color key="textColor" red="0.050980392156862744" green="0.086274509803921567" blue="0.14509803921568629" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
-                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" ambiguous="YES" insetsLayoutMarginsFromSafeArea="NO" text="Detail" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="aWX-a4-DgG">
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Detail" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="aWX-a4-DgG">
                                                     <rect key="frame" x="249.66666666666666" y="18" width="47.333333333333336" height="20.333333333333332"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
@@ -3936,13 +3963,13 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-empty-001">
                                 <rect key="frame" x="24" y="779.33333333333337" width="345" height="92"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sin movimientos recientes" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-empty-title">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sin alertas de stock bajo" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-empty-title">
                                         <rect key="frame" x="20" y="26" width="305" height="20.333333333333329"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <color key="textColor" red="0.050980392156862744" green="0.086274509803921567" blue="0.14509803921568629" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Las ventas y cobros aparecerán aquí." textAlignment="center" lineBreakMode="tailTruncation" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-empty-detail">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="El stock bajo aparecerá aquí." textAlignment="center" lineBreakMode="tailTruncation" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="cjR-empty-detail">
                                         <rect key="frame" x="20" y="54.333333333333258" width="305" height="17"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" systemColor="systemGrayColor"/>
@@ -3964,54 +3991,74 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </view>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="mpu-TY-QBY"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <constraints>
-                            <constraint firstItem="SNs-fs-CeO" firstAttribute="top" secondItem="mpu-TY-QBY" secondAttribute="top" constant="8" id="08T-gM-zwC"/>
+                                        </subviews>
+                                        <constraints>
+                            <constraint firstItem="SNs-fs-CeO" firstAttribute="top" secondItem="cjR-content-001" secondAttribute="top" constant="8" id="08T-gM-zwC"/>
                             <constraint firstItem="Hdr-17-xEG" firstAttribute="top" secondItem="82N-uu-47u" secondAttribute="bottom" constant="24" id="5X7-Y7-B0g"/>
-                            <constraint firstItem="82N-uu-47u" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="FAR-Dj-mtC"/>
-                            <constraint firstItem="I0Z-31-tci" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="Gk8-q7-LQq"/>
+                            <constraint firstItem="82N-uu-47u" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="FAR-Dj-mtC"/>
+                            <constraint firstItem="I0Z-31-tci" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="Gk8-q7-LQq"/>
                             <constraint firstItem="W3w-5i-Asw" firstAttribute="top" secondItem="cjR-stock-alert-card" secondAttribute="bottom" constant="20" id="J1D-5M-DLi"/>
-                            <constraint firstItem="Hdr-17-xEG" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="KfR-tL-H8L"/>
+                            <constraint firstItem="Hdr-17-xEG" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="KfR-tL-H8L"/>
                             <constraint firstItem="82N-uu-47u" firstAttribute="top" secondItem="SNs-fs-CeO" secondAttribute="bottom" constant="8" id="Mjt-cH-MqP"/>
                             <constraint firstAttribute="trailing" secondItem="I0Z-31-tci" secondAttribute="trailing" constant="24" id="TqI-aK-rIa"/>
-                            <constraint firstItem="W3w-5i-Asw" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="Ugc-5k-7sA"/>
-                            <constraint firstItem="SNs-fs-CeO" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="Vdr-BA-S6t"/>
+                            <constraint firstItem="W3w-5i-Asw" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="Ugc-5k-7sA"/>
+                            <constraint firstItem="SNs-fs-CeO" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="Vdr-BA-S6t"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="82N-uu-47u" secondAttribute="trailing" constant="24" id="Wnm-ug-RBA"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="SNs-fs-CeO" secondAttribute="trailing" constant="24" id="aG4-Ws-t0X"/>
                             <constraint firstItem="cjR-metric-title" firstAttribute="top" secondItem="Hdr-17-xEG" secondAttribute="bottom" constant="18" id="cjR-main-c01"/>
-                            <constraint firstItem="cjR-metric-title" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c02"/>
+                            <constraint firstItem="cjR-metric-title" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="cjR-main-c02"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cjR-metric-title" secondAttribute="trailing" constant="24" id="cjR-main-c03"/>
                             <constraint firstItem="cjR-metric-stack" firstAttribute="top" secondItem="cjR-metric-title" secondAttribute="bottom" constant="8" id="cjR-main-c04"/>
-                            <constraint firstItem="cjR-metric-stack" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c05"/>
+                            <constraint firstItem="cjR-metric-stack" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="cjR-main-c05"/>
                             <constraint firstAttribute="trailing" secondItem="cjR-metric-stack" secondAttribute="trailing" constant="24" id="cjR-main-c06"/>
                             <constraint firstItem="cjR-metric-stack" firstAttribute="height" constant="105" id="cjR-main-c07"/>
                             <constraint firstItem="cjR-card-sales" firstAttribute="width" secondItem="cjR-card-paid" secondAttribute="width" id="cjR-main-c07a"/>
                             <constraint firstItem="cjR-card-paid" firstAttribute="width" secondItem="cjR-card-pending" secondAttribute="width" id="cjR-main-c07b"/>
                             <constraint firstItem="cjR-card-pending" firstAttribute="width" secondItem="cjR-card-stock" secondAttribute="width" id="cjR-main-c07c"/>
-                            <constraint firstItem="mpu-TY-QBY" firstAttribute="bottom" secondItem="I0Z-31-tci" secondAttribute="bottom" constant="8" id="cjR-main-c08"/>
+                            <constraint firstAttribute="bottom" secondItem="I0Z-31-tci" secondAttribute="bottom" constant="24" id="cjR-main-c08"/>
                             <constraint firstItem="cjR-empty-001" firstAttribute="top" secondItem="I0Z-31-tci" secondAttribute="top" constant="24" id="cjR-main-c09"/>
                             <constraint firstItem="cjR-empty-001" firstAttribute="leading" secondItem="I0Z-31-tci" secondAttribute="leading" id="cjR-main-c10"/>
                             <constraint firstItem="cjR-empty-001" firstAttribute="trailing" secondItem="I0Z-31-tci" secondAttribute="trailing" id="cjR-main-c11"/>
                             <constraint firstItem="cjR-empty-001" firstAttribute="height" constant="92" id="cjR-main-c12"/>
                             <constraint firstItem="cjR-week-title" firstAttribute="top" secondItem="cjR-metric-stack" secondAttribute="bottom" constant="20" id="cjR-main-c13"/>
-                            <constraint firstItem="cjR-week-title" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c14"/>
+                            <constraint firstItem="cjR-week-title" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="cjR-main-c14"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cjR-week-title" secondAttribute="trailing" constant="24" id="cjR-main-c15"/>
                             <constraint firstItem="cjR-week-card" firstAttribute="top" secondItem="cjR-week-title" secondAttribute="bottom" constant="8" id="cjR-main-c16"/>
-                            <constraint firstItem="cjR-week-card" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c17"/>
+                            <constraint firstItem="cjR-week-card" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="cjR-main-c17"/>
                             <constraint firstAttribute="trailing" secondItem="cjR-week-card" secondAttribute="trailing" constant="24" id="cjR-main-c18"/>
                             <constraint firstItem="cjR-week-card" firstAttribute="height" constant="94" id="cjR-main-c19"/>
                             <constraint firstItem="cjR-stock-alert-title" firstAttribute="top" secondItem="cjR-week-card" secondAttribute="bottom" constant="20" id="cjR-main-c20"/>
-                            <constraint firstItem="cjR-stock-alert-title" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c21"/>
+                            <constraint firstItem="cjR-stock-alert-title" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="cjR-main-c21"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="cjR-stock-alert-title" secondAttribute="trailing" constant="24" id="cjR-main-c22"/>
                             <constraint firstItem="cjR-stock-alert-card" firstAttribute="top" secondItem="cjR-stock-alert-title" secondAttribute="bottom" constant="8" id="cjR-main-c23"/>
-                            <constraint firstItem="cjR-stock-alert-card" firstAttribute="leading" secondItem="mpu-TY-QBY" secondAttribute="leading" constant="24" id="cjR-main-c24"/>
+                            <constraint firstItem="cjR-stock-alert-card" firstAttribute="leading" secondItem="cjR-content-001" secondAttribute="leading" constant="24" id="cjR-main-c24"/>
                             <constraint firstAttribute="trailing" secondItem="cjR-stock-alert-card" secondAttribute="trailing" constant="24" id="cjR-main-c25"/>
                             <constraint firstItem="cjR-stock-alert-card" firstAttribute="height" constant="74" id="cjR-main-c26"/>
                             <constraint firstAttribute="trailing" secondItem="Hdr-17-xEG" secondAttribute="trailing" constant="24" id="d8P-LN-WZw"/>
                             <constraint firstItem="I0Z-31-tci" firstAttribute="top" secondItem="W3w-5i-Asw" secondAttribute="bottom" constant="12" id="k3q-BM-DtE"/>
+                            <constraint firstItem="I0Z-31-tci" firstAttribute="height" constant="220" id="cjR-main-table-height"/>
                             <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="W3w-5i-Asw" secondAttribute="trailing" constant="24" id="mWl-HZ-hbS"/>
+                                        </constraints>
+                                    </view>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="cjR-content-001" firstAttribute="top" secondItem="cjR-scroll-content-guide" secondAttribute="top" id="cjR-scroll-c01"/>
+                                    <constraint firstItem="cjR-content-001" firstAttribute="leading" secondItem="cjR-scroll-content-guide" secondAttribute="leading" id="cjR-scroll-c02"/>
+                                    <constraint firstItem="cjR-content-001" firstAttribute="trailing" secondItem="cjR-scroll-content-guide" secondAttribute="trailing" id="cjR-scroll-c03"/>
+                                    <constraint firstItem="cjR-content-001" firstAttribute="bottom" secondItem="cjR-scroll-content-guide" secondAttribute="bottom" id="cjR-scroll-c04"/>
+                                    <constraint firstItem="cjR-content-001" firstAttribute="width" secondItem="cjR-scroll-frame-guide" secondAttribute="width" id="cjR-scroll-c05"/>
+                                </constraints>
+                                <viewLayoutGuide key="contentLayoutGuide" id="cjR-scroll-content-guide"/>
+                                <viewLayoutGuide key="frameLayoutGuide" id="cjR-scroll-frame-guide"/>
+                            </scrollView>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="mpu-TY-QBY"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="cjR-scroll-001" firstAttribute="top" secondItem="mpu-TY-QBY" secondAttribute="top" id="cjR-root-scroll-top"/>
+                            <constraint firstItem="cjR-scroll-001" firstAttribute="leading" secondItem="Nz4-NM-1Fi" secondAttribute="leading" id="cjR-root-scroll-leading"/>
+                            <constraint firstAttribute="trailing" secondItem="cjR-scroll-001" secondAttribute="trailing" id="cjR-root-scroll-trailing"/>
+                            <constraint firstAttribute="bottom" secondItem="cjR-scroll-001" secondAttribute="bottom" id="cjR-root-scroll-bottom"/>
                         </constraints>
                     </view>
                     <tabBarItem key="tabBarItem" title="Inicio" image="house" catalog="system" id="AFn-9H-fHA"/>

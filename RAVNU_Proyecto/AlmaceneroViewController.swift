@@ -165,10 +165,27 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                 stock.unidadMedida = product.unidadMedida ?? "L"
                 stock.capacidadTotal = product.capacidadTotal
                 stock.stockMinimo = product.stockMinimo
-                stock.stockActual = initialStock(for: almacen.nombre ?? "", productIndex: index, capacity: product.capacidadTotal)
+                let initialAmount = initialStock(for: almacen.nombre ?? "", productIndex: index, capacity: product.capacidadTotal)
+                stock.stockActual = initialAmount
+                if initialAmount > 0 {
+                    createInitialStockMovement(product: product, almacen: almacen, amount: initialAmount)
+                }
             }
         }
         updateProductTotals()
+    }
+
+    private func createInitialStockMovement(product: ProductoEntity, almacen: AlmacenEntity, amount: Double) {
+        let movimiento = MovimientoInventarioEntity(context: context)
+        movimiento.id = UUID()
+        movimiento.fecha = Date()
+        movimiento.tipo = "entrada"
+        movimiento.cantidadLitros = amount
+        movimiento.producto = product
+        movimiento.almacen = almacen
+        movimiento.origen = "Stock inicial"
+        movimiento.destino = almacen.nombre
+        movimiento.nota = "Carga inicial de inventario"
     }
 
     private func initialStock(for warehouse: String, productIndex: Int, capacity: Double) -> Double {

@@ -231,8 +231,7 @@ final class ModalVentaViewController: UIViewController {
         venta.metodoPago = metodoPago.rawValue
         venta.estado = metodoPago == .efectivo ? "pagada" : "pendiente"
 
-        producto.stockLitros -= cantidad
-        createInventoryMovement(for: producto, cantidad: cantidad, cliente: cliente)
+        registerInventorySalida(for: producto, cantidad: cantidad, cliente: cliente)
 
         if metodoPago == .credito {
             cliente.creditoUsado += total
@@ -255,17 +254,54 @@ final class ModalVentaViewController: UIViewController {
         }
     }
 
-    private func createInventoryMovement(for producto: ProductoEntity, cantidad: Double, cliente: ClienteEntity) {
+    private func registerInventorySalida(for producto: ProductoEntity, cantidad: Double, cliente: ClienteEntity) {
+        let almacen = defaultWarehouse()
+        if let almacen {
+            let stock = stockRecord(producto: producto, almacen: almacen)
+            stock.stockActual = max(stock.stockActual - cantidad, 0)
+            stock.stockMinimo = producto.stockMinimo
+            stock.capacidadTotal = producto.capacidadTotal
+            stock.unidadMedida = producto.unidadMedida ?? "L"
+        }
+
+        producto.stockLitros = totalStock(for: producto)
+
         let movimiento = MovimientoInventarioEntity(context: context)
         movimiento.id = UUID()
         movimiento.fecha = Date()
         movimiento.tipo = "salida"
         movimiento.cantidadLitros = -cantidad
         movimiento.producto = producto
-        movimiento.almacen = defaultWarehouse()
+        movimiento.almacen = almacen
         movimiento.origen = movimiento.almacen?.nombre ?? "Almacén"
         movimiento.destino = cliente.nombre ?? "Cliente"
         movimiento.nota = "Venta a \(cliente.nombre ?? "cliente")"
+    }
+
+    private func stockRecord(producto: ProductoEntity, almacen: AlmacenEntity) -> StockAlmacenEntity {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
+
+        if let existing = try? context.fetch(request).first {
+            return existing
+        }
+
+        let stock = StockAlmacenEntity(context: context)
+        stock.id = UUID()
+        stock.producto = producto
+        stock.almacen = almacen
+        stock.stockActual = producto.stockLitros
+        stock.stockMinimo = producto.stockMinimo
+        stock.capacidadTotal = producto.capacidadTotal
+        stock.unidadMedida = producto.unidadMedida ?? "L"
+        return stock
+    }
+
+    private func totalStock(for producto: ProductoEntity) -> Double {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "producto == %@", producto)
+        return ((try? context.fetch(request)) ?? []).reduce(0) { $0 + $1.stockActual }
     }
 
     private func defaultWarehouse() -> AlmacenEntity? {
