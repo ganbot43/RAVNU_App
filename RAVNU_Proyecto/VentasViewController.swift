@@ -49,6 +49,10 @@ class VentasViewController: UIViewController, UITableViewDelegate, UITableViewDa
         tblListaVentas.rowHeight = 72
         tblListaVentas.dataSource = self
         tblListaVentas.delegate = self
+        tblListaVentas.separatorStyle = .none
+        tblListaVentas.backgroundColor = .clear
+        tblListaVentas.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 24, right: 0)
+        tblListaVentas.showsVerticalScrollIndicator = false
         configureSummaryLabels()
         loadCatalogData()
         loadVentas()
@@ -225,9 +229,14 @@ class VentasViewController: UIViewController, UITableViewDelegate, UITableViewDa
         cell.textLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
         cell.detailTextLabel?.text = "\(litros) • \(metodoPago.capitalized) • \(total)"
         cell.detailTextLabel?.textColor = .secondaryLabel
-        cell.backgroundColor = .white
-        cell.layer.cornerRadius = 14
-        cell.clipsToBounds = true
+        cell.backgroundColor = .clear
+        cell.contentView.backgroundColor = .white
+        cell.contentView.layer.cornerRadius = 16
+        cell.contentView.layer.shadowColor = UIColor.black.cgColor
+        cell.contentView.layer.shadowOpacity = 0.06
+        cell.contentView.layer.shadowRadius = 8
+        cell.contentView.layer.shadowOffset = CGSize(width: 0, height: 3)
+        cell.contentView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
         cell.selectionStyle = .none
         return cell
     }

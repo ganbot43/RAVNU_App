@@ -248,9 +248,14 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
         amountLabel.text = "Bajo"
 
         cell.accessoryView = amountLabel
-        cell.backgroundColor = .white
-        cell.layer.cornerRadius = 16
-        cell.clipsToBounds = true
+        cell.backgroundColor = .clear
+        cell.contentView.backgroundColor = .white
+        cell.contentView.layer.cornerRadius = 16
+        cell.contentView.layer.shadowColor = UIColor.black.cgColor
+        cell.contentView.layer.shadowOpacity = 0.06
+        cell.contentView.layer.shadowRadius = 8
+        cell.contentView.layer.shadowOffset = CGSize(width: 0, height: 3)
+        cell.contentView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
         cell.selectionStyle = .none
         return cell
     }

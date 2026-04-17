@@ -51,6 +51,10 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         tblClientes.delegate = self
         tblClientes.rowHeight = 104
         tblClientes.tableFooterView = UIView()
+        tblClientes.separatorStyle = .none
+        tblClientes.backgroundColor = .clear
+        tblClientes.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 24, right: 0)
+        tblClientes.showsVerticalScrollIndicator = false
         searchBar.delegate = self
         configureSearchBar()
         configureAnalyticsView()
@@ -306,9 +310,14 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         badge.text = "\(info.title)\n\(info.amount)"
         cell.accessoryView = badge
         cell.selectionStyle = .none
-        cell.backgroundColor = .white
-        cell.layer.cornerRadius = 18
-        cell.clipsToBounds = true
+        cell.backgroundColor = .clear
+        cell.contentView.backgroundColor = .white
+        cell.contentView.layer.cornerRadius = 18
+        cell.contentView.layer.shadowColor = UIColor.black.cgColor
+        cell.contentView.layer.shadowOpacity = 0.06
+        cell.contentView.layer.shadowRadius = 8
+        cell.contentView.layer.shadowOffset = CGSize(width: 0, height: 3)
+        cell.contentView.layoutMargins = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
         return cell
     }
 
