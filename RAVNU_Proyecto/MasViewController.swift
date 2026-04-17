@@ -12,6 +12,11 @@ final class MasViewController: UIViewController {
     @IBOutlet private weak var lblDetalleTesoreria: UILabel?
     @IBOutlet private weak var lblDetalleCobros: UILabel?
     @IBOutlet private weak var stackModulosAdmin: UIStackView?
+    @IBOutlet private weak var stackModulosAdminRow: UIStackView?
+    @IBOutlet private weak var cardTesoreria: UIView?
+    @IBOutlet private weak var cardCompras: UIView?
+    @IBOutlet private weak var cardRRHH: UIView?
+    @IBOutlet private weak var cardCobros: UIView?
 
     private let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     private let currencyFormatter: NumberFormatter = {
@@ -26,6 +31,7 @@ final class MasViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        configureTextBehavior()
         configureRoleAccess()
     }
 
@@ -38,7 +44,38 @@ final class MasViewController: UIViewController {
 
     private func configureRoleAccess() {
         let rol = UserDefaults.standard.string(forKey: "rolLogueado") ?? ""
-        stackModulosAdmin?.isHidden = rol == "Cajero"
+
+        let canSeeTesoreria = rol == "Admin" || rol == "Super"
+        let canSeeCobros = rol == "Admin" || rol == "Super" || rol == "Cajero"
+        let canSeeCompras = rol == "Admin" || rol == "Almacen"
+        let canSeeRRHH = rol == "Admin"
+
+        cardTesoreria?.isHidden = !canSeeTesoreria
+        cardCobros?.isHidden = !canSeeCobros
+        cardCompras?.isHidden = !canSeeCompras
+        cardRRHH?.isHidden = !canSeeRRHH
+        stackModulosAdminRow?.isHidden = !canSeeCompras && !canSeeRRHH
+        stackModulosAdmin?.isHidden = !canSeeTesoreria && !canSeeCompras && !canSeeRRHH
+    }
+
+    private func configureTextBehavior() {
+        [lblNombre, lblRol, lblCobrosTotal, lblVencidos, lblPendientes, lblDetalleTesoreria, lblDetalleCobros].forEach { label in
+            label?.adjustsFontSizeToFitWidth = true
+            label?.minimumScaleFactor = 0.78
+        }
+
+        lblNombre?.numberOfLines = 1
+        lblVencidos?.numberOfLines = 2
+        lblPendientes?.numberOfLines = 2
+        lblDetalleTesoreria?.numberOfLines = 2
+        lblDetalleCobros?.numberOfLines = 2
+
+        [cardTesoreria, cardCobros, cardCompras, cardRRHH].forEach { card in
+            card?.layer.shadowColor = UIColor.black.cgColor
+            card?.layer.shadowOpacity = 0.06
+            card?.layer.shadowRadius = 8
+            card?.layer.shadowOffset = CGSize(width: 0, height: 3)
+        }
     }
 
     private func cargarDatosUsuario() {

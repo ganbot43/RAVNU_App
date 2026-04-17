@@ -15,6 +15,16 @@
 		4D20CE722F908D11009B29CC /* ProductoEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE692F908D11009B29CC /* ProductoEntity+CoreDataClass.swift */; };
 		4D20CE732F908D11009B29CC /* CuotaEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE672F908D11009B29CC /* CuotaEntity+CoreDataClass.swift */; };
 		4D20CE742F908D11009B29CC /* VentaEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D20CE6C2F908D11009B29CC /* VentaEntity+CoreDataProperties.swift */; };
+		4DA4EB312F91BF8D009F28F5 /* AlmacenEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB302F91BF8D009F28F5 /* AlmacenEntity+CoreDataClass.swift */; };
+		4DA4EB332F91BF8E009F28F5 /* MovimientoInventarioEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB322F91BF8E009F28F5 /* MovimientoInventarioEntity+CoreDataClass.swift */; };
+		4DA4EB352F91BF8E009F28F5 /* ProveedorEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB342F91BF8E009F28F5 /* ProveedorEntity+CoreDataClass.swift */; };
+		4DA4EB372F91BF8E009F28F5 /* OrdenCompraEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB362F91BF8E009F28F5 /* OrdenCompraEntity+CoreDataClass.swift */; };
+		4DA4EB392F91BFA9009F28F5 /* AlmacenEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB382F91BFA9009F28F5 /* AlmacenEntity+CoreDataProperties.swift */; };
+		4DA4EB3B2F91BFAA009F28F5 /* MovimientoInventarioEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB3A2F91BFAA009F28F5 /* MovimientoInventarioEntity+CoreDataProperties.swift */; };
+		4DA4EB3D2F91BFAA009F28F5 /* ProveedorEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB3C2F91BFAA009F28F5 /* ProveedorEntity+CoreDataProperties.swift */; };
+		4DA4EB3F2F91BFAA009F28F5 /* OrdenCompraEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB3E2F91BFAA009F28F5 /* OrdenCompraEntity+CoreDataProperties.swift */; };
+		4DA4EB472F91C485009F28F5 /* StockAlmacenEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB462F91C485009F28F5 /* StockAlmacenEntity+CoreDataClass.swift */; };
+		4DA4EB492F91C485009F28F5 /* StockAlmacenEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA4EB482F91C485009F28F5 /* StockAlmacenEntity+CoreDataProperties.swift */; };
 		4DD98B532F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD98B522F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift */; };
 		4DD98B542F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DD98B512F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift */; };
 /* End PBXBuildFile section */
@@ -28,6 +38,16 @@
 		4D20CE6A2F908D11009B29CC /* ProductoEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProductoEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		4D20CE6B2F908D11009B29CC /* VentaEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VentaEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		4D20CE6C2F908D11009B29CC /* VentaEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VentaEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4DA4EB302F91BF8D009F28F5 /* AlmacenEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AlmacenEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4DA4EB322F91BF8E009F28F5 /* MovimientoInventarioEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MovimientoInventarioEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4DA4EB342F91BF8E009F28F5 /* ProveedorEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProveedorEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4DA4EB362F91BF8E009F28F5 /* OrdenCompraEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OrdenCompraEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4DA4EB382F91BFA9009F28F5 /* AlmacenEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AlmacenEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4DA4EB3A2F91BFAA009F28F5 /* MovimientoInventarioEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MovimientoInventarioEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4DA4EB3C2F91BFAA009F28F5 /* ProveedorEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProveedorEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4DA4EB3E2F91BFAA009F28F5 /* OrdenCompraEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OrdenCompraEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		4DA4EB462F91C485009F28F5 /* StockAlmacenEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StockAlmacenEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		4DA4EB482F91C485009F28F5 /* StockAlmacenEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StockAlmacenEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		4DD98B512F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
 		4DD98B522F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoginEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		AE42C8912F86B08A001C9095 /* RAVNU_Proyecto.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RAVNU_Proyecto.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -80,6 +100,16 @@
 				4DD98B522F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift */,
 				AE42C8932F86B08A001C9095 /* RAVNU_Proyecto */,
 				AE42C8922F86B08A001C9095 /* Products */,
+				4DA4EB302F91BF8D009F28F5 /* AlmacenEntity+CoreDataClass.swift */,
+				4DA4EB322F91BF8E009F28F5 /* MovimientoInventarioEntity+CoreDataClass.swift */,
+				4DA4EB342F91BF8E009F28F5 /* ProveedorEntity+CoreDataClass.swift */,
+				4DA4EB362F91BF8E009F28F5 /* OrdenCompraEntity+CoreDataClass.swift */,
+				4DA4EB382F91BFA9009F28F5 /* AlmacenEntity+CoreDataProperties.swift */,
+				4DA4EB3A2F91BFAA009F28F5 /* MovimientoInventarioEntity+CoreDataProperties.swift */,
+				4DA4EB3C2F91BFAA009F28F5 /* ProveedorEntity+CoreDataProperties.swift */,
+				4DA4EB3E2F91BFAA009F28F5 /* OrdenCompraEntity+CoreDataProperties.swift */,
+				4DA4EB462F91C485009F28F5 /* StockAlmacenEntity+CoreDataClass.swift */,
+				4DA4EB482F91C485009F28F5 /* StockAlmacenEntity+CoreDataProperties.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -165,14 +195,24 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4DA4EB332F91BF8E009F28F5 /* MovimientoInventarioEntity+CoreDataClass.swift in Sources */,
 				4D20CE6D2F908D11009B29CC /* ProductoEntity+CoreDataProperties.swift in Sources */,
+				4DA4EB3D2F91BFAA009F28F5 /* ProveedorEntity+CoreDataProperties.swift in Sources */,
+				4DA4EB312F91BF8D009F28F5 /* AlmacenEntity+CoreDataClass.swift in Sources */,
+				4DA4EB3B2F91BFAA009F28F5 /* MovimientoInventarioEntity+CoreDataProperties.swift in Sources */,
+				4DA4EB392F91BFA9009F28F5 /* AlmacenEntity+CoreDataProperties.swift in Sources */,
+				4DA4EB372F91BF8E009F28F5 /* OrdenCompraEntity+CoreDataClass.swift in Sources */,
 				4D20CE6E2F908D11009B29CC /* VentaEntity+CoreDataClass.swift in Sources */,
+				4DA4EB472F91C485009F28F5 /* StockAlmacenEntity+CoreDataClass.swift in Sources */,
 				4D20CE6F2F908D11009B29CC /* CuotaEntity+CoreDataProperties.swift in Sources */,
+				4DA4EB3F2F91BFAA009F28F5 /* OrdenCompraEntity+CoreDataProperties.swift in Sources */,
 				4D20CE702F908D11009B29CC /* ClienteEntity+CoreDataClass.swift in Sources */,
 				4D20CE712F908D11009B29CC /* ClienteEntity+CoreDataProperties.swift in Sources */,
 				4D20CE722F908D11009B29CC /* ProductoEntity+CoreDataClass.swift in Sources */,
 				4D20CE732F908D11009B29CC /* CuotaEntity+CoreDataClass.swift in Sources */,
 				4D20CE742F908D11009B29CC /* VentaEntity+CoreDataProperties.swift in Sources */,
+				4DA4EB352F91BF8E009F28F5 /* ProveedorEntity+CoreDataClass.swift in Sources */,
+				4DA4EB492F91C485009F28F5 /* StockAlmacenEntity+CoreDataProperties.swift in Sources */,
 				4DD98B532F8AD69B00186F8E /* LoginEntity+CoreDataProperties.swift in Sources */,
 				4DD98B542F8AD69B00186F8E /* LoginEntity+CoreDataClass.swift in Sources */,
 			);

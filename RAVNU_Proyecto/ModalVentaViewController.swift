@@ -232,6 +232,7 @@ final class ModalVentaViewController: UIViewController {
         venta.estado = metodoPago == .efectivo ? "pagada" : "pendiente"
 
         producto.stockLitros -= cantidad
+        createInventoryMovement(for: producto, cantidad: cantidad, cliente: cliente)
 
         if metodoPago == .credito {
             cliente.creditoUsado += total
@@ -252,6 +253,36 @@ final class ModalVentaViewController: UIViewController {
             cuota.venta = venta
             cuota.fechaVencimiento = Calendar.current.date(byAdding: .month, value: numero, to: Date())
         }
+    }
+
+    private func createInventoryMovement(for producto: ProductoEntity, cantidad: Double, cliente: ClienteEntity) {
+        let movimiento = MovimientoInventarioEntity(context: context)
+        movimiento.id = UUID()
+        movimiento.fecha = Date()
+        movimiento.tipo = "salida"
+        movimiento.cantidadLitros = -cantidad
+        movimiento.producto = producto
+        movimiento.almacen = defaultWarehouse()
+        movimiento.origen = movimiento.almacen?.nombre ?? "Almacén"
+        movimiento.destino = cliente.nombre ?? "Cliente"
+        movimiento.nota = "Venta a \(cliente.nombre ?? "cliente")"
+    }
+
+    private func defaultWarehouse() -> AlmacenEntity? {
+        let request: NSFetchRequest<AlmacenEntity> = AlmacenEntity.fetchRequest()
+        request.fetchLimit = 1
+        request.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
+
+        if let almacen = try? context.fetch(request).first {
+            return almacen
+        }
+
+        let almacen = AlmacenEntity(context: context)
+        almacen.id = UUID()
+        almacen.nombre = "Main Station"
+        almacen.direccion = "Av. La Marina 245, Lima"
+        almacen.activo = true
+        return almacen
     }
 
     private func showAlert(title: String, message: String) {

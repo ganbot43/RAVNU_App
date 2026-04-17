@@ -66,14 +66,8 @@ class LoginViewController: UIViewController {
         UserDefaults.standard.set(login.rol ?? rolSeleccionado, forKey: "rolLogueado")
 
         switch rolSeleccionado {
-        case "Admin":
-            performSegue(withIdentifier: "verAdmin", sender: datos)
-        case "Cajero":
+        case "Admin", "Cajero", "Super", "Almacen":
             performSegue(withIdentifier: "verCajero", sender: datos)
-        case "Super":
-            performSegue(withIdentifier: "verSuper", sender: datos)
-        case "Almacen":
-            performSegue(withIdentifier: "verAlmacen", sender: datos)
         default:
             mostrarAlerta(mensaje: "Rol no valido.")
         }
