@@ -25,7 +25,6 @@ final class ModalProductoViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         [txtPrecio, txtStockMinimo, txtCapacidad].forEach { $0?.keyboardType = .decimalPad }
-        txtUnidad?.text = "L"
         btnGuardar?.layer.cornerRadius = 16
         btnGuardar?.clipsToBounds = true
     }
