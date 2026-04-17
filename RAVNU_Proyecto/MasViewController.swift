@@ -32,6 +32,7 @@ final class MasViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureTextBehavior()
+        configureCardTaps()
         configureRoleAccess()
     }
 
@@ -160,7 +161,37 @@ final class MasViewController: UIViewController {
         cerrarSesionUniversal()
     }
 
-    @IBAction private func btnIrCuotas(_ sender: UIButton) {
+    private func configureCardTaps() {
+        let cobrosTap = UITapGestureRecognizer(target: self, action: #selector(cobrosCardTapped))
+        cardCobros?.addGestureRecognizer(cobrosTap)
+        cardCobros?.isUserInteractionEnabled = true
+
+        let tesoreriaTap = UITapGestureRecognizer(target: self, action: #selector(tesoreriaCardTapped))
+        cardTesoreria?.addGestureRecognizer(tesoreriaTap)
+        cardTesoreria?.isUserInteractionEnabled = true
+
+        let comprasTap = UITapGestureRecognizer(target: self, action: #selector(comprasCardTapped))
+        cardCompras?.addGestureRecognizer(comprasTap)
+        cardCompras?.isUserInteractionEnabled = true
+
+        let rrhhTap = UITapGestureRecognizer(target: self, action: #selector(rrhhCardTapped))
+        cardRRHH?.addGestureRecognizer(rrhhTap)
+        cardRRHH?.isUserInteractionEnabled = true
+    }
+
+    @objc private func cobrosCardTapped() {
         performSegue(withIdentifier: "mostrarPantallaCuotas", sender: nil)
+    }
+
+    @objc private func tesoreriaCardTapped() {
+        performSegue(withIdentifier: "mostrarPantallaTesoreria", sender: nil)
+    }
+
+    @objc private func comprasCardTapped() {
+        performSegue(withIdentifier: "mostrarPantallaCompras", sender: nil)
+    }
+
+    @objc private func rrhhCardTapped() {
+        performSegue(withIdentifier: "mostrarPantallaRRHH", sender: nil)
     }
 }

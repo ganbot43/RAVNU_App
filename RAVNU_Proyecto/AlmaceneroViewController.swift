@@ -336,7 +336,7 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
             let productName = stock.producto?.nombre ?? "Producto"
             let warehouseName = stock.almacen?.nombre ?? "Almacén"
             almacenCell.configure(
-                accent: isLow ? UIColor(red: 0.882, green: 0.275, blue: 0.306, alpha: 1) : UIColor(red: 0.286, green: 0.475, blue: 0.976, alpha: 1),
+                accent: isLow ? UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1) : UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1),
                 title: productName,
                 subtitle: warehouseName,
                 detail: "Min \(formatLiters(minimum(for: stock))) · Cap \(formatLiters(capacity(for: stock)))",
@@ -348,7 +348,7 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
             let minimum = producto.stockMinimo
             let low = producto.stockLitros < minimum
             almacenCell.configure(
-                accent: low ? UIColor(red: 0.882, green: 0.275, blue: 0.306, alpha: 1) : UIColor(red: 0.149, green: 0.651, blue: 0.392, alpha: 1),
+                accent: low ? UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1) : UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1),
                 title: producto.nombre ?? "Producto",
                 subtitle: "\(formatCurrency(producto.precioPorLitro)) / \(producto.unidadMedida ?? "L")",
                 detail: "Stock total consolidado · Min \(formatLiters(minimum))",
@@ -376,13 +376,13 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
     private func colorForMovement(_ type: String) -> UIColor {
         switch type {
         case "entrada":
-            return UIColor(red: 0.149, green: 0.651, blue: 0.392, alpha: 1)
+            return UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1)
         case "salida":
-            return UIColor(red: 0.882, green: 0.275, blue: 0.306, alpha: 1)
+            return UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1)
         case "transfer":
-            return UIColor(red: 0.502, green: 0.275, blue: 0.851, alpha: 1)
+            return UIColor(red: 0.545, green: 0.361, blue: 0.965, alpha: 1)
         default:
-            return UIColor(red: 0.286, green: 0.475, blue: 0.976, alpha: 1)
+            return UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
         }
     }
 }

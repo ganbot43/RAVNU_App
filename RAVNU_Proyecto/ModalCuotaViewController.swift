@@ -64,7 +64,7 @@ final class ModalCuotaViewController: UIViewController {
         txtCliente?.tintColor = .clear
         txtCliente?.inputView = cuotaPicker
         txtCliente?.inputAccessoryView = pickerToolbar()
-        txtCliente?.placeholder = "Selecciona una cuota pendiente"
+        txtCliente?.placeholder = "Seleccionar cuota pendiente a cobrar"
 
         txtMonto?.keyboardType = .decimalPad
         txtMonto?.addTarget(self, action: #selector(montoDidChange), for: .editingChanged)

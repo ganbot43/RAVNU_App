@@ -25,7 +25,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
 
     private let activeColor = UIColor(red: 0.188, green: 0.196, blue: 0.271, alpha: 1)
     private let inactiveColor = UIColor(red: 0.596, green: 0.608, blue: 0.675, alpha: 1)
-    private let selectedFilterColor = UIColor(red: 0.286, green: 0.475, blue: 0.976, alpha: 1)
+    private let selectedFilterColor = UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
     private let clienteCellIdentifier = "clienteCell"
 
     private var clientes: [ClienteEntity] = []
@@ -88,9 +88,9 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         }
         
         // Aplicar colores específicos
-        lblActivos?.textColor = UIColor(red: 0.25, green: 0.80, blue: 0.42, alpha: 1)
-        lblRiesgo?.textColor = UIColor(red: 0.95, green: 0.67, blue: 0.04, alpha: 1)
-        lblBloqueados?.textColor = UIColor(red: 0.89, green: 0.24, blue: 0.24, alpha: 1)
+        lblActivos?.textColor = UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1)
+        lblRiesgo?.textColor = UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 1)
+        lblBloqueados?.textColor = UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1)
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -217,16 +217,16 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
                     "Cuenta inactiva")
         }
         if isClienteVencido(cliente) {
-            return ("Vencido", UIColor(red: 0.89, green: 0.24, blue: 0.24, alpha: 1),
+            return ("Vencido", UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1),
                     String(format: "S/%.0f", cliente.creditoUsado),
                     String(format: "%.0f%% del límite S/%.0f", porcentajeCredito(cliente), cliente.limiteCredito))
         }
         if isClienteEnRiesgo(cliente) {
-            return ("En Riesgo", UIColor(red: 0.95, green: 0.67, blue: 0.04, alpha: 1),
+            return ("En Riesgo", UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 1),
                     String(format: "S/%.0f", cliente.creditoUsado),
                     String(format: "%.0f%% del límite S/%.0f", porcentajeCredito(cliente), cliente.limiteCredito))
         }
-        return ("Activo", UIColor(red: 0.25, green: 0.80, blue: 0.42, alpha: 1),
+        return ("Activo", UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1),
                 String(format: "S/%.0f", cliente.creditoUsado),
                 cliente.limiteCredito > 0
                     ? String(format: "%.0f%% del límite S/%.0f", porcentajeCredito(cliente), cliente.limiteCredito)

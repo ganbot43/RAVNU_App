@@ -86,9 +86,9 @@ final class ModalVentaViewController: UIViewController {
         txtCliente.inputAccessoryView = pickerToolbar(selector: #selector(donePickingCliente))
         txtProducto.inputAccessoryView = pickerToolbar(selector: #selector(donePickingProducto))
 
-        txtCliente.placeholder = "Selecciona un cliente"
-        txtProducto.placeholder = "Selecciona un producto"
-        txtCantidad.placeholder = "Ingresa litros"
+        txtCliente.placeholder = "Seleccionar cliente"
+        txtProducto.placeholder = "Seleccionar producto y precio"
+        txtCantidad.placeholder = "Cantidad en litros (Ej: 50.5)"
 
         btnGuardarVenta.layer.cornerRadius = 16
         btnGuardarVenta.clipsToBounds = true
@@ -139,7 +139,7 @@ final class ModalVentaViewController: UIViewController {
     }
 
     private func updatePaymentSelection() {
-        let selectedColor = UIColor(red: 0.286, green: 0.475, blue: 0.976, alpha: 1)
+        let selectedColor = UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
         let unselectedColor = UIColor(white: 0.94, alpha: 1)
         let selectedTitleColor = UIColor.white
         let unselectedTitleColor = UIColor(red: 0.45, green: 0.47, blue: 0.55, alpha: 1)

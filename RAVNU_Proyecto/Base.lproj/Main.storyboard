@@ -184,7 +184,7 @@
                                 <buttonConfiguration key="configuration" style="filled" title="+ Registrar">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="14"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="btnRegistrarTapped:" destination="tM7-xw-eIb" eventType="touchUpInside" id="alm-act-register"/>
@@ -242,7 +242,7 @@
                                         </subviews>
                                     </stackView>
                                 </subviews>
-                                <color key="backgroundColor" red="0.22745098039215686" green="0.25098039215686274" blue="0.92156862745098034" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstItem="alm-card-title-001" firstAttribute="top" secondItem="alm-summary-card-001" secondAttribute="top" constant="18" id="alm-card-c1"/>
                                     <constraint firstItem="alm-metrics-row-001" firstAttribute="top" secondItem="alm-value-caption-001" secondAttribute="bottom" constant="14" id="alm-card-c10"/>
@@ -270,7 +270,7 @@
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Stock estable en la red." lineBreakMode="wordWrap" numberOfLines="2" translatesAutoresizingMaskIntoConstraints="NO" id="alm-alert-label-001">
                                         <rect key="frame" x="18" y="20.666666666666629" width="309" height="17"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
-                                        <color key="textColor" red="0.69411764705882351" green="0.33333333333333331" blue="0.047058823529411764" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="textColor" red="0.96078431372549022" green="0.61960784313725492" blue="0.043137254901960784" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </label>
                                 </subviews>
                                 <color key="backgroundColor" red="1" green="0.97254901960784312" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -299,7 +299,7 @@
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="0" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="alm-products-001">
                                                 <rect key="frame" x="12" y="31.333333333333314" width="144.66666666666666" height="24"/>
                                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
-                                                <color key="textColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="textColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             </label>
                                         </subviews>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -465,43 +465,43 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="783"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="ma-cancel-001">
-                                <rect key="frame" x="24" y="32" width="80" height="34"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ma-cancel-001">
+                                <rect key="frame" x="24.000000000000007" y="71" width="91.666666666666686" height="34"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Cancelar"/>
                                 <connections>
                                     <action selector="btnCancelarTapped:" destination="0ub-KN-DO2" eventType="touchUpInside" id="ma-act-cancel"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Nuevo Almacén" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ma-title-001">
-                                <rect key="frame" x="116" y="39" width="161" height="24"/>
+                                <rect key="frame" x="123" y="76" width="147" height="24"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                 <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Datos del almacén" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ma-section-001">
-                                <rect key="frame" x="24" y="95" width="345" height="20"/>
+                                <rect key="frame" x="24" y="133" width="345" height="20"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
                                 <color key="textColor" red="0.45098039215686275" green="0.47058823529411764" blue="0.5490196078431373" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </label>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Nombre: Main Station" translatesAutoresizingMaskIntoConstraints="NO" id="ma-name-001">
-                                <rect key="frame" x="24" y="131" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Ej: Estación Central, Depósito Norte..." translatesAutoresizingMaskIntoConstraints="NO" id="ma-name-001">
+                                <rect key="frame" x="24" y="169" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Dirección" translatesAutoresizingMaskIntoConstraints="NO" id="ma-address-001">
-                                <rect key="frame" x="24" y="195" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Ej: Av. La Marina 245, Lima" translatesAutoresizingMaskIntoConstraints="NO" id="ma-address-001">
+                                <rect key="frame" x="24" y="233" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Responsable" translatesAutoresizingMaskIntoConstraints="NO" id="ma-owner-001">
-                                <rect key="frame" x="24" y="259" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Nombre del responsable del almacén" translatesAutoresizingMaskIntoConstraints="NO" id="ma-owner-001">
+                                <rect key="frame" x="24" y="297" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ma-info-001">
-                                <rect key="frame" x="24" y="331" width="345" height="76"/>
+                                <rect key="frame" x="24" y="369" width="345" height="76"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="El almacén quedará disponible para productos, movimientos y transferencias internas." lineBreakMode="wordWrap" numberOfLines="2" translatesAutoresizingMaskIntoConstraints="NO" id="ma-info-label-001">
-                                        <rect key="frame" x="18" y="16" width="309" height="44"/>
+                                        <rect key="frame" x="18" y="20" width="309" height="36"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <color key="textColor" red="0.45098039215686275" green="0.47058823529411764" blue="0.5490196078431373" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </label>
@@ -518,12 +518,12 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="ma-save-001">
-                                <rect key="frame" x="24" y="431" width="345" height="56"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ma-save-001">
+                                <rect key="frame" x="24" y="469" width="345" height="56"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Guardar Almacén">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="17"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="btnGuardarTapped:" destination="0ub-KN-DO2" eventType="touchUpInside" id="ma-act-save"/>
@@ -534,14 +534,6 @@
                         <color key="backgroundColor" red="0.96470588235294119" green="0.97254901960784312" blue="0.99215686274509807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="ma-cancel-001" firstAttribute="top" secondItem="aO7-vi-6pw" secondAttribute="top" constant="12" id="ma-root-c1"/>
-                            <constraint firstItem="ma-cancel-001" firstAttribute="leading" secondItem="aO7-vi-6pw" secondAttribute="leading" constant="24" id="ma-root-c2"/>
-                            <constraint firstItem="ma-title-001" firstAttribute="centerY" secondItem="ma-cancel-001" secondAttribute="centerY" id="ma-root-c3"/>
-                            <constraint firstItem="ma-title-001" firstAttribute="centerX" secondItem="fhY-QO-qEi" secondAttribute="centerX" id="ma-root-c4"/>
-                            <constraint firstItem="ma-section-001" firstAttribute="top" secondItem="ma-cancel-001" secondAttribute="bottom" constant="28" id="ma-root-c5"/>
-                            <constraint firstItem="ma-section-001" firstAttribute="leading" secondItem="aO7-vi-6pw" secondAttribute="leading" constant="24" id="ma-root-c6"/>
-                            <constraint firstAttribute="trailing" secondItem="ma-section-001" secondAttribute="trailing" constant="24" id="ma-root-c7"/>
-                            <constraint firstItem="ma-name-001" firstAttribute="top" secondItem="ma-section-001" secondAttribute="bottom" constant="16" id="ma-root-c8"/>
-                            <constraint firstItem="ma-name-001" firstAttribute="leading" secondItem="aO7-vi-6pw" secondAttribute="leading" constant="24" id="ma-root-c9"/>
                             <constraint firstAttribute="trailing" secondItem="ma-name-001" secondAttribute="trailing" constant="24" id="ma-root-c10"/>
                             <constraint firstItem="ma-name-001" firstAttribute="height" constant="48" id="ma-root-c11"/>
                             <constraint firstItem="ma-address-001" firstAttribute="top" secondItem="ma-name-001" secondAttribute="bottom" constant="16" id="ma-root-c12"/>
@@ -552,6 +544,7 @@
                             <constraint firstItem="ma-owner-001" firstAttribute="leading" secondItem="ma-name-001" secondAttribute="leading" id="ma-root-c17"/>
                             <constraint firstItem="ma-owner-001" firstAttribute="trailing" secondItem="ma-name-001" secondAttribute="trailing" id="ma-root-c18"/>
                             <constraint firstItem="ma-owner-001" firstAttribute="height" constant="48" id="ma-root-c19"/>
+                            <constraint firstItem="ma-cancel-001" firstAttribute="leading" secondItem="aO7-vi-6pw" secondAttribute="leading" constant="24" id="ma-root-c2"/>
                             <constraint firstItem="ma-info-001" firstAttribute="top" secondItem="ma-owner-001" secondAttribute="bottom" constant="24" id="ma-root-c20"/>
                             <constraint firstItem="ma-info-001" firstAttribute="leading" secondItem="ma-name-001" secondAttribute="leading" id="ma-root-c21"/>
                             <constraint firstItem="ma-info-001" firstAttribute="trailing" secondItem="ma-name-001" secondAttribute="trailing" id="ma-root-c22"/>
@@ -560,6 +553,13 @@
                             <constraint firstItem="ma-save-001" firstAttribute="leading" secondItem="ma-name-001" secondAttribute="leading" id="ma-root-c25"/>
                             <constraint firstItem="ma-save-001" firstAttribute="trailing" secondItem="ma-name-001" secondAttribute="trailing" id="ma-root-c26"/>
                             <constraint firstItem="ma-save-001" firstAttribute="height" constant="56" id="ma-root-c27"/>
+                            <constraint firstItem="ma-title-001" firstAttribute="centerY" secondItem="ma-cancel-001" secondAttribute="centerY" id="ma-root-c3"/>
+                            <constraint firstItem="ma-title-001" firstAttribute="centerX" secondItem="fhY-QO-qEi" secondAttribute="centerX" id="ma-root-c4"/>
+                            <constraint firstItem="ma-section-001" firstAttribute="top" secondItem="ma-cancel-001" secondAttribute="bottom" constant="28" id="ma-root-c5"/>
+                            <constraint firstItem="ma-section-001" firstAttribute="leading" secondItem="aO7-vi-6pw" secondAttribute="leading" constant="24" id="ma-root-c6"/>
+                            <constraint firstAttribute="trailing" secondItem="ma-section-001" secondAttribute="trailing" constant="24" id="ma-root-c7"/>
+                            <constraint firstItem="ma-name-001" firstAttribute="top" secondItem="ma-section-001" secondAttribute="bottom" constant="16" id="ma-root-c8"/>
+                            <constraint firstItem="ma-name-001" firstAttribute="leading" secondItem="aO7-vi-6pw" secondAttribute="leading" constant="24" id="ma-root-c9"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Qt4-0l-L6H"/>
@@ -582,55 +582,55 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="783"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="mp-cancel-001">
-                                <rect key="frame" x="24" y="32" width="80" height="34"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mp-cancel-001">
+                                <rect key="frame" x="24.000000000000007" y="71" width="91.666666666666686" height="34"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Cancelar"/>
                                 <connections>
                                     <action selector="btnCancelarTapped:" destination="OkS-V8-JzR" eventType="touchUpInside" id="mp-act-cancel"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Nuevo Producto" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mp-title-001">
-                                <rect key="frame" x="112" y="39" width="169" height="24"/>
+                                <rect key="frame" x="121" y="76" width="151" height="24"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                 <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </label>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="mp-type-001">
-                                <rect key="frame" x="24" y="93" width="345" height="32"/>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="mp-type-001">
+                                <rect key="frame" x="24" y="133" width="345" height="32"/>
                                 <segments>
                                     <segment title="Combustible"/>
                                     <segment title="GLP"/>
                                 </segments>
                             </segmentedControl>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Nombre del combustible" translatesAutoresizingMaskIntoConstraints="NO" id="mp-name-001">
-                                <rect key="frame" x="24" y="145" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Ej: Gasolina 90, Diesel B5..." translatesAutoresizingMaskIntoConstraints="NO" id="mp-name-001">
+                                <rect key="frame" x="24" y="184" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Precio por unidad" translatesAutoresizingMaskIntoConstraints="NO" id="mp-price-001">
-                                <rect key="frame" x="24" y="209" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Precio por litro en soles (Ej: 5.64)" translatesAutoresizingMaskIntoConstraints="NO" id="mp-price-001">
+                                <rect key="frame" x="24" y="248" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Unidad de medida: L / Balón" translatesAutoresizingMaskIntoConstraints="NO" id="mp-unit-001">
-                                <rect key="frame" x="24" y="273" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Unidad de medida (Ej: L, Galón, Balón)" translatesAutoresizingMaskIntoConstraints="NO" id="mp-unit-001">
+                                <rect key="frame" x="24" y="312" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Stock mínimo" translatesAutoresizingMaskIntoConstraints="NO" id="mp-min-001">
-                                <rect key="frame" x="24" y="337" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Stock mínimo en litros (Ej: 500)" translatesAutoresizingMaskIntoConstraints="NO" id="mp-min-001">
+                                <rect key="frame" x="24" y="376" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Capacidad por almacén" translatesAutoresizingMaskIntoConstraints="NO" id="mp-cap-001">
-                                <rect key="frame" x="24" y="401" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Capacidad máxima en litros (Ej: 12000)" translatesAutoresizingMaskIntoConstraints="NO" id="mp-cap-001">
+                                <rect key="frame" x="24" y="440" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                             </textField>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mp-info-001">
-                                <rect key="frame" x="24" y="473" width="345" height="70"/>
+                                <rect key="frame" x="24" y="512" width="345" height="70"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="El stock inicial se distribuye con movimientos de entrada por almacén." lineBreakMode="wordWrap" numberOfLines="2" translatesAutoresizingMaskIntoConstraints="NO" id="mp-info-label-001">
-                                        <rect key="frame" x="18" y="14" width="309" height="42"/>
+                                        <rect key="frame" x="18" y="17" width="309" height="36"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="15"/>
                                         <color key="textColor" red="0.45098039215686275" green="0.47058823529411764" blue="0.5490196078431373" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </label>
@@ -647,12 +647,12 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="mp-save-001">
-                                <rect key="frame" x="24" y="567" width="345" height="56"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mp-save-001">
+                                <rect key="frame" x="24" y="606" width="345" height="56"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Guardar Producto">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="17"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="btnGuardarTapped:" destination="OkS-V8-JzR" eventType="touchUpInside" id="mp-act-save"/>
@@ -663,14 +663,6 @@
                         <color key="backgroundColor" red="0.96470588235294119" green="0.97254901960784312" blue="0.99215686274509807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="mp-cancel-001" firstAttribute="top" secondItem="bGZ-cv-dNs" secondAttribute="top" constant="12" id="mp-root-c1"/>
-                            <constraint firstItem="mp-cancel-001" firstAttribute="leading" secondItem="bGZ-cv-dNs" secondAttribute="leading" constant="24" id="mp-root-c2"/>
-                            <constraint firstItem="mp-title-001" firstAttribute="centerY" secondItem="mp-cancel-001" secondAttribute="centerY" id="mp-root-c3"/>
-                            <constraint firstItem="mp-title-001" firstAttribute="centerX" secondItem="OiG-nr-52m" secondAttribute="centerX" id="mp-root-c4"/>
-                            <constraint firstItem="mp-type-001" firstAttribute="top" secondItem="mp-cancel-001" secondAttribute="bottom" constant="28" id="mp-root-c5"/>
-                            <constraint firstItem="mp-type-001" firstAttribute="leading" secondItem="bGZ-cv-dNs" secondAttribute="leading" constant="24" id="mp-root-c6"/>
-                            <constraint firstAttribute="trailing" secondItem="mp-type-001" secondAttribute="trailing" constant="24" id="mp-root-c7"/>
-                            <constraint firstItem="mp-name-001" firstAttribute="top" secondItem="mp-type-001" secondAttribute="bottom" constant="20" id="mp-root-c8"/>
-                            <constraint firstItem="mp-name-001" firstAttribute="leading" secondItem="mp-type-001" secondAttribute="leading" id="mp-root-c9"/>
                             <constraint firstItem="mp-name-001" firstAttribute="trailing" secondItem="mp-type-001" secondAttribute="trailing" id="mp-root-c10"/>
                             <constraint firstItem="mp-name-001" firstAttribute="height" constant="48" id="mp-root-c11"/>
                             <constraint firstItem="mp-price-001" firstAttribute="top" secondItem="mp-name-001" secondAttribute="bottom" constant="16" id="mp-root-c12"/>
@@ -681,6 +673,7 @@
                             <constraint firstItem="mp-unit-001" firstAttribute="leading" secondItem="mp-name-001" secondAttribute="leading" id="mp-root-c17"/>
                             <constraint firstItem="mp-unit-001" firstAttribute="trailing" secondItem="mp-name-001" secondAttribute="trailing" id="mp-root-c18"/>
                             <constraint firstItem="mp-unit-001" firstAttribute="height" constant="48" id="mp-root-c19"/>
+                            <constraint firstItem="mp-cancel-001" firstAttribute="leading" secondItem="bGZ-cv-dNs" secondAttribute="leading" constant="24" id="mp-root-c2"/>
                             <constraint firstItem="mp-min-001" firstAttribute="top" secondItem="mp-unit-001" secondAttribute="bottom" constant="16" id="mp-root-c20"/>
                             <constraint firstItem="mp-min-001" firstAttribute="leading" secondItem="mp-name-001" secondAttribute="leading" id="mp-root-c21"/>
                             <constraint firstItem="mp-min-001" firstAttribute="trailing" secondItem="mp-name-001" secondAttribute="trailing" id="mp-root-c22"/>
@@ -691,12 +684,19 @@
                             <constraint firstItem="mp-cap-001" firstAttribute="height" constant="48" id="mp-root-c27"/>
                             <constraint firstItem="mp-info-001" firstAttribute="top" secondItem="mp-cap-001" secondAttribute="bottom" constant="24" id="mp-root-c28"/>
                             <constraint firstItem="mp-info-001" firstAttribute="leading" secondItem="mp-name-001" secondAttribute="leading" id="mp-root-c29"/>
+                            <constraint firstItem="mp-title-001" firstAttribute="centerY" secondItem="mp-cancel-001" secondAttribute="centerY" id="mp-root-c3"/>
                             <constraint firstItem="mp-info-001" firstAttribute="trailing" secondItem="mp-name-001" secondAttribute="trailing" id="mp-root-c30"/>
                             <constraint firstItem="mp-info-001" firstAttribute="height" constant="70" id="mp-root-c31"/>
                             <constraint firstItem="mp-save-001" firstAttribute="top" secondItem="mp-info-001" secondAttribute="bottom" constant="24" id="mp-root-c32"/>
                             <constraint firstItem="mp-save-001" firstAttribute="leading" secondItem="mp-name-001" secondAttribute="leading" id="mp-root-c33"/>
                             <constraint firstItem="mp-save-001" firstAttribute="trailing" secondItem="mp-name-001" secondAttribute="trailing" id="mp-root-c34"/>
                             <constraint firstItem="mp-save-001" firstAttribute="height" constant="56" id="mp-root-c35"/>
+                            <constraint firstItem="mp-title-001" firstAttribute="centerX" secondItem="OiG-nr-52m" secondAttribute="centerX" id="mp-root-c4"/>
+                            <constraint firstItem="mp-type-001" firstAttribute="top" secondItem="mp-cancel-001" secondAttribute="bottom" constant="28" id="mp-root-c5"/>
+                            <constraint firstItem="mp-type-001" firstAttribute="leading" secondItem="bGZ-cv-dNs" secondAttribute="leading" constant="24" id="mp-root-c6"/>
+                            <constraint firstAttribute="trailing" secondItem="mp-type-001" secondAttribute="trailing" constant="24" id="mp-root-c7"/>
+                            <constraint firstItem="mp-name-001" firstAttribute="top" secondItem="mp-type-001" secondAttribute="bottom" constant="20" id="mp-root-c8"/>
+                            <constraint firstItem="mp-name-001" firstAttribute="leading" secondItem="mp-type-001" secondAttribute="leading" id="mp-root-c9"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="4GV-IT-qSQ"/>
@@ -722,56 +722,56 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="783"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="mm-cancel-001">
-                                <rect key="frame" x="24" y="32" width="80" height="34"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="leading" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mm-cancel-001">
+                                <rect key="frame" x="24.000000000000007" y="71" width="91.666666666666686" height="34"/>
                                 <buttonConfiguration key="configuration" style="plain" title="Cancelar"/>
                                 <connections>
                                     <action selector="btnCancelarTapped:" destination="dse-zq-pW2" eventType="touchUpInside" id="mm-act-cancel"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Movimiento" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mm-title-001">
-                                <rect key="frame" x="132" y="39" width="129" height="24"/>
+                                <rect key="frame" x="141.33333333333334" y="76" width="110.33333333333334" height="24"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                 <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </label>
-                            <segmentedControl opaque="NO" contentMode="scaleToFill" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="mm-type-001">
-                                <rect key="frame" x="24" y="93" width="345" height="32"/>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="mm-type-001">
+                                <rect key="frame" x="24" y="133" width="345" height="32"/>
                                 <segments>
                                     <segment title="Entrada"/>
                                     <segment title="Salida"/>
                                     <segment title="Transfer"/>
                                 </segments>
                             </segmentedControl>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Almacén origen" translatesAutoresizingMaskIntoConstraints="NO" id="mm-origin-001">
-                                <rect key="frame" x="24" y="145" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Seleccionar almacén de origen" translatesAutoresizingMaskIntoConstraints="NO" id="mm-origin-001">
+                                <rect key="frame" x="24" y="184" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Almacén destino" translatesAutoresizingMaskIntoConstraints="NO" id="mm-dest-001">
-                                <rect key="frame" x="24" y="209" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Seleccionar almacén de destino" translatesAutoresizingMaskIntoConstraints="NO" id="mm-dest-001">
+                                <rect key="frame" x="24" y="248" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Producto" translatesAutoresizingMaskIntoConstraints="NO" id="mm-product-001">
-                                <rect key="frame" x="24" y="273" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Seleccionar producto" translatesAutoresizingMaskIntoConstraints="NO" id="mm-product-001">
+                                <rect key="frame" x="24" y="312" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Cantidad" translatesAutoresizingMaskIntoConstraints="NO" id="mm-amount-001">
-                                <rect key="frame" x="24" y="337" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Cantidad en litros (Ej: 1000)" translatesAutoresizingMaskIntoConstraints="NO" id="mm-amount-001">
+                                <rect key="frame" x="24" y="376" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
                             </textField>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Nota opcional" translatesAutoresizingMaskIntoConstraints="NO" id="mm-note-001">
-                                <rect key="frame" x="24" y="401" width="345" height="48"/>
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Nota opcional (Ej: Reposición programada)" translatesAutoresizingMaskIntoConstraints="NO" id="mm-note-001">
+                                <rect key="frame" x="24" y="440" width="345" height="48"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="16"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mm-info-001">
-                                <rect key="frame" x="24" y="473" width="345" height="78"/>
+                                <rect key="frame" x="24" y="512" width="345" height="78"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Entrada suma stock. Salida descuenta stock. Transferencia descuenta del origen y suma al destino." lineBreakMode="wordWrap" numberOfLines="3" translatesAutoresizingMaskIntoConstraints="NO" id="mm-info-label-001">
-                                        <rect key="frame" x="18" y="12" width="309" height="54"/>
+                                        <rect key="frame" x="18" y="14.000000000000004" width="309" height="50.333333333333343"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <color key="textColor" red="0.45098039215686275" green="0.47058823529411764" blue="0.5490196078431373" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </label>
@@ -788,12 +788,12 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="mm-save-001">
-                                <rect key="frame" x="24" y="575" width="345" height="56"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mm-save-001">
+                                <rect key="frame" x="24" y="614" width="345" height="56"/>
                                 <buttonConfiguration key="configuration" style="filled" title="Registrar Movimiento">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="17"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="btnGuardarTapped:" destination="dse-zq-pW2" eventType="touchUpInside" id="mm-act-save"/>
@@ -804,14 +804,6 @@
                         <color key="backgroundColor" red="0.96470588235294119" green="0.97254901960784312" blue="0.99215686274509807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="mm-cancel-001" firstAttribute="top" secondItem="Gi0-s9-rEb" secondAttribute="top" constant="12" id="mm-root-c1"/>
-                            <constraint firstItem="mm-cancel-001" firstAttribute="leading" secondItem="Gi0-s9-rEb" secondAttribute="leading" constant="24" id="mm-root-c2"/>
-                            <constraint firstItem="mm-title-001" firstAttribute="centerY" secondItem="mm-cancel-001" secondAttribute="centerY" id="mm-root-c3"/>
-                            <constraint firstItem="mm-title-001" firstAttribute="centerX" secondItem="dFE-7u-8XW" secondAttribute="centerX" id="mm-root-c4"/>
-                            <constraint firstItem="mm-type-001" firstAttribute="top" secondItem="mm-cancel-001" secondAttribute="bottom" constant="28" id="mm-root-c5"/>
-                            <constraint firstItem="mm-type-001" firstAttribute="leading" secondItem="Gi0-s9-rEb" secondAttribute="leading" constant="24" id="mm-root-c6"/>
-                            <constraint firstAttribute="trailing" secondItem="mm-type-001" secondAttribute="trailing" constant="24" id="mm-root-c7"/>
-                            <constraint firstItem="mm-origin-001" firstAttribute="top" secondItem="mm-type-001" secondAttribute="bottom" constant="20" id="mm-root-c8"/>
-                            <constraint firstItem="mm-origin-001" firstAttribute="leading" secondItem="mm-type-001" secondAttribute="leading" id="mm-root-c9"/>
                             <constraint firstItem="mm-origin-001" firstAttribute="trailing" secondItem="mm-type-001" secondAttribute="trailing" id="mm-root-c10"/>
                             <constraint firstItem="mm-origin-001" firstAttribute="height" constant="48" id="mm-root-c11"/>
                             <constraint firstItem="mm-dest-001" firstAttribute="top" secondItem="mm-origin-001" secondAttribute="bottom" constant="16" id="mm-root-c12"/>
@@ -822,6 +814,7 @@
                             <constraint firstItem="mm-product-001" firstAttribute="leading" secondItem="mm-origin-001" secondAttribute="leading" id="mm-root-c17"/>
                             <constraint firstItem="mm-product-001" firstAttribute="trailing" secondItem="mm-origin-001" secondAttribute="trailing" id="mm-root-c18"/>
                             <constraint firstItem="mm-product-001" firstAttribute="height" constant="48" id="mm-root-c19"/>
+                            <constraint firstItem="mm-cancel-001" firstAttribute="leading" secondItem="Gi0-s9-rEb" secondAttribute="leading" constant="24" id="mm-root-c2"/>
                             <constraint firstItem="mm-amount-001" firstAttribute="top" secondItem="mm-product-001" secondAttribute="bottom" constant="16" id="mm-root-c20"/>
                             <constraint firstItem="mm-amount-001" firstAttribute="leading" secondItem="mm-origin-001" secondAttribute="leading" id="mm-root-c21"/>
                             <constraint firstItem="mm-amount-001" firstAttribute="trailing" secondItem="mm-origin-001" secondAttribute="trailing" id="mm-root-c22"/>
@@ -832,12 +825,19 @@
                             <constraint firstItem="mm-note-001" firstAttribute="height" constant="48" id="mm-root-c27"/>
                             <constraint firstItem="mm-info-001" firstAttribute="top" secondItem="mm-note-001" secondAttribute="bottom" constant="24" id="mm-root-c28"/>
                             <constraint firstItem="mm-info-001" firstAttribute="leading" secondItem="mm-origin-001" secondAttribute="leading" id="mm-root-c29"/>
+                            <constraint firstItem="mm-title-001" firstAttribute="centerY" secondItem="mm-cancel-001" secondAttribute="centerY" id="mm-root-c3"/>
                             <constraint firstItem="mm-info-001" firstAttribute="trailing" secondItem="mm-origin-001" secondAttribute="trailing" id="mm-root-c30"/>
                             <constraint firstItem="mm-info-001" firstAttribute="height" constant="78" id="mm-root-c31"/>
                             <constraint firstItem="mm-save-001" firstAttribute="top" secondItem="mm-info-001" secondAttribute="bottom" constant="24" id="mm-root-c32"/>
                             <constraint firstItem="mm-save-001" firstAttribute="leading" secondItem="mm-origin-001" secondAttribute="leading" id="mm-root-c33"/>
                             <constraint firstItem="mm-save-001" firstAttribute="trailing" secondItem="mm-origin-001" secondAttribute="trailing" id="mm-root-c34"/>
                             <constraint firstItem="mm-save-001" firstAttribute="height" constant="56" id="mm-root-c35"/>
+                            <constraint firstItem="mm-title-001" firstAttribute="centerX" secondItem="dFE-7u-8XW" secondAttribute="centerX" id="mm-root-c4"/>
+                            <constraint firstItem="mm-type-001" firstAttribute="top" secondItem="mm-cancel-001" secondAttribute="bottom" constant="28" id="mm-root-c5"/>
+                            <constraint firstItem="mm-type-001" firstAttribute="leading" secondItem="Gi0-s9-rEb" secondAttribute="leading" constant="24" id="mm-root-c6"/>
+                            <constraint firstAttribute="trailing" secondItem="mm-type-001" secondAttribute="trailing" constant="24" id="mm-root-c7"/>
+                            <constraint firstItem="mm-origin-001" firstAttribute="top" secondItem="mm-type-001" secondAttribute="bottom" constant="20" id="mm-root-c8"/>
+                            <constraint firstItem="mm-origin-001" firstAttribute="leading" secondItem="mm-type-001" secondAttribute="leading" id="mm-root-c9"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="BUy-SZ-Oqc"/>
@@ -932,7 +932,7 @@
                                 <buttonConfiguration key="configuration" style="filled" title="+ Nueva Venta">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="15"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="btnNuevaVentaTapped:" destination="JEd-F4-l1N" eventType="touchUpInside" id="nv-001"/>
@@ -999,7 +999,7 @@
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sTn-Uc-QNd">
                                                                 <rect key="frame" x="16" y="16" width="34" height="34"/>
-                                                                <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <userDefinedRuntimeAttributes>
                                                                     <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
                                                                         <real key="value" value="17"/>
@@ -1217,7 +1217,7 @@
                                                             </view>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9vF-Mi-8G8">
                                                                 <rect key="frame" x="263" y="0.0" width="34" height="8"/>
-                                                                <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <constraints>
                                                                     <constraint firstAttribute="height" constant="8" id="h1a-B1-007"/>
                                                                 </constraints>
@@ -1269,7 +1269,7 @@
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Tvq-XH-a2i">
                                                                 <rect key="frame" x="0.0" y="0.0" width="345" height="4"/>
-                                                                <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             </view>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="---" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9S1-Cu-B0y">
                                                                 <rect key="frame" x="18" y="24" width="28.666666666666671" height="25.333333333333329"/>
@@ -1297,7 +1297,7 @@
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Crédito" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qF8-S4-L6g">
                                                                 <rect key="frame" x="275.66666666666669" y="72.333333333333371" width="51.333333333333314" height="28"/>
-                                                                <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
@@ -1413,7 +1413,7 @@
                                                         <subviews>
                                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="18A-njy-CwK">
                                                                 <rect key="frame" x="0.0" y="0.0" width="345" height="4"/>
-                                                                <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             </view>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="---" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HoD-zs-rvb">
                                                                 <rect key="frame" x="18" y="24" width="28.666666666666671" height="25.333333333333329"/>
@@ -1441,7 +1441,7 @@
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Crédito" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0Df-rX-GcG">
                                                                 <rect key="frame" x="275.66666666666669" y="72.333333333333258" width="51.333333333333314" height="28"/>
-                                                                <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                                 <nil key="highlightedColor"/>
@@ -1701,7 +1701,7 @@
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Total: S/ 248.00" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="f4J-xL-9O6">
                                                 <rect key="frame" x="24" y="357" width="345" height="40.666666666666686"/>
                                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="34"/>
-                                                <color key="textColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="textColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             </label>
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="M1a-V5-dA1">
                                                 <rect key="frame" x="24" y="417.66666666666663" width="345" height="48"/>
@@ -1742,7 +1742,7 @@
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="3" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nOa-hQ-zr5">
                                                         <rect key="frame" x="278" y="16.333333333333371" width="13" height="24"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
-                                                        <color key="textColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <color key="textColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cWn-4V-dl6">
                                                         <rect key="frame" x="299" y="10.333333333333371" width="30" height="36"/>
@@ -1759,7 +1759,7 @@
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="S/ 82.67" textAlignment="right" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jQ3-rV-fn6">
                                                         <rect key="frame" x="250.33333333333329" y="54.666666666666742" width="78.666666666666657" height="24"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
-                                                        <color key="textColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <color key="textColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Primera fecha de vencimiento" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k0w-tk-N8v">
                                                         <rect key="frame" x="16" y="92.666666666666742" width="205" height="20.333333333333329"/>
@@ -1822,7 +1822,7 @@
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="⛽ Almacén -40L" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l4A-I8-Mj0">
                                                         <rect key="frame" x="16" y="37.666666666666742" width="121" height="17"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
-                                                        <color key="textColor" red="0.72156862745098038" green="0.25490196078431371" blue="0.27843137254901962" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <color key="textColor" red="0.93725490196078431" green="0.26666666666666666" blue="0.26666666666666666" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="💰 Tesorería +S/248" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y9x-TP-Vs9">
                                                         <rect key="frame" x="155" y="37.666666666666742" width="142.33333333333337" height="17"/>
@@ -1850,7 +1850,7 @@
                                             </view>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="E4P-Zv-P8h">
                                                 <rect key="frame" x="24" y="761.66666666666663" width="345" height="52"/>
-                                                <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="52" id="sv-ht-001"/>
                                                 </constraints>
@@ -2002,7 +2002,7 @@
                                                 <rect key="frame" x="24.000000000000004" y="73" width="61.333333333333343" height="20"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Ingresa nombre o razón social" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-001">
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Ej: Juan Pérez, Transportes SAC..." translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-001">
                                                 <rect key="frame" x="24" y="101" width="345" height="44"/>
                                                 <color key="backgroundColor" red="0.95686274509803926" green="0.96470588235294119" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
@@ -2015,7 +2015,7 @@
                                                 <rect key="frame" x="24.000000000000007" y="165" width="88.666666666666686" height="20"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Ingresa DNI o RUC" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-002">
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Nro. de documento (Ej: 12345678)" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-002">
                                                 <rect key="frame" x="24" y="193" width="345" height="44"/>
                                                 <color key="backgroundColor" red="0.95686274509803926" green="0.96470588235294119" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
@@ -2028,7 +2028,7 @@
                                                 <rect key="frame" x="24" y="257" width="65.333333333333329" height="20"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Ingresa teléfono" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-003">
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Teléfono (Ej: 987 654 321)" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-003">
                                                 <rect key="frame" x="24" y="285" width="345" height="44"/>
                                                 <color key="backgroundColor" red="0.95686274509803926" green="0.96470588235294119" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
@@ -2041,7 +2041,7 @@
                                                 <rect key="frame" x="24" y="349" width="72" height="20"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Ingresa dirección" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-004">
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Dirección del cliente (Ej: Av. Javier Prado 123)" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-004">
                                                 <rect key="frame" x="24" y="377" width="345" height="44"/>
                                                 <color key="backgroundColor" red="0.95686274509803926" green="0.96470588235294119" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
@@ -2054,7 +2054,7 @@
                                                 <rect key="frame" x="24" y="441" width="128" height="20"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Ingresa límite de crédito" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-005">
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Límite en soles (Ej: 5000)" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-005">
                                                 <rect key="frame" x="24" y="469" width="345" height="44"/>
                                                 <color key="backgroundColor" red="0.95686274509803926" green="0.96470588235294119" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
@@ -2065,7 +2065,7 @@
                                             </textField>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mc-save-001">
                                                 <rect key="frame" x="24" y="545" width="345" height="36"/>
-                                                <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                                 <state key="normal" title="Guardar Cliente">
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2358,7 +2358,7 @@
                                 <buttonConfiguration key="configuration" style="filled" title="Confirmar Pago">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="17"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="btnConfirmarTapped:" destination="Roy-n8-OfN" eventType="touchUpInside" id="mq-act-confirm"/>
@@ -2452,7 +2452,7 @@
                                 <buttonConfiguration key="configuration" style="filled" title="+ Agregar">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="15"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="btnAgregarClienteTapped:" destination="5NT-5g-J6N" eventType="touchUpInside" id="cl-act-001"/>
@@ -2508,7 +2508,7 @@
                                         <rect key="frame" x="0.0" y="0.0" width="80.333333333333329" height="45.333333333333336"/>
                                         <buttonConfiguration key="configuration" style="filled" title="Todos ✓">
                                             <fontDescription key="titleFontDescription" type="boldSystem" pointSize="13"/>
-                                            <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                            <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </buttonConfiguration>
                                         <connections>
                                             <action selector="btnTodosTapped:" destination="5NT-5g-J6N" eventType="touchUpInside" id="cl-act-004"/>
@@ -2658,7 +2658,7 @@
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="0" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cl-bloq-001">
                                                         <rect key="frame" x="16" y="54" width="19" height="33.666666666666657"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
-                                                        <color key="textColor" red="0.72156862745098038" green="0.25490196078431371" blue="0.27843137254901962" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <color key="textColor" red="0.93725490196078431" green="0.26666666666666666" blue="0.26666666666666666" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
                                                 </subviews>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -2865,7 +2865,7 @@
                                 <buttonConfiguration key="configuration" style="filled" title="Salir">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="13"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="btnCerrarSesion:" destination="obY-Cn-DhB" eventType="touchUpInside" id="mas-act-logout"/>
@@ -2902,7 +2902,7 @@
                                                                 <color key="textColor" white="1" alpha="0.88" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             </label>
                                                         </subviews>
-                                                        <color key="backgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <color key="backgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <constraints>
                                                             <constraint firstItem="mas-initials-001" firstAttribute="leading" secondItem="mas-profile-card-001" secondAttribute="leading" constant="18" id="mas-pc-001"/>
                                                             <constraint firstItem="mas-initials-001" firstAttribute="centerY" secondItem="mas-profile-card-001" secondAttribute="centerY" id="mas-pc-002"/>
@@ -3056,29 +3056,18 @@
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin vencidos" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-vencidos-001">
                                                                 <rect key="frame" x="16" y="88.999999999999943" width="313" height="17"/>
                                                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
-                                                                <color key="textColor" red="0.72156862745098038" green="0.25490196078431371" blue="0.27843137254901962" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                <color key="textColor" red="0.93725490196078431" green="0.26666666666666666" blue="0.26666666666666666" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Sin pendientes" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-pendientes-001">
                                                                 <rect key="frame" x="16" y="113.99999999999994" width="313" height="17"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                                 <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             </label>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="Revisa y cobra cuotas desde este modulo." lineBreakMode="tailTruncation" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-detail-001">
-                                                                <rect key="frame" x="16" y="138.99999999999994" width="225" height="17"/>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Toca para ver y cobrar cuotas." lineBreakMode="tailTruncation" minimumScaleFactor="0.80000000000000004" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-detail-001">
+                                                                <rect key="frame" x="16" y="138.99999999999994" width="196" height="17"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                                 <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                             </label>
-                                                            <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mas-cobros-btn-001">
-                                                                <rect key="frame" x="257" y="132.66666666666669" width="72" height="29.666666666666657"/>
-                                                                <buttonConfiguration key="configuration" style="filled" title="Ver">
-                                                                    <fontDescription key="titleFontDescription" type="boldSystem" pointSize="13"/>
-                                                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                                </buttonConfiguration>
-                                                                <connections>
-                                                                    <action selector="btnIrCuotas:" destination="obY-Cn-DhB" eventType="touchUpInside" id="mas-act-cobros"/>
-                                                                </connections>
-                                                            </button>
                                                         </subviews>
                                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                         <constraints>
@@ -3096,10 +3085,6 @@
                                                             <constraint firstAttribute="trailing" secondItem="mas-cobros-pendientes-001" secondAttribute="trailing" constant="16" id="mas-cob-012"/>
                                                             <constraint firstItem="mas-cobros-detail-001" firstAttribute="top" secondItem="mas-cobros-pendientes-001" secondAttribute="bottom" constant="8" id="mas-cob-013"/>
                                                             <constraint firstItem="mas-cobros-detail-001" firstAttribute="leading" secondItem="mas-cobros-card-001" secondAttribute="leading" constant="16" id="mas-cob-014"/>
-                                                            <constraint firstItem="mas-cobros-detail-001" firstAttribute="trailing" secondItem="mas-cobros-btn-001" secondAttribute="leading" constant="-12" id="mas-cob-014b"/>
-                                                            <constraint firstItem="mas-cobros-btn-001" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="mas-cobros-detail-001" secondAttribute="trailing" constant="12" id="mas-cob-015"/>
-                                                            <constraint firstAttribute="trailing" secondItem="mas-cobros-btn-001" secondAttribute="trailing" constant="16" id="mas-cob-016"/>
-                                                            <constraint firstItem="mas-cobros-btn-001" firstAttribute="centerY" secondItem="mas-cobros-detail-001" secondAttribute="centerY" id="mas-cob-017"/>
                                                             <constraint firstAttribute="height" constant="164" id="mas-cob-018"/>
                                                         </constraints>
                                                         <userDefinedRuntimeAttributes>
@@ -3167,7 +3152,7 @@
                         <outlet property="lblVencidos" destination="mas-cobros-vencidos-001" id="mas-out-008"/>
                         <outlet property="stackModulosAdmin" destination="mas-admin-stack-001" id="mas-out-009"/>
                         <outlet property="stackModulosAdminRow" destination="mas-admin-row-001" id="mas-out-admin-row"/>
-                        <outlet property="view" destination="mas-content-001" id="QIz-oI-g1c"/>
+                        <outlet property="view" destination="v28-nC-o3W" id="QIz-oI-g1c"/>
                         <segue destination="Mw1-zJ-K1J" kind="show" identifier="mostrarPantallaCuotas" id="3f2-6W-eue"/>
                         <segue destination="oES-Jz-K6d" kind="show" identifier="mostrarPantallaTesoreria" id="qQV-qD-lK2"/>
                         <segue destination="5RX-zo-Kiw" kind="show" identifier="mostrarPantallaCompras" id="dQ0-QB-EI9"/>
@@ -3206,7 +3191,7 @@
                                 <buttonConfiguration key="configuration" style="filled" title="+ Pagar">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="14"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.28627450980392155" green="0.47450980392156861" blue="0.97647058823529409" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </buttonConfiguration>
                                 <connections>
                                     <action selector="btnPagarTapped:" destination="Mw1-zJ-K1J" eventType="touchUpInside" id="cu-act-pay"/>

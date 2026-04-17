@@ -176,7 +176,7 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
                 subtitle: detalle,
                 amount: formatCurrency(venta.total),
                 date: fecha,
-                accentColor: UIColor(red: 0.192, green: 0.431, blue: 0.984, alpha: 1)
+                accentColor: UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
             )
         }
 
@@ -192,8 +192,8 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
                 amount: formatCurrency(cuota.monto),
                 date: resolvedDate,
                 accentColor: cuota.pagada
-                    ? UIColor(red: 0.149, green: 0.651, blue: 0.392, alpha: 1)
-                    : UIColor(red: 0.925, green: 0.506, blue: 0.086, alpha: 1)
+                    ? UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1)
+                    : UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 1)
             )
         }
 

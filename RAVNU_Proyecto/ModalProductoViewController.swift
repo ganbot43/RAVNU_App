@@ -38,8 +38,14 @@ final class ModalProductoViewController: UIViewController {
         if (txtNombre?.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return "Ingresa el nombre del producto."
         }
-        if parseDouble(txtPrecio?.text) < 0 {
-            return "El precio no puede ser negativo."
+        if parseDouble(txtPrecio?.text) <= 0 {
+            return "Ingresa un precio mayor a cero."
+        }
+        if (txtUnidad?.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "Ingresa la unidad de medida."
+        }
+        if parseDouble(txtStockMinimo?.text) <= 0 {
+            return "Ingresa un stock mínimo mayor a cero."
         }
         if parseDouble(txtCapacidad?.text) <= 0 {
             return "Ingresa una capacidad total mayor a cero."

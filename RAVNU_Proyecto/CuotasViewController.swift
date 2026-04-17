@@ -29,7 +29,7 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
     }
 
     private let cellIdentifier = "cuotaCell"
-    private let activeColor = UIColor(red: 0.286, green: 0.475, blue: 0.976, alpha: 1)
+    private let activeColor = UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
     private let inactiveColor = UIColor(red: 0.596, green: 0.608, blue: 0.675, alpha: 1)
     private var cuotas: [CuotaEntity] = []
     private var filteredCuotas: [CuotaEntity] = []
@@ -322,11 +322,11 @@ private final class CuotaTableViewCell: UITableViewCell {
         var color: UIColor {
             switch self {
             case .pendiente:
-                return UIColor(red: 0.925, green: 0.506, blue: 0.086, alpha: 1)
+                return UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 1)
             case .vencido:
-                return UIColor(red: 0.882, green: 0.275, blue: 0.306, alpha: 1)
+                return UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1)
             case .pagado:
-                return UIColor(red: 0.149, green: 0.651, blue: 0.392, alpha: 1)
+                return UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1)
             }
         }
     }
