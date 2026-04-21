@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="3vH-Ti-HC8">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="3vH-Ti-HC8">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
         <capability name="Image references" minToolsVersion="12.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -2020,12 +2020,12 @@
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
                                                         <color key="textColor" systemColor="systemGrayColor"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="⛽ Almacén -40L" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l4A-I8-Mj0">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="⛽ Almacén -40L" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l4A-I8-Mj0">
                                                         <rect key="frame" x="16" y="37.666666666666742" width="121" height="17"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                                         <color key="textColor" red="0.93725490196078431" green="0.26666666666666666" blue="0.26666666666666666" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="💰 Tesorería +S/248" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y9x-TP-Vs9">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="💰 Tesorería +S/248" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y9x-TP-Vs9">
                                                         <rect key="frame" x="155" y="37.666666666666742" width="142.33333333333337" height="17"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                                         <color key="textColor" red="0.22745098039215686" green="0.5607843137254902" blue="0.32941176470588235" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -2225,7 +2225,7 @@
                                                 <rect key="frame" x="24.000000000000007" y="165" width="88.666666666666686" height="20"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                             </label>
-                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Nro. de documento (Ej: 12345678)" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-002">
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Nro. de Documento (Ej: DNI o RUC)" translatesAutoresizingMaskIntoConstraints="NO" id="mc-txt-002">
                                                 <rect key="frame" x="24" y="193" width="345" height="44"/>
                                                 <color key="backgroundColor" red="0.95686274509803926" green="0.96470588235294119" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 <constraints>
@@ -3467,11 +3467,11 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-back-001">
-                                <rect key="frame" x="24" y="62" width="40" height="40"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-back-001">
+                                <rect key="frame" x="24" y="77" width="40" height="40"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="40" id="cmp-back-w"/>
                                     <constraint firstAttribute="height" constant="40" id="cmp-back-h"/>
+                                    <constraint firstAttribute="width" constant="40" id="cmp-back-w"/>
                                 </constraints>
                                 <buttonConfiguration key="configuration" style="plain" title="‹">
                                     <fontDescription key="titleFontDescription" type="boldSystem" pointSize="26"/>
@@ -3482,46 +3482,63 @@
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Compras" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-title-001">
-                                <rect key="frame" x="120" y="70" width="153" height="25"/>
+                                <rect key="frame" x="151.66666666666666" y="84.333333333333329" width="89.666666666666657" height="25.333333333333329"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="21"/>
                                 <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="0 pendiente" textAlignment="center" lineBreakMode="tailTruncation" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-pending-badge-001">
-                                <rect key="frame" x="292" y="68" width="77" height="28"/>
+                                <rect key="frame" x="292" y="83" width="77" height="28"/>
+                                <color key="backgroundColor" red="1" green="0.97254901960784312" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="28" id="cmp-badge-h"/>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="77" id="cmp-badge-w"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="12"/>
                                 <color key="textColor" red="0.96099999999999997" green="0.62" blue="0.042999999999999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <color key="backgroundColor" red="1" green="0.97254901960784312" blue="0.8901960784313725" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="14"/></userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="14"/>
+                                    </userDefinedRuntimeAttribute>
                                     <userDefinedRuntimeAttribute type="boolean" keyPath="clipsToBounds" value="YES"/>
                                 </userDefinedRuntimeAttributes>
                             </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-tabs-001">
-                                <rect key="frame" x="24" y="118" width="345" height="40"/>
+                                <rect key="frame" x="24" y="133" width="345" height="40"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-tab-providers-001">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-tab-providers-001">
                                         <rect key="frame" x="4" y="4" width="112.33333333333333" height="32"/>
-                                        <buttonConfiguration key="configuration" style="plain" title="Proveedores"><fontDescription key="titleFontDescription" type="boldSystem" pointSize="12"/></buttonConfiguration>
-                                        <connections><action selector="btnProveedoresTapped:" destination="5RX-zo-Kiw" eventType="touchUpInside" id="cmp-act-providers"/></connections>
+                                        <buttonConfiguration key="configuration" style="plain" title="Proveedores">
+                                            <fontDescription key="titleFontDescription" type="boldSystem" pointSize="12"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="btnProveedoresTapped:" destination="5RX-zo-Kiw" eventType="touchUpInside" id="cmp-act-providers"/>
+                                        </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-tab-orders-001">
-                                        <rect key="frame" x="116.33333333333333" y="4" width="112.33333333333333" height="32"/>
-                                        <buttonConfiguration key="configuration" style="plain" title="Órdenes"><fontDescription key="titleFontDescription" type="boldSystem" pointSize="12"/></buttonConfiguration>
-                                        <connections><action selector="btnOrdenesTapped:" destination="5RX-zo-Kiw" eventType="touchUpInside" id="cmp-act-orders"/></connections>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-tab-orders-001">
+                                        <rect key="frame" x="116.33333333333334" y="4" width="112.33333333333334" height="32"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Órdenes">
+                                            <fontDescription key="titleFontDescription" type="boldSystem" pointSize="12"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="btnOrdenesTapped:" destination="5RX-zo-Kiw" eventType="touchUpInside" id="cmp-act-orders"/>
+                                        </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-tab-analysis-001">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-tab-analysis-001">
                                         <rect key="frame" x="228.66666666666666" y="4" width="112.33333333333334" height="32"/>
-                                        <buttonConfiguration key="configuration" style="plain" title="Análisis"><fontDescription key="titleFontDescription" type="boldSystem" pointSize="12"/></buttonConfiguration>
-                                        <connections><action selector="btnAnalisisTapped:" destination="5RX-zo-Kiw" eventType="touchUpInside" id="cmp-act-analysis"/></connections>
+                                        <buttonConfiguration key="configuration" style="plain" title="Análisis">
+                                            <fontDescription key="titleFontDescription" type="boldSystem" pointSize="12"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="btnAnalisisTapped:" destination="5RX-zo-Kiw" eventType="touchUpInside" id="cmp-act-analysis"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                                 <color key="backgroundColor" red="0.93333333333333335" green="0.94117647058823528" blue="0.97254901960784312" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstItem="cmp-tab-providers-001" firstAttribute="top" secondItem="cmp-tabs-001" secondAttribute="top" constant="4" id="cmp-tabs-c1"/>
+                                    <constraint firstAttribute="trailing" secondItem="cmp-tab-analysis-001" secondAttribute="trailing" constant="4" id="cmp-tabs-c10"/>
+                                    <constraint firstItem="cmp-tab-providers-001" firstAttribute="width" secondItem="cmp-tab-orders-001" secondAttribute="width" id="cmp-tabs-c11"/>
+                                    <constraint firstItem="cmp-tab-orders-001" firstAttribute="width" secondItem="cmp-tab-analysis-001" secondAttribute="width" id="cmp-tabs-c12"/>
                                     <constraint firstItem="cmp-tab-providers-001" firstAttribute="leading" secondItem="cmp-tabs-001" secondAttribute="leading" constant="4" id="cmp-tabs-c2"/>
                                     <constraint firstItem="cmp-tab-providers-001" firstAttribute="bottom" secondItem="cmp-tabs-001" secondAttribute="bottom" constant="-4" id="cmp-tabs-c3"/>
                                     <constraint firstItem="cmp-tab-orders-001" firstAttribute="top" secondItem="cmp-tabs-001" secondAttribute="top" constant="4" id="cmp-tabs-c4"/>
@@ -3530,41 +3547,135 @@
                                     <constraint firstItem="cmp-tab-analysis-001" firstAttribute="top" secondItem="cmp-tabs-001" secondAttribute="top" constant="4" id="cmp-tabs-c7"/>
                                     <constraint firstItem="cmp-tab-analysis-001" firstAttribute="leading" secondItem="cmp-tab-orders-001" secondAttribute="trailing" id="cmp-tabs-c8"/>
                                     <constraint firstItem="cmp-tab-analysis-001" firstAttribute="bottom" secondItem="cmp-tabs-001" secondAttribute="bottom" constant="-4" id="cmp-tabs-c9"/>
-                                    <constraint firstAttribute="trailing" secondItem="cmp-tab-analysis-001" secondAttribute="trailing" constant="4" id="cmp-tabs-c10"/>
-                                    <constraint firstItem="cmp-tab-providers-001" firstAttribute="width" secondItem="cmp-tab-orders-001" secondAttribute="width" id="cmp-tabs-c11"/>
-                                    <constraint firstItem="cmp-tab-orders-001" firstAttribute="width" secondItem="cmp-tab-analysis-001" secondAttribute="width" id="cmp-tabs-c12"/>
                                 </constraints>
-                                <userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="14"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <real key="value" value="14"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-orders-view-001">
-                                <rect key="frame" x="0.0" y="174" width="393" height="644"/>
+                                <rect key="frame" x="0.0" y="189" width="393" height="629"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-metrics-stack-001">
                                         <rect key="frame" x="24" y="0.0" width="345" height="62"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-metric-total-001"><rect key="frame" x="0.0" y="0.0" width="109.66666666666667" height="62"/><subviews><label opaque="NO" userInteractionEnabled="NO" text="GASTO TOTAL" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-total-title-001"><rect key="frame" x="10" y="11" width="90" height="14"/><fontDescription key="fontDescription" type="boldSystem" pointSize="11"/><color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label><label opaque="NO" userInteractionEnabled="NO" text="S/0" textAlignment="center" lineBreakMode="tailTruncation" minimumScaleFactor="0.72" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-total-value-001"><rect key="frame" x="10" y="31" width="90" height="21"/><fontDescription key="fontDescription" type="boldSystem" pointSize="17"/><color key="textColor" red="0.96099999999999997" green="0.62" blue="0.042999999999999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label></subviews><color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/><constraints><constraint firstItem="cmp-total-title-001" firstAttribute="top" secondItem="cmp-metric-total-001" secondAttribute="top" constant="11" id="cmp-mt-c1"/><constraint firstItem="cmp-total-title-001" firstAttribute="leading" secondItem="cmp-metric-total-001" secondAttribute="leading" constant="10" id="cmp-mt-c2"/><constraint firstAttribute="trailing" secondItem="cmp-total-title-001" secondAttribute="trailing" constant="10" id="cmp-mt-c3"/><constraint firstItem="cmp-total-value-001" firstAttribute="top" secondItem="cmp-total-title-001" secondAttribute="bottom" constant="6" id="cmp-mt-c4"/><constraint firstItem="cmp-total-value-001" firstAttribute="leading" secondItem="cmp-metric-total-001" secondAttribute="leading" constant="10" id="cmp-mt-c5"/><constraint firstAttribute="trailing" secondItem="cmp-total-value-001" secondAttribute="trailing" constant="10" id="cmp-mt-c6"/></constraints><userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="16"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes></view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-metric-pending-001"><rect key="frame" x="117.66666666666667" y="0.0" width="109.66666666666667" height="62"/><subviews><label opaque="NO" userInteractionEnabled="NO" text="PENDIENTES" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-pend-title-001"><rect key="frame" x="10" y="11" width="90" height="14"/><fontDescription key="fontDescription" type="boldSystem" pointSize="11"/><color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label><label opaque="NO" userInteractionEnabled="NO" text="0" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-pend-value-001"><rect key="frame" x="10" y="31" width="90" height="21"/><fontDescription key="fontDescription" type="boldSystem" pointSize="17"/><color key="textColor" red="0.96099999999999997" green="0.62" blue="0.042999999999999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label></subviews><color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/><constraints><constraint firstItem="cmp-pend-title-001" firstAttribute="top" secondItem="cmp-metric-pending-001" secondAttribute="top" constant="11" id="cmp-mp-c1"/><constraint firstItem="cmp-pend-title-001" firstAttribute="leading" secondItem="cmp-metric-pending-001" secondAttribute="leading" constant="10" id="cmp-mp-c2"/><constraint firstAttribute="trailing" secondItem="cmp-pend-title-001" secondAttribute="trailing" constant="10" id="cmp-mp-c3"/><constraint firstItem="cmp-pend-value-001" firstAttribute="top" secondItem="cmp-pend-title-001" secondAttribute="bottom" constant="6" id="cmp-mp-c4"/><constraint firstItem="cmp-pend-value-001" firstAttribute="leading" secondItem="cmp-metric-pending-001" secondAttribute="leading" constant="10" id="cmp-mp-c5"/><constraint firstAttribute="trailing" secondItem="cmp-pend-value-001" secondAttribute="trailing" constant="10" id="cmp-mp-c6"/></constraints><userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="16"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes></view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-metric-received-001"><rect key="frame" x="235.33333333333334" y="0.0" width="109.66666666666666" height="62"/><subviews><label opaque="NO" userInteractionEnabled="NO" text="RECIBIDAS" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-rec-title-001"><rect key="frame" x="10" y="11" width="90" height="14"/><fontDescription key="fontDescription" type="boldSystem" pointSize="11"/><color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label><label opaque="NO" userInteractionEnabled="NO" text="0" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-rec-value-001"><rect key="frame" x="10" y="31" width="90" height="21"/><fontDescription key="fontDescription" type="boldSystem" pointSize="17"/><color key="textColor" red="0.13333333333333333" green="0.77254901960784317" blue="0.36862745098039218" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label></subviews><color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/><constraints><constraint firstItem="cmp-rec-title-001" firstAttribute="top" secondItem="cmp-metric-received-001" secondAttribute="top" constant="11" id="cmp-mr-c1"/><constraint firstItem="cmp-rec-title-001" firstAttribute="leading" secondItem="cmp-metric-received-001" secondAttribute="leading" constant="10" id="cmp-mr-c2"/><constraint firstAttribute="trailing" secondItem="cmp-rec-title-001" secondAttribute="trailing" constant="10" id="cmp-mr-c3"/><constraint firstItem="cmp-rec-value-001" firstAttribute="top" secondItem="cmp-rec-title-001" secondAttribute="bottom" constant="6" id="cmp-mr-c4"/><constraint firstItem="cmp-rec-value-001" firstAttribute="leading" secondItem="cmp-metric-received-001" secondAttribute="leading" constant="10" id="cmp-mr-c5"/><constraint firstAttribute="trailing" secondItem="cmp-rec-value-001" secondAttribute="trailing" constant="10" id="cmp-mr-c6"/></constraints><userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="16"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes></view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-metric-total-001">
+                                                <rect key="frame" x="0.0" y="0.0" width="109.66666666666667" height="62"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="GASTO TOTAL" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-total-title-001">
+                                                        <rect key="frame" x="10" y="11" width="89.666666666666671" height="13.333333333333336"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="11"/>
+                                                        <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="S/0" textAlignment="center" lineBreakMode="tailTruncation" minimumScaleFactor="0.71999999999999997" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-total-value-001">
+                                                        <rect key="frame" x="10" y="30.333333333333343" width="89.666666666666671" height="20.333333333333329"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                                        <color key="textColor" red="0.96099999999999997" green="0.62" blue="0.042999999999999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="cmp-total-title-001" firstAttribute="top" secondItem="cmp-metric-total-001" secondAttribute="top" constant="11" id="cmp-mt-c1"/>
+                                                    <constraint firstItem="cmp-total-title-001" firstAttribute="leading" secondItem="cmp-metric-total-001" secondAttribute="leading" constant="10" id="cmp-mt-c2"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-total-title-001" secondAttribute="trailing" constant="10" id="cmp-mt-c3"/>
+                                                    <constraint firstItem="cmp-total-value-001" firstAttribute="top" secondItem="cmp-total-title-001" secondAttribute="bottom" constant="6" id="cmp-mt-c4"/>
+                                                    <constraint firstItem="cmp-total-value-001" firstAttribute="leading" secondItem="cmp-metric-total-001" secondAttribute="leading" constant="10" id="cmp-mt-c5"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-total-value-001" secondAttribute="trailing" constant="10" id="cmp-mt-c6"/>
+                                                </constraints>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                        <real key="value" value="16"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-metric-pending-001">
+                                                <rect key="frame" x="117.66666666666666" y="0.0" width="109.66666666666666" height="62"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="PENDIENTES" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-pend-title-001">
+                                                        <rect key="frame" x="10" y="11" width="89.666666666666671" height="13.333333333333336"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="11"/>
+                                                        <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="0" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-pend-value-001">
+                                                        <rect key="frame" x="10" y="30.333333333333343" width="89.666666666666671" height="20.333333333333329"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                                        <color key="textColor" red="0.96099999999999997" green="0.62" blue="0.042999999999999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="cmp-pend-title-001" firstAttribute="top" secondItem="cmp-metric-pending-001" secondAttribute="top" constant="11" id="cmp-mp-c1"/>
+                                                    <constraint firstItem="cmp-pend-title-001" firstAttribute="leading" secondItem="cmp-metric-pending-001" secondAttribute="leading" constant="10" id="cmp-mp-c2"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-pend-title-001" secondAttribute="trailing" constant="10" id="cmp-mp-c3"/>
+                                                    <constraint firstItem="cmp-pend-value-001" firstAttribute="top" secondItem="cmp-pend-title-001" secondAttribute="bottom" constant="6" id="cmp-mp-c4"/>
+                                                    <constraint firstItem="cmp-pend-value-001" firstAttribute="leading" secondItem="cmp-metric-pending-001" secondAttribute="leading" constant="10" id="cmp-mp-c5"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-pend-value-001" secondAttribute="trailing" constant="10" id="cmp-mp-c6"/>
+                                                </constraints>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                        <real key="value" value="16"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-metric-received-001">
+                                                <rect key="frame" x="235.33333333333329" y="0.0" width="109.66666666666666" height="62"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="RECIBIDAS" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-rec-title-001">
+                                                        <rect key="frame" x="10" y="11" width="89.666666666666671" height="13.333333333333336"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="11"/>
+                                                        <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="0" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-rec-value-001">
+                                                        <rect key="frame" x="10" y="30.333333333333343" width="89.666666666666671" height="20.333333333333329"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
+                                                        <color key="textColor" red="0.13333333333333333" green="0.77254901960784317" blue="0.36862745098039218" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="cmp-rec-title-001" firstAttribute="top" secondItem="cmp-metric-received-001" secondAttribute="top" constant="11" id="cmp-mr-c1"/>
+                                                    <constraint firstItem="cmp-rec-title-001" firstAttribute="leading" secondItem="cmp-metric-received-001" secondAttribute="leading" constant="10" id="cmp-mr-c2"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-rec-title-001" secondAttribute="trailing" constant="10" id="cmp-mr-c3"/>
+                                                    <constraint firstItem="cmp-rec-value-001" firstAttribute="top" secondItem="cmp-rec-title-001" secondAttribute="bottom" constant="6" id="cmp-mr-c4"/>
+                                                    <constraint firstItem="cmp-rec-value-001" firstAttribute="leading" secondItem="cmp-metric-received-001" secondAttribute="leading" constant="10" id="cmp-mr-c5"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-rec-value-001" secondAttribute="trailing" constant="10" id="cmp-mr-c6"/>
+                                                </constraints>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                        <real key="value" value="16"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </view>
                                         </subviews>
                                     </stackView>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="142" estimatedRowHeight="142" sectionHeaderHeight="0.0" sectionFooterHeight="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-orders-table-001">
-                                        <rect key="frame" x="0.0" y="78" width="393" height="566"/>
+                                        <rect key="frame" x="0.0" y="78" width="393" height="551"/>
                                         <color key="backgroundColor" red="0.97254901960784312" green="0.98039215686274506" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <connections><outlet property="dataSource" destination="5RX-zo-Kiw" id="cmp-ord-ds"/><outlet property="delegate" destination="5RX-zo-Kiw" id="cmp-ord-dl"/></connections>
+                                        <connections>
+                                            <outlet property="dataSource" destination="5RX-zo-Kiw" id="cmp-ord-ds"/>
+                                            <outlet property="delegate" destination="5RX-zo-Kiw" id="cmp-ord-dl"/>
+                                        </connections>
                                     </tableView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-new-order-001">
-                                        <rect key="frame" x="24" y="558" width="345" height="52"/>
-                                        <constraints><constraint firstAttribute="height" constant="52" id="cmp-new-h"/></constraints>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-new-order-001">
+                                        <rect key="frame" x="24" y="611" width="345" height="52"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="52" id="cmp-new-h"/>
+                                        </constraints>
                                         <buttonConfiguration key="configuration" style="filled" title="+ Nueva Orden de Compra">
                                             <fontDescription key="titleFontDescription" type="boldSystem" pointSize="16"/>
-                                            <color key="baseBackgroundColor" red="0.96099999999999997" green="0.62" blue="0.042999999999999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                            <color key="baseBackgroundColor" red="0.96099999999999997" green="0.62" blue="0.042999999999999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </buttonConfiguration>
-                                        <connections><action selector="btnNuevaOrdenTapped:" destination="5RX-zo-Kiw" eventType="touchUpInside" id="cmp-act-new"/></connections>
+                                        <connections>
+                                            <action selector="btnNuevaOrdenTapped:" destination="5RX-zo-Kiw" eventType="touchUpInside" id="cmp-act-new"/>
+                                        </connections>
                                     </button>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="cmp-metrics-stack-001" firstAttribute="top" secondItem="cmp-orders-view-001" secondAttribute="top" id="cmp-ord-c1"/>
+                                    <constraint firstAttribute="trailing" secondItem="cmp-new-order-001" secondAttribute="trailing" constant="24" id="cmp-ord-c10"/>
+                                    <constraint firstAttribute="bottom" secondItem="cmp-new-order-001" secondAttribute="bottom" constant="-34" id="cmp-ord-c11"/>
                                     <constraint firstItem="cmp-metrics-stack-001" firstAttribute="leading" secondItem="cmp-orders-view-001" secondAttribute="leading" constant="24" id="cmp-ord-c2"/>
                                     <constraint firstAttribute="trailing" secondItem="cmp-metrics-stack-001" secondAttribute="trailing" constant="24" id="cmp-ord-c3"/>
                                     <constraint firstItem="cmp-metrics-stack-001" firstAttribute="height" constant="62" id="cmp-ord-c4"/>
@@ -3573,23 +3684,25 @@
                                     <constraint firstAttribute="trailing" secondItem="cmp-orders-table-001" secondAttribute="trailing" id="cmp-ord-c7"/>
                                     <constraint firstAttribute="bottom" secondItem="cmp-orders-table-001" secondAttribute="bottom" id="cmp-ord-c8"/>
                                     <constraint firstItem="cmp-new-order-001" firstAttribute="leading" secondItem="cmp-orders-view-001" secondAttribute="leading" constant="24" id="cmp-ord-c9"/>
-                                    <constraint firstAttribute="trailing" secondItem="cmp-new-order-001" secondAttribute="trailing" constant="24" id="cmp-ord-c10"/>
-                                    <constraint firstAttribute="bottom" secondItem="cmp-new-order-001" secondAttribute="bottom" constant="-34" id="cmp-ord-c11"/>
                                 </constraints>
                             </view>
                             <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-providers-view-001">
-                                <rect key="frame" x="0.0" y="174" width="393" height="644"/>
+                                <rect key="frame" x="0.0" y="189" width="393" height="629"/>
                                 <subviews>
                                     <searchBar contentMode="redraw" placeholder="Buscar proveedor" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-provider-search-001">
                                         <rect key="frame" x="24" y="0.0" width="345" height="48"/>
+                                        <textInputTraits key="textInputTraits"/>
                                     </searchBar>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" rowHeight="142" estimatedRowHeight="142" sectionHeaderHeight="0.0" sectionFooterHeight="0.0" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-providers-table-001">
-                                        <rect key="frame" x="0.0" y="58" width="393" height="586"/>
+                                        <rect key="frame" x="0.0" y="58" width="393" height="571"/>
                                         <color key="backgroundColor" red="0.97254901960784312" green="0.98039215686274506" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <connections><outlet property="dataSource" destination="5RX-zo-Kiw" id="cmp-prov-ds"/><outlet property="delegate" destination="5RX-zo-Kiw" id="cmp-prov-dl"/></connections>
+                                        <connections>
+                                            <outlet property="dataSource" destination="5RX-zo-Kiw" id="cmp-prov-ds"/>
+                                            <outlet property="delegate" destination="5RX-zo-Kiw" id="cmp-prov-dl"/>
+                                        </connections>
                                     </tableView>
                                     <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" text="No hay proveedores registrados" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="2" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-provider-empty-001">
-                                        <rect key="frame" x="48" y="250" width="297" height="52"/>
+                                        <rect key="frame" x="48" y="284.33333333333331" width="297" height="20.333333333333314"/>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                         <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </label>
@@ -3597,6 +3710,8 @@
                                 <constraints>
                                     <constraint firstItem="cmp-provider-search-001" firstAttribute="top" secondItem="cmp-providers-view-001" secondAttribute="top" id="cmp-prov-c0"/>
                                     <constraint firstItem="cmp-provider-search-001" firstAttribute="leading" secondItem="cmp-providers-view-001" secondAttribute="leading" constant="24" id="cmp-prov-c1"/>
+                                    <constraint firstItem="cmp-provider-empty-001" firstAttribute="leading" secondItem="cmp-providers-view-001" secondAttribute="leading" constant="48" id="cmp-prov-c10"/>
+                                    <constraint firstAttribute="trailing" secondItem="cmp-provider-empty-001" secondAttribute="trailing" constant="48" id="cmp-prov-c11"/>
                                     <constraint firstAttribute="trailing" secondItem="cmp-provider-search-001" secondAttribute="trailing" constant="24" id="cmp-prov-c2"/>
                                     <constraint firstItem="cmp-provider-search-001" firstAttribute="height" constant="48" id="cmp-prov-c3"/>
                                     <constraint firstItem="cmp-providers-table-001" firstAttribute="top" secondItem="cmp-provider-search-001" secondAttribute="bottom" constant="10" id="cmp-prov-c4"/>
@@ -3605,12 +3720,10 @@
                                     <constraint firstAttribute="bottom" secondItem="cmp-providers-table-001" secondAttribute="bottom" id="cmp-prov-c7"/>
                                     <constraint firstItem="cmp-provider-empty-001" firstAttribute="centerX" secondItem="cmp-providers-view-001" secondAttribute="centerX" id="cmp-prov-c8"/>
                                     <constraint firstItem="cmp-provider-empty-001" firstAttribute="centerY" secondItem="cmp-providers-view-001" secondAttribute="centerY" constant="-20" id="cmp-prov-c9"/>
-                                    <constraint firstItem="cmp-provider-empty-001" firstAttribute="leading" secondItem="cmp-providers-view-001" secondAttribute="leading" constant="48" id="cmp-prov-c10"/>
-                                    <constraint firstAttribute="trailing" secondItem="cmp-provider-empty-001" secondAttribute="trailing" constant="48" id="cmp-prov-c11"/>
                                 </constraints>
                             </view>
                             <scrollView hidden="YES" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-analysis-scroll-001">
-                                <rect key="frame" x="0.0" y="174" width="393" height="644"/>
+                                <rect key="frame" x="0.0" y="189" width="393" height="629"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-analysis-content-001">
                                         <rect key="frame" x="0.0" y="0.0" width="393" height="502"/>
@@ -3618,17 +3731,139 @@
                                             <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-analysis-metrics-001">
                                                 <rect key="frame" x="24" y="0.0" width="345" height="86"/>
                                                 <subviews>
-                                                    <label opaque="NO" userInteractionEnabled="NO" text="GASTO S/0" textAlignment="center" numberOfLines="2" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ana-gasto-001"><rect key="frame" x="0.0" y="0.0" width="109.66666666666667" height="86"/><color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/><fontDescription key="fontDescription" type="boldSystem" pointSize="16"/><color key="textColor" red="0.96099999999999997" green="0.62" blue="0.042999999999999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/><userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="16"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes></label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" text="VOLUMEN 0L" textAlignment="center" numberOfLines="2" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ana-volume-001"><rect key="frame" x="117.66666666666666" y="0.0" width="109.66666666666666" height="86"/><color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/><fontDescription key="fontDescription" type="boldSystem" pointSize="16"/><color key="textColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/><userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="16"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes></label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" text="PROVEEDORES 0" textAlignment="center" numberOfLines="2" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ana-provider-001"><rect key="frame" x="235.33333333333329" y="0.0" width="109.66666666666666" height="86"/><color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/><fontDescription key="fontDescription" type="boldSystem" pointSize="16"/><color key="textColor" red="0.54509803921568623" green="0.36078431372549019" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/><userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="16"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes></label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="GASTO S/0" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ana-gasto-001">
+                                                        <rect key="frame" x="0.0" y="0.0" width="109.66666666666667" height="86"/>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                                        <color key="textColor" red="0.96099999999999997" green="0.62" blue="0.042999999999999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <userDefinedRuntimeAttributes>
+                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                <real key="value" value="16"/>
+                                                            </userDefinedRuntimeAttribute>
+                                                        </userDefinedRuntimeAttributes>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="VOLUMEN 0L" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ana-volume-001">
+                                                        <rect key="frame" x="117.66666666666666" y="0.0" width="109.66666666666666" height="86"/>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                                        <color key="textColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <userDefinedRuntimeAttributes>
+                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                <real key="value" value="16"/>
+                                                            </userDefinedRuntimeAttribute>
+                                                        </userDefinedRuntimeAttributes>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="PROVEEDORES 0" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ana-provider-001">
+                                                        <rect key="frame" x="235.33333333333329" y="0.0" width="109.66666666666666" height="86"/>
+                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                                        <color key="textColor" red="0.54509803921568623" green="0.36078431372549019" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <userDefinedRuntimeAttributes>
+                                                            <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                                <real key="value" value="16"/>
+                                                            </userDefinedRuntimeAttribute>
+                                                        </userDefinedRuntimeAttributes>
+                                                    </label>
                                                 </subviews>
                                             </stackView>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ranking-card-001"><rect key="frame" x="24" y="102" width="345" height="112"/><subviews><label opaque="NO" userInteractionEnabled="NO" text="Ranking de Proveedores" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-rank-title-001"><rect key="frame" x="16" y="16" width="313" height="19"/><fontDescription key="fontDescription" type="boldSystem" pointSize="16"/><color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label><label opaque="NO" userInteractionEnabled="NO" text="Sin proveedores activos" lineBreakMode="wordWrap" numberOfLines="3" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ranking-value-001"><rect key="frame" x="16" y="49" width="313" height="16"/><fontDescription key="fontDescription" type="system" pointSize="13"/><color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label></subviews><color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/><constraints><constraint firstItem="cmp-rank-title-001" firstAttribute="top" secondItem="cmp-ranking-card-001" secondAttribute="top" constant="16" id="cmp-rank-c1"/><constraint firstItem="cmp-rank-title-001" firstAttribute="leading" secondItem="cmp-ranking-card-001" secondAttribute="leading" constant="16" id="cmp-rank-c2"/><constraint firstAttribute="trailing" secondItem="cmp-rank-title-001" secondAttribute="trailing" constant="16" id="cmp-rank-c3"/><constraint firstItem="cmp-ranking-value-001" firstAttribute="top" secondItem="cmp-rank-title-001" secondAttribute="bottom" constant="14" id="cmp-rank-c4"/><constraint firstItem="cmp-ranking-value-001" firstAttribute="leading" secondItem="cmp-ranking-card-001" secondAttribute="leading" constant="16" id="cmp-rank-c5"/><constraint firstAttribute="trailing" secondItem="cmp-ranking-value-001" secondAttribute="trailing" constant="16" id="cmp-rank-c6"/><constraint firstAttribute="height" constant="112" id="cmp-rank-c7"/></constraints><userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="16"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes></view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-product-card-001"><rect key="frame" x="24" y="230" width="345" height="112"/><subviews><label opaque="NO" userInteractionEnabled="NO" text="Gasto por Producto" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-prod-title-001"><rect key="frame" x="16" y="16" width="313" height="19"/><fontDescription key="fontDescription" type="boldSystem" pointSize="16"/><color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label><label opaque="NO" userInteractionEnabled="NO" text="Sin gasto por producto" lineBreakMode="wordWrap" numberOfLines="3" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-product-value-001"><rect key="frame" x="16" y="49" width="313" height="16"/><fontDescription key="fontDescription" type="system" pointSize="13"/><color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label></subviews><color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/><constraints><constraint firstItem="cmp-prod-title-001" firstAttribute="top" secondItem="cmp-product-card-001" secondAttribute="top" constant="16" id="cmp-prod-c1"/><constraint firstItem="cmp-prod-title-001" firstAttribute="leading" secondItem="cmp-product-card-001" secondAttribute="leading" constant="16" id="cmp-prod-c2"/><constraint firstAttribute="trailing" secondItem="cmp-prod-title-001" secondAttribute="trailing" constant="16" id="cmp-prod-c3"/><constraint firstItem="cmp-product-value-001" firstAttribute="top" secondItem="cmp-prod-title-001" secondAttribute="bottom" constant="14" id="cmp-prod-c4"/><constraint firstItem="cmp-product-value-001" firstAttribute="leading" secondItem="cmp-product-card-001" secondAttribute="leading" constant="16" id="cmp-prod-c5"/><constraint firstAttribute="trailing" secondItem="cmp-product-value-001" secondAttribute="trailing" constant="16" id="cmp-prod-c6"/><constraint firstAttribute="height" constant="112" id="cmp-prod-c7"/></constraints><userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="16"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes></view>
-                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-volume-card-001"><rect key="frame" x="24" y="358" width="345" height="112"/><subviews><label opaque="NO" userInteractionEnabled="NO" text="Por Producto" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-vol-title-001"><rect key="frame" x="16" y="16" width="313" height="19"/><fontDescription key="fontDescription" type="boldSystem" pointSize="16"/><color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label><label opaque="NO" userInteractionEnabled="NO" text="Sin volumen registrado" lineBreakMode="wordWrap" numberOfLines="3" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-volume-value-001"><rect key="frame" x="16" y="49" width="313" height="16"/><fontDescription key="fontDescription" type="system" pointSize="13"/><color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/></label></subviews><color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/><constraints><constraint firstItem="cmp-vol-title-001" firstAttribute="top" secondItem="cmp-volume-card-001" secondAttribute="top" constant="16" id="cmp-vol-c1"/><constraint firstItem="cmp-vol-title-001" firstAttribute="leading" secondItem="cmp-volume-card-001" secondAttribute="leading" constant="16" id="cmp-vol-c2"/><constraint firstAttribute="trailing" secondItem="cmp-vol-title-001" secondAttribute="trailing" constant="16" id="cmp-vol-c3"/><constraint firstItem="cmp-volume-value-001" firstAttribute="top" secondItem="cmp-vol-title-001" secondAttribute="bottom" constant="14" id="cmp-vol-c4"/><constraint firstItem="cmp-volume-value-001" firstAttribute="leading" secondItem="cmp-volume-card-001" secondAttribute="leading" constant="16" id="cmp-vol-c5"/><constraint firstAttribute="trailing" secondItem="cmp-volume-value-001" secondAttribute="trailing" constant="16" id="cmp-vol-c6"/><constraint firstAttribute="height" constant="112" id="cmp-vol-c7"/></constraints><userDefinedRuntimeAttributes><userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius"><real key="value" value="16"/></userDefinedRuntimeAttribute></userDefinedRuntimeAttributes></view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ranking-card-001">
+                                                <rect key="frame" x="24" y="102" width="345" height="112"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="Ranking de Proveedores" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-rank-title-001">
+                                                        <rect key="frame" x="16" y="15.999999999999998" width="313" height="19.333333333333329"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                                        <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="Sin proveedores activos" lineBreakMode="wordWrap" numberOfLines="3" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-ranking-value-001">
+                                                        <rect key="frame" x="16" y="49.333333333333314" width="313" height="15.666666666666671"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                                        <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="cmp-rank-title-001" firstAttribute="top" secondItem="cmp-ranking-card-001" secondAttribute="top" constant="16" id="cmp-rank-c1"/>
+                                                    <constraint firstItem="cmp-rank-title-001" firstAttribute="leading" secondItem="cmp-ranking-card-001" secondAttribute="leading" constant="16" id="cmp-rank-c2"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-rank-title-001" secondAttribute="trailing" constant="16" id="cmp-rank-c3"/>
+                                                    <constraint firstItem="cmp-ranking-value-001" firstAttribute="top" secondItem="cmp-rank-title-001" secondAttribute="bottom" constant="14" id="cmp-rank-c4"/>
+                                                    <constraint firstItem="cmp-ranking-value-001" firstAttribute="leading" secondItem="cmp-ranking-card-001" secondAttribute="leading" constant="16" id="cmp-rank-c5"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-ranking-value-001" secondAttribute="trailing" constant="16" id="cmp-rank-c6"/>
+                                                    <constraint firstAttribute="height" constant="112" id="cmp-rank-c7"/>
+                                                </constraints>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                        <real key="value" value="16"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-product-card-001">
+                                                <rect key="frame" x="24" y="230" width="345" height="112"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="Gasto por Producto" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-prod-title-001">
+                                                        <rect key="frame" x="16" y="15.999999999999998" width="313" height="19.333333333333329"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                                        <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="Sin gasto por producto" lineBreakMode="wordWrap" numberOfLines="3" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-product-value-001">
+                                                        <rect key="frame" x="16" y="49.333333333333314" width="313" height="15.666666666666671"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                                        <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="cmp-prod-title-001" firstAttribute="top" secondItem="cmp-product-card-001" secondAttribute="top" constant="16" id="cmp-prod-c1"/>
+                                                    <constraint firstItem="cmp-prod-title-001" firstAttribute="leading" secondItem="cmp-product-card-001" secondAttribute="leading" constant="16" id="cmp-prod-c2"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-prod-title-001" secondAttribute="trailing" constant="16" id="cmp-prod-c3"/>
+                                                    <constraint firstItem="cmp-product-value-001" firstAttribute="top" secondItem="cmp-prod-title-001" secondAttribute="bottom" constant="14" id="cmp-prod-c4"/>
+                                                    <constraint firstItem="cmp-product-value-001" firstAttribute="leading" secondItem="cmp-product-card-001" secondAttribute="leading" constant="16" id="cmp-prod-c5"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-product-value-001" secondAttribute="trailing" constant="16" id="cmp-prod-c6"/>
+                                                    <constraint firstAttribute="height" constant="112" id="cmp-prod-c7"/>
+                                                </constraints>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                        <real key="value" value="16"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </view>
+                                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-volume-card-001">
+                                                <rect key="frame" x="24" y="358" width="345" height="112"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="Por Producto" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-vol-title-001">
+                                                        <rect key="frame" x="16" y="15.999999999999998" width="313" height="19.333333333333329"/>
+                                                        <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
+                                                        <color key="textColor" red="0.074509803921568626" green="0.086274509803921567" blue="0.15686274509803921" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" text="Sin volumen registrado" lineBreakMode="wordWrap" numberOfLines="3" minimumScaleFactor="0.75" translatesAutoresizingMaskIntoConstraints="NO" id="cmp-volume-value-001">
+                                                        <rect key="frame" x="16" y="49.333333333333371" width="313" height="15.666666666666671"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="13"/>
+                                                        <color key="textColor" red="0.59607843137254901" green="0.60784313725490191" blue="0.67450980392156867" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                    </label>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                <constraints>
+                                                    <constraint firstItem="cmp-vol-title-001" firstAttribute="top" secondItem="cmp-volume-card-001" secondAttribute="top" constant="16" id="cmp-vol-c1"/>
+                                                    <constraint firstItem="cmp-vol-title-001" firstAttribute="leading" secondItem="cmp-volume-card-001" secondAttribute="leading" constant="16" id="cmp-vol-c2"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-vol-title-001" secondAttribute="trailing" constant="16" id="cmp-vol-c3"/>
+                                                    <constraint firstItem="cmp-volume-value-001" firstAttribute="top" secondItem="cmp-vol-title-001" secondAttribute="bottom" constant="14" id="cmp-vol-c4"/>
+                                                    <constraint firstItem="cmp-volume-value-001" firstAttribute="leading" secondItem="cmp-volume-card-001" secondAttribute="leading" constant="16" id="cmp-vol-c5"/>
+                                                    <constraint firstAttribute="trailing" secondItem="cmp-volume-value-001" secondAttribute="trailing" constant="16" id="cmp-vol-c6"/>
+                                                    <constraint firstAttribute="height" constant="112" id="cmp-vol-c7"/>
+                                                </constraints>
+                                                <userDefinedRuntimeAttributes>
+                                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                                        <real key="value" value="16"/>
+                                                    </userDefinedRuntimeAttribute>
+                                                </userDefinedRuntimeAttributes>
+                                            </view>
                                         </subviews>
                                         <constraints>
                                             <constraint firstItem="cmp-analysis-metrics-001" firstAttribute="top" secondItem="cmp-analysis-content-001" secondAttribute="top" id="cmp-an-c1"/>
+                                            <constraint firstAttribute="trailing" secondItem="cmp-product-card-001" secondAttribute="trailing" constant="24" id="cmp-an-c10"/>
+                                            <constraint firstItem="cmp-volume-card-001" firstAttribute="top" secondItem="cmp-product-card-001" secondAttribute="bottom" constant="16" id="cmp-an-c11"/>
+                                            <constraint firstItem="cmp-volume-card-001" firstAttribute="leading" secondItem="cmp-analysis-content-001" secondAttribute="leading" constant="24" id="cmp-an-c12"/>
+                                            <constraint firstAttribute="trailing" secondItem="cmp-volume-card-001" secondAttribute="trailing" constant="24" id="cmp-an-c13"/>
+                                            <constraint firstAttribute="bottom" secondItem="cmp-volume-card-001" secondAttribute="bottom" constant="32" id="cmp-an-c14"/>
                                             <constraint firstItem="cmp-analysis-metrics-001" firstAttribute="leading" secondItem="cmp-analysis-content-001" secondAttribute="leading" constant="24" id="cmp-an-c2"/>
                                             <constraint firstAttribute="trailing" secondItem="cmp-analysis-metrics-001" secondAttribute="trailing" constant="24" id="cmp-an-c3"/>
                                             <constraint firstItem="cmp-analysis-metrics-001" firstAttribute="height" constant="86" id="cmp-an-c4"/>
@@ -3637,11 +3872,6 @@
                                             <constraint firstAttribute="trailing" secondItem="cmp-ranking-card-001" secondAttribute="trailing" constant="24" id="cmp-an-c7"/>
                                             <constraint firstItem="cmp-product-card-001" firstAttribute="top" secondItem="cmp-ranking-card-001" secondAttribute="bottom" constant="16" id="cmp-an-c8"/>
                                             <constraint firstItem="cmp-product-card-001" firstAttribute="leading" secondItem="cmp-analysis-content-001" secondAttribute="leading" constant="24" id="cmp-an-c9"/>
-                                            <constraint firstAttribute="trailing" secondItem="cmp-product-card-001" secondAttribute="trailing" constant="24" id="cmp-an-c10"/>
-                                            <constraint firstItem="cmp-volume-card-001" firstAttribute="top" secondItem="cmp-product-card-001" secondAttribute="bottom" constant="16" id="cmp-an-c11"/>
-                                            <constraint firstItem="cmp-volume-card-001" firstAttribute="leading" secondItem="cmp-analysis-content-001" secondAttribute="leading" constant="24" id="cmp-an-c12"/>
-                                            <constraint firstAttribute="trailing" secondItem="cmp-volume-card-001" secondAttribute="trailing" constant="24" id="cmp-an-c13"/>
-                                            <constraint firstAttribute="bottom" secondItem="cmp-volume-card-001" secondAttribute="bottom" constant="32" id="cmp-an-c14"/>
                                         </constraints>
                                     </view>
                                 </subviews>
@@ -3660,14 +3890,6 @@
                         <color key="backgroundColor" red="0.97254901960784312" green="0.98039215686274506" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="cmp-back-001" firstAttribute="top" secondItem="tgo-Hb-TYE" secondAttribute="top" constant="18" id="cmp-root-c1"/>
-                            <constraint firstItem="cmp-back-001" firstAttribute="leading" secondItem="tgo-Hb-TYE" secondAttribute="leading" constant="24" id="cmp-root-c2"/>
-                            <constraint firstItem="cmp-title-001" firstAttribute="centerY" secondItem="cmp-back-001" secondAttribute="centerY" id="cmp-root-c3"/>
-                            <constraint firstItem="cmp-title-001" firstAttribute="centerX" secondItem="0RW-XP-zmf" secondAttribute="centerX" id="cmp-root-c4"/>
-                            <constraint firstItem="cmp-pending-badge-001" firstAttribute="centerY" secondItem="cmp-back-001" secondAttribute="centerY" id="cmp-root-c5"/>
-                            <constraint firstAttribute="trailing" secondItem="cmp-pending-badge-001" secondAttribute="trailing" constant="24" id="cmp-root-c6"/>
-                            <constraint firstItem="cmp-tabs-001" firstAttribute="top" secondItem="cmp-back-001" secondAttribute="bottom" constant="16" id="cmp-root-c7"/>
-                            <constraint firstItem="cmp-tabs-001" firstAttribute="leading" secondItem="tgo-Hb-TYE" secondAttribute="leading" constant="24" id="cmp-root-c8"/>
-                            <constraint firstItem="tgo-Hb-TYE" firstAttribute="trailing" secondItem="cmp-tabs-001" secondAttribute="trailing" constant="24" id="cmp-root-c9"/>
                             <constraint firstItem="cmp-tabs-001" firstAttribute="height" constant="40" id="cmp-root-c10"/>
                             <constraint firstItem="cmp-orders-view-001" firstAttribute="top" secondItem="cmp-tabs-001" secondAttribute="bottom" constant="16" id="cmp-root-c11"/>
                             <constraint firstItem="cmp-orders-view-001" firstAttribute="leading" secondItem="0RW-XP-zmf" secondAttribute="leading" id="cmp-root-c12"/>
@@ -3678,9 +3900,17 @@
                             <constraint firstItem="cmp-providers-view-001" firstAttribute="trailing" secondItem="cmp-orders-view-001" secondAttribute="trailing" id="cmp-root-c17"/>
                             <constraint firstItem="cmp-providers-view-001" firstAttribute="bottom" secondItem="cmp-orders-view-001" secondAttribute="bottom" id="cmp-root-c18"/>
                             <constraint firstItem="cmp-analysis-scroll-001" firstAttribute="top" secondItem="cmp-orders-view-001" secondAttribute="top" id="cmp-root-c19"/>
+                            <constraint firstItem="cmp-back-001" firstAttribute="leading" secondItem="tgo-Hb-TYE" secondAttribute="leading" constant="24" id="cmp-root-c2"/>
                             <constraint firstItem="cmp-analysis-scroll-001" firstAttribute="leading" secondItem="cmp-orders-view-001" secondAttribute="leading" id="cmp-root-c20"/>
                             <constraint firstItem="cmp-analysis-scroll-001" firstAttribute="trailing" secondItem="cmp-orders-view-001" secondAttribute="trailing" id="cmp-root-c21"/>
                             <constraint firstItem="cmp-analysis-scroll-001" firstAttribute="bottom" secondItem="cmp-orders-view-001" secondAttribute="bottom" id="cmp-root-c22"/>
+                            <constraint firstItem="cmp-title-001" firstAttribute="centerY" secondItem="cmp-back-001" secondAttribute="centerY" id="cmp-root-c3"/>
+                            <constraint firstItem="cmp-title-001" firstAttribute="centerX" secondItem="0RW-XP-zmf" secondAttribute="centerX" id="cmp-root-c4"/>
+                            <constraint firstItem="cmp-pending-badge-001" firstAttribute="centerY" secondItem="cmp-back-001" secondAttribute="centerY" id="cmp-root-c5"/>
+                            <constraint firstAttribute="trailing" secondItem="cmp-pending-badge-001" secondAttribute="trailing" constant="24" id="cmp-root-c6"/>
+                            <constraint firstItem="cmp-tabs-001" firstAttribute="top" secondItem="cmp-back-001" secondAttribute="bottom" constant="16" id="cmp-root-c7"/>
+                            <constraint firstItem="cmp-tabs-001" firstAttribute="leading" secondItem="tgo-Hb-TYE" secondAttribute="leading" constant="24" id="cmp-root-c8"/>
+                            <constraint firstItem="tgo-Hb-TYE" firstAttribute="trailing" secondItem="cmp-tabs-001" secondAttribute="trailing" constant="24" id="cmp-root-c9"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="4Ix-63-ZX2"/>
@@ -3701,10 +3931,10 @@
                         <outlet property="lblRecibidas" destination="cmp-rec-value-001" id="cmp-out-014"/>
                         <outlet property="ordenesTableView" destination="cmp-orders-table-001" id="cmp-out-015"/>
                         <outlet property="ordenesView" destination="cmp-orders-view-001" id="cmp-out-016"/>
+                        <outlet property="proveedoresEmptyLabel" destination="cmp-provider-empty-001" id="cmp-out-020"/>
+                        <outlet property="proveedoresSearchBar" destination="cmp-provider-search-001" id="cmp-out-019"/>
                         <outlet property="proveedoresTableView" destination="cmp-providers-table-001" id="cmp-out-017"/>
                         <outlet property="proveedoresView" destination="cmp-providers-view-001" id="cmp-out-018"/>
-                        <outlet property="proveedoresSearchBar" destination="cmp-provider-search-001" id="cmp-out-019"/>
-                        <outlet property="proveedoresEmptyLabel" destination="cmp-provider-empty-001" id="cmp-out-020"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aKN-vY-bbv" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -5169,16 +5399,16 @@
         <image name="person.2.fill" catalog="system" width="128" height="86"/>
         <image name="shippingbox" catalog="system" width="128" height="123"/>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.53333333329999999" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.53333333333333333" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGray5Color">
-            <color red="0.8980392157" green="0.8980392157" blue="0.91764705879999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.89803921568627454" green="0.89803921568627454" blue="0.91764705882352937" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGrayColor">
-            <color red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.21960784310000001" blue="0.23529411759999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.2196078431372549" blue="0.23529411764705882" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
