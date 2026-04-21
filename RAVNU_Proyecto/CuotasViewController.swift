@@ -21,7 +21,7 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
     @IBOutlet private weak var lblClientesDeuda: UILabel?
     @IBOutlet private weak var emptyStateView: UIView?
 
-    private enum FiltroCuota { // hola 
+    private enum FiltroCuota {
         case todos
         case pendiente
         case vencido
