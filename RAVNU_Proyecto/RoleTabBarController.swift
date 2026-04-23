@@ -20,14 +20,16 @@ final class RoleTabBarController: UITabBarController {
             allRoleTabs = viewControllers ?? []
         }
 
-        let role = UserDefaults.standard.string(forKey: "rolLogueado") ?? "Cajero"
+        let role = AppSession.shared.rolLogueado ?? "Cajero"
         let allowedTabs = allowedTabTitles(for: role)
         let filteredTabs = allRoleTabs.filter { controller in
             guard let title = controller.tabBarItem.title else { return false }
             return allowedTabs.contains(title)
         }
 
-        if viewControllers?.map(\.tabBarItem.title) != filteredTabs.map(\.tabBarItem.title) {
+        let currentTitles = viewControllers?.map { $0.tabBarItem.title }
+        let filteredTitles = filteredTabs.map { $0.tabBarItem.title }
+        if currentTitles != filteredTitles {
             setViewControllers(filteredTabs, animated: false)
         }
     }

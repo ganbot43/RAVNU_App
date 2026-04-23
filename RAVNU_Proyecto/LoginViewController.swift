@@ -62,8 +62,8 @@ class LoginViewController: UIViewController {
         
         let datos = "\(login.usuario ?? usuario) - \(login.rol ?? rolSeleccionado)"
 
-        UserDefaults.standard.set(login.usuario ?? usuario, forKey: "usuarioLogueado")
-        UserDefaults.standard.set(login.rol ?? rolSeleccionado, forKey: "rolLogueado")
+        AppSession.shared.usuarioLogueado = login.usuario ?? usuario
+        AppSession.shared.rolLogueado = login.rol ?? rolSeleccionado
 
         switch rolSeleccionado {
         case "Admin", "Cajero", "Super", "Almacen":

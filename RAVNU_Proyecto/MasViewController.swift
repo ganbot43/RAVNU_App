@@ -44,7 +44,7 @@ final class MasViewController: UIViewController {
     }
 
     private func configureRoleAccess() {
-        let rol = UserDefaults.standard.string(forKey: "rolLogueado") ?? ""
+        let rol = AppSession.shared.rolLogueado ?? ""
 
         let canSeeTesoreria = rol == "Admin" || rol == "Super"
         let canSeeCobros = rol == "Admin" || rol == "Super" || rol == "Cajero"
@@ -80,8 +80,8 @@ final class MasViewController: UIViewController {
     }
 
     private func cargarDatosUsuario() {
-        let nombre = UserDefaults.standard.string(forKey: "usuarioLogueado") ?? "Usuario"
-        let rol = UserDefaults.standard.string(forKey: "rolLogueado") ?? ""
+        let nombre = AppSession.shared.usuarioLogueado ?? "Usuario"
+        let rol = AppSession.shared.rolLogueado ?? ""
 
         lblNombre?.text = nombre
         lblIniciales?.text = iniciales(from: nombre)
@@ -156,8 +156,7 @@ final class MasViewController: UIViewController {
     }
 
     @IBAction private func btnCerrarSesion(_ sender: UIButton) {
-        UserDefaults.standard.removeObject(forKey: "usuarioLogueado")
-        UserDefaults.standard.removeObject(forKey: "rolLogueado")
+        AppSession.shared.clear()
         cerrarSesionUniversal()
     }
 

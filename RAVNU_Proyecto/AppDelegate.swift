@@ -7,6 +7,9 @@
 
 import UIKit
 import CoreData
+#if canImport(FirebaseCore)
+import FirebaseCore
+#endif
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -14,7 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        AppRuntime.shared.configure()
         return true
     }
 
@@ -81,4 +84,166 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
+}
+
+final class AppRuntime {
+    static let shared = AppRuntime()
+
+    let session = AppSession.shared
+    let firebase = FirebaseBootstrap.shared
+    let syncCoordinator = RemoteSyncCoordinator.shared
+
+    private init() {}
+
+    func configure() {
+        firebase.configureIfAvailable()
+        syncCoordinator.configure(firebase: firebase)
+        NotificationCenter.default.post(name: .backendModeDidChange, object: backendMode)
+    }
+
+    var backendMode: BackendMode {
+        if syncCoordinator.isRemoteReady {
+            return .firebaseRemote
+        }
+        if firebase.isAvailable {
+            return .firebasePendingConfiguration
+        }
+        return .localFallback
+    }
+}
+
+final class AppSession {
+    static let shared = AppSession()
+
+    private enum Keys {
+        static let usuario = "usuarioLogueado"
+        static let rol = "rolLogueado"
+        static let remoteEnabled = "remoteDataEnabled"
+        static let lastSync = "remoteLastSyncDate"
+    }
+
+    private let defaults = UserDefaults.standard
+
+    private init() {}
+
+    var usuarioLogueado: String? {
+        get { defaults.string(forKey: Keys.usuario) }
+        set { defaults.set(newValue, forKey: Keys.usuario) }
+    }
+
+    var rolLogueado: String? {
+        get { defaults.string(forKey: Keys.rol) }
+        set { defaults.set(newValue, forKey: Keys.rol) }
+    }
+
+    var remoteDataEnabled: Bool {
+        get { defaults.object(forKey: Keys.remoteEnabled) as? Bool ?? true }
+        set { defaults.set(newValue, forKey: Keys.remoteEnabled) }
+    }
+
+    var lastRemoteSyncAt: Date? {
+        get { defaults.object(forKey: Keys.lastSync) as? Date }
+        set { defaults.set(newValue, forKey: Keys.lastSync) }
+    }
+
+    func clear() {
+        defaults.removeObject(forKey: Keys.usuario)
+        defaults.removeObject(forKey: Keys.rol)
+    }
+}
+
+final class FirebaseBootstrap {
+    static let shared = FirebaseBootstrap()
+
+    private(set) var isConfigured = false
+    private(set) var isAvailable = false
+    private(set) var configurationMessage = "Firebase SDK no integrado en el proyecto."
+
+    private init() {}
+
+    func configureIfAvailable() {
+        #if canImport(FirebaseCore)
+        isAvailable = true
+        if FirebaseApp.app() == nil {
+            FirebaseApp.configure()
+        }
+        isConfigured = FirebaseApp.app() != nil
+        configurationMessage = isConfigured
+            ? "Firebase configurado correctamente."
+            : "Firebase SDK presente, pero la app aun no pudo configurarse."
+        #else
+        isAvailable = false
+        isConfigured = false
+        configurationMessage = "Agrega FirebaseCore y GoogleService-Info.plist para activar modo remoto."
+        #endif
+    }
+}
+
+final class RemoteSyncCoordinator {
+    static let shared = RemoteSyncCoordinator()
+
+    enum SyncState: String {
+        case idle
+        case waitingForFirebase
+        case ready
+        case syncing
+        case failed
+    }
+
+    private(set) var firebase: FirebaseBootstrap?
+    private(set) var state: SyncState = .idle
+    private(set) var lastErrorMessage: String?
+
+    private init() {}
+
+    func configure(firebase: FirebaseBootstrap) {
+        self.firebase = firebase
+        state = firebase.isConfigured ? .ready : .waitingForFirebase
+        NotificationCenter.default.post(name: .remoteSyncStateDidChange, object: state)
+    }
+
+    var isRemoteReady: Bool {
+        guard let firebase else { return false }
+        return AppSession.shared.remoteDataEnabled && firebase.isConfigured
+    }
+
+    func startInitialSyncIfPossible() {
+        guard let firebase else {
+            state = .failed
+            lastErrorMessage = "FirebaseBootstrap no fue configurado."
+            NotificationCenter.default.post(name: .remoteSyncStateDidChange, object: state)
+            return
+        }
+
+        guard AppSession.shared.remoteDataEnabled else {
+            state = .idle
+            lastErrorMessage = nil
+            NotificationCenter.default.post(name: .remoteSyncStateDidChange, object: state)
+            return
+        }
+
+        guard firebase.isConfigured else {
+            state = .waitingForFirebase
+            lastErrorMessage = firebase.configurationMessage
+            NotificationCenter.default.post(name: .remoteSyncStateDidChange, object: state)
+            return
+        }
+
+        state = .ready
+        lastErrorMessage = nil
+        AppSession.shared.lastRemoteSyncAt = Date()
+        NotificationCenter.default.post(name: .remoteSyncStateDidChange, object: state)
+        // Entrada futura para descargar Firestore y actualizar el cache local.
+    }
+}
+
+enum BackendMode: String {
+    case localFallback
+    case firebasePendingConfiguration
+    case firebaseRemote
+}
+
+extension Notification.Name {
+    static let remoteSyncStateDidChange = Notification.Name("remoteSyncStateDidChange")
+    static let backendModeDidChange = Notification.Name("backendModeDidChange")
 }

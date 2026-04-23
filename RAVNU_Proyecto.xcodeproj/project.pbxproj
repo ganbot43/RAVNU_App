@@ -58,6 +58,10 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Infrastructure/AppRuntime.swift,
+				Infrastructure/AppSession.swift,
+				Infrastructure/FirebaseBootstrap.swift,
+				Infrastructure/RemoteSyncCoordinator.swift,
 			);
 			target = AE42C8902F86B08A001C9095 /* RAVNU_Proyecto */;
 		};
@@ -85,6 +89,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4D99F8D02F9AB68B00434514 /* Infrastructure */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Infrastructure;
+			sourceTree = "<group>";
+		};
 		AE42C8882F86B08A001C9095 = {
 			isa = PBXGroup;
 			children = (
@@ -110,6 +121,7 @@
 				4DA4EB3E2F91BFAA009F28F5 /* OrdenCompraEntity+CoreDataProperties.swift */,
 				4DA4EB462F91C485009F28F5 /* StockAlmacenEntity+CoreDataClass.swift */,
 				4DA4EB482F91C485009F28F5 /* StockAlmacenEntity+CoreDataProperties.swift */,
+				4D99F8D02F9AB68B00434514 /* Infrastructure */,
 			);
 			sourceTree = "<group>";
 		};

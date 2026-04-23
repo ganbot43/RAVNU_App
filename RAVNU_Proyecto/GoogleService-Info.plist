@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyAejxNprHTEiGfX29wmZ-PMguPM2iWQAOk</string>
+	<key>GCM_SENDER_ID</key>
+	<string>936647674188</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.cibertec.RAVNU-Proyecto</string>
+	<key>PROJECT_ID</key>
+	<string>ravnu-admin</string>
+	<key>STORAGE_BUCKET</key>
+	<string>ravnu-admin.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:936647674188:ios:fef4298d11e63d372aa7e9</string>
+</dict>
+</plist>
