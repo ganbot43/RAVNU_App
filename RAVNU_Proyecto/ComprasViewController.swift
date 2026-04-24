@@ -57,6 +57,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
+        configureRoleAccess()
         loadData()
         showOrdenes()
     }
@@ -104,6 +105,16 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         tableView?.backgroundColor = .clear
         tableView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 96, right: 0)
         tableView?.showsVerticalScrollIndicator = false
+    }
+
+    private func configureRoleAccess() {
+        let shouldHideCreateActions = RoleAccessControl.isAdmin == false
+        RoleAccessControl.configureButtons(
+            in: view,
+            target: self,
+            selectors: [#selector(btnNuevaOrdenTapped(_:))],
+            hidden: shouldHideCreateActions
+        )
     }
 
     private func loadData() {
@@ -267,6 +278,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     @IBAction private func btnNuevaOrdenTapped(_ sender: UIButton) {
+        guard RoleAccessControl.isAdmin else { return }
         showOrdenes()
     }
 

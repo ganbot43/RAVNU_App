@@ -74,6 +74,7 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
+        configureRoleAccess()
         loadTreasuryData()
         showResumen()
     }
@@ -100,6 +101,16 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
             $0?.adjustsFontSizeToFitWidth = true
             $0?.minimumScaleFactor = 0.72
         }
+    }
+
+    private func configureRoleAccess() {
+        let shouldHideCreateActions = RoleAccessControl.isAdmin == false
+        RoleAccessControl.configureButtons(
+            in: view,
+            target: self,
+            selectors: [#selector(btnAgregarTapped(_:))],
+            hidden: shouldHideCreateActions
+        )
     }
 
     private func loadTreasuryData() {
@@ -264,6 +275,7 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
     }
 
     @IBAction private func btnAgregarTapped(_ sender: UIButton) {
+        guard RoleAccessControl.isAdmin else { return }
         showTransacciones()
     }
 

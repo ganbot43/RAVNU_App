@@ -23,12 +23,13 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
     var nombreBienvenido: String?
 
     private enum Mode: Int {
-        case general = 0
+        case almacenes = 0
         case productos = 1
         case movimientos = 2
     }
 
     private enum RowItem {
+        case almacen(AlmacenEntity)
         case stock(StockAlmacenEntity)
         case producto(ProductoEntity)
         case movimiento(MovimientoInventarioEntity)
@@ -40,7 +41,7 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
     private var stocks: [StockAlmacenEntity] = []
     private var movimientos: [MovimientoInventarioEntity] = []
     private var rows: [RowItem] = []
-    private var mode: Mode = .general
+    private var mode: Mode = .almacenes
 
     private var context: NSManagedObjectContext {
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -60,18 +61,31 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
+        configureRoleAccess()
         seedInitialWarehouseDataIfNeeded()
+        observeRemoteSync()
         loadData()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        if FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled {
+            resetWarehouseModuleCache()
+            RemoteSyncCoordinator.shared.startInitialSyncIfPossible()
+        }
         loadData()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     private func configureUI() {
         lblTitulo?.text = "Almacén"
-        segmentedTabs?.selectedSegmentIndex = Mode.general.rawValue
+        segmentedTabs?.setTitle("Almacenes", forSegmentAt: 0)
+        segmentedTabs?.setTitle("Productos", forSegmentAt: 1)
+        segmentedTabs?.setTitle("Movimientos", forSegmentAt: 2)
+        segmentedTabs?.selectedSegmentIndex = Mode.almacenes.rawValue
         segmentedTabs?.addTarget(self, action: #selector(tabChanged), for: .valueChanged)
 
         tableView?.register(AlmacenTableViewCell.self, forCellReuseIdentifier: cellIdentifier)
@@ -99,7 +113,57 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         lblAlerta?.numberOfLines = 2
     }
 
+    private func configureRoleAccess() {
+        btnRegistrar?.isHidden = RoleAccessControl.isAdmin == false
+        btnRegistrar?.isEnabled = RoleAccessControl.isAdmin
+    }
+
+    private func resetWarehouseModuleCache() {
+        context.performAndWait {
+            do {
+                try deleteAll(entityName: "MovimientoInventarioEntity")
+                try deleteAll(entityName: "StockAlmacenEntity")
+                try deleteAll(entityName: "ProductoEntity")
+                try deleteAll(entityName: "AlmacenEntity")
+                if context.hasChanges {
+                    try context.save()
+                }
+            } catch {
+                context.rollback()
+            }
+        }
+    }
+
+    private func deleteAll(entityName: String) throws {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        deleteRequest.resultType = .resultTypeObjectIDs
+        let result = try context.execute(deleteRequest) as? NSBatchDeleteResult
+        if let objectIDs = result?.result as? [NSManagedObjectID] {
+            let changes = [NSDeletedObjectsKey: objectIDs]
+            NSManagedObjectContext.mergeChanges(fromRemoteContextSave: changes, into: [context])
+        }
+    }
+
+    private func observeRemoteSync() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleRemoteSyncStateChanged),
+            name: .remoteSyncStateDidChange,
+            object: nil
+        )
+    }
+
+    @objc
+    private func handleRemoteSyncStateChanged() {
+        loadData()
+    }
+
     private func seedInitialWarehouseDataIfNeeded() {
+        if FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled {
+            return
+        }
+
         let request: NSFetchRequest<AlmacenEntity> = AlmacenEntity.fetchRequest()
         request.fetchLimit = 1
 
@@ -269,8 +333,8 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
 
     private func applyMode() {
         switch mode {
-        case .general:
-            rows = stocks.map { .stock($0) }
+        case .almacenes:
+            rows = almacenes.map { .almacen($0) }
         case .productos:
             rows = productos.map { .producto($0) }
         case .movimientos:
@@ -281,11 +345,12 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
 
     @objc
     private func tabChanged() {
-        mode = Mode(rawValue: segmentedTabs?.selectedSegmentIndex ?? 0) ?? .general
+        mode = Mode(rawValue: segmentedTabs?.selectedSegmentIndex ?? 0) ?? .almacenes
         applyMode()
     }
 
     @IBAction private func btnRegistrarTapped(_ sender: UIButton) {
+        guard RoleAccessControl.isAdmin else { return }
         let sheet = UIAlertController(title: "Registrar", message: nil, preferredStyle: .actionSheet)
         sheet.addAction(UIAlertAction(title: "Almacén", style: .default) { [weak self] _ in
             self?.performSegue(withIdentifier: "mostrarModalAlmacen", sender: nil)
@@ -348,6 +413,22 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         guard let almacenCell = cell as? AlmacenTableViewCell else { return cell }
 
         switch rows[indexPath.row] {
+        case .almacen(let almacen):
+            let warehouseStocks = stocks.filter { $0.almacen == almacen }
+            let totalLiters = warehouseStocks.reduce(0.0) { $0 + $1.stockActual }
+            let totalCapacity = warehouseStocks.reduce(0.0) { $0 + capacity(for: $1) }
+            let lowCount = warehouseStocks.filter { $0.stockActual > 0 && $0.stockActual < minimum(for: $0) }.count
+            almacenCell.configure(
+                accent: lowCount > 0
+                    ? UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 1)
+                    : UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1),
+                title: almacen.nombre ?? "Almacén",
+                subtitle: almacen.responsable ?? "Sin responsable",
+                detail: almacen.direccion ?? "Sin dirección",
+                amount: formatLiters(totalLiters),
+                progress: CGFloat(min(totalLiters / max(totalCapacity, 1), 1)),
+                status: lowCount > 0 ? "\(lowCount) bajo" : "Activo"
+            )
         case .stock(let stock):
             let isLow = stock.stockActual < minimum(for: stock)
             let productName = stock.producto?.nombre ?? "Producto"

@@ -1,5 +1,6 @@
 import CoreData
 import UIKit
+import SwiftUI
 
 final class CajeroViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
@@ -39,11 +40,13 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
     private var productos: [ProductoEntity] = []
     private var stocks: [StockAlmacenEntity] = []
     private var stockAlerts: [StockAlertItem] = []
+    private var hostingController: UIHostingController<CajeroDashboardView>?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         configureTableView()
         configureInitialState()
+        configureSwiftUIDashboard()
         loadDashboardData()
     }
 
@@ -67,6 +70,47 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
         resetDashboardLabels()
     }
 
+    private func configureSwiftUIDashboard() {
+        hideLegacyDashboardUI()
+        let host = UIHostingController(rootView: CajeroDashboardView(data: makeDashboardData()))
+        addChild(host)
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        host.view.backgroundColor = .clear
+        view.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.topAnchor.constraint(equalTo: view.topAnchor),
+            host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        host.didMove(toParent: self)
+        hostingController = host
+    }
+
+    private func hideLegacyDashboardUI() {
+        [
+            lblNombreBienvenido,
+            lblSaldoActual,
+            lblResumenSecundario,
+            lblVentasHoy,
+            lblVentasHoyDetalle,
+            lblCobradoHoy,
+            lblCobradoHoyDetalle,
+            lblPendientes,
+            lblPendientesDetalle,
+            lblStockBajo,
+            lblStockBajoDetalle,
+            lblVentasSemana,
+            lblVentasSemanaDetalle,
+            lblAlertaStockTitulo,
+            lblAlertaStockDetalle,
+            emptyStateView,
+            tblCajero
+        ].forEach {
+            $0?.isHidden = true
+        }
+    }
+
     private func resetDashboardLabels() {
         lblSaldoActual?.text = "S/ --"
         lblResumenSecundario?.text = "Sin ventas ni cobros registrados"
@@ -85,6 +129,7 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
         stockAlerts = []
         tblCajero?.reloadData()
         emptyStateView?.isHidden = false
+        refreshSwiftUIDashboard()
     }
 
     private func loadDashboardData() {
@@ -177,6 +222,95 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
         stockAlerts = Array(lowStockItems.prefix(8))
         tblCajero?.reloadData()
         emptyStateView?.isHidden = !stockAlerts.isEmpty
+        refreshSwiftUIDashboard()
+    }
+
+    private func refreshSwiftUIDashboard() {
+        hostingController?.rootView = CajeroDashboardView(data: makeDashboardData())
+    }
+
+    private func makeDashboardData() -> CajeroDashboardViewData {
+        let salesToday = ventas.filter { venta in
+            guard let fecha = venta.fechaVenta else { return false }
+            return Calendar.current.isDateInToday(fecha)
+        }
+        let paidCuotasToday = cuotas.filter { cuota in
+            guard cuota.pagada, let fecha = cuota.fechaPago else { return false }
+            return Calendar.current.isDateInToday(fecha)
+        }
+        let pendingCuotas = cuotas.filter { !$0.pagada }
+        let weekSales = weekSalesData()
+        let lowStockItems = buildLowStockItems()
+        let topDebtor = biggestDebtor()
+
+        let metrics = [
+            CajeroDashboardViewData.Metric(
+                title: "Vendido Hoy",
+                value: salesToday.isEmpty ? "S/0" : formatCurrency(salesToday.reduce(0) { $0 + $1.total }),
+                icon: "arrow.up.right",
+                color: Color(.sRGB, red: 59 / 255, green: 130 / 255, blue: 246 / 255, opacity: 1)
+            ),
+            CajeroDashboardViewData.Metric(
+                title: "Cobrado Hoy",
+                value: paidCuotasToday.isEmpty ? "S/0" : formatCurrency(paidCuotasToday.reduce(0) { $0 + $1.monto }),
+                icon: "checkmark.circle.fill",
+                color: Color(.sRGB, red: 34 / 255, green: 197 / 255, blue: 94 / 255, opacity: 1)
+            ),
+            CajeroDashboardViewData.Metric(
+                title: "Por Cobrar",
+                value: pendingCuotas.isEmpty ? "S/0" : formatCurrency(pendingCuotas.reduce(0) { $0 + $1.monto }),
+                icon: "clock.fill",
+                color: Color(.sRGB, red: 239 / 255, green: 68 / 255, blue: 68 / 255, opacity: 1)
+            )
+        ]
+
+        let lowStockTitle = lowStockItems.first?.productName ?? "Sin alertas"
+        let lowStockDetail = lowStockItems.first.map { "\($0.currentRounded) \($0.unit) restantes" } ?? "Inventario estable"
+
+        return CajeroDashboardViewData(
+            notificationCount: max(min(pendingCuotas.count, 9), 2),
+            metrics: metrics,
+            weekSales: weekSales,
+            lowStockTitle: lowStockTitle,
+            lowStockDetail: lowStockDetail,
+            lowStockBadge: lowStockItems.isEmpty ? "OK" : "Stock Bajo",
+            debtorName: topDebtor.name,
+            debtorAmount: formatCurrency(topDebtor.amount),
+            debtorStatus: topDebtor.amount > 0 ? "Vencido" : "Sin deuda"
+        )
+    }
+
+    private func weekSalesData() -> [CajeroDashboardViewData.WeekSale] {
+        let calendar = Calendar.current
+        let symbols = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
+        guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: Date()) else {
+            return symbols.enumerated().map { index, symbol in
+                CajeroDashboardViewData.WeekSale(day: symbol, value: 0, isHighlighted: index == 6)
+            }
+        }
+
+        let grouped = Dictionary(grouping: ventas.filter { venta in
+            guard let fecha = venta.fechaVenta else { return false }
+            return weekInterval.contains(fecha)
+        }) { venta -> Int in
+            let weekday = calendar.component(.weekday, from: venta.fechaVenta ?? Date())
+            return (weekday + 5) % 7
+        }
+
+        return symbols.enumerated().map { index, symbol in
+            let total = (grouped[index] ?? []).reduce(0.0) { $0 + $1.total }
+            return CajeroDashboardViewData.WeekSale(day: symbol, value: total, isHighlighted: index == 6)
+        }
+    }
+
+    private func biggestDebtor() -> (name: String, amount: Double) {
+        let grouped = Dictionary(grouping: cuotas.filter { !$0.pagada }) { cuota in
+            cuota.venta?.cliente?.nombre ?? "Sin cliente"
+        }
+        let sorted = grouped
+            .map { (name: $0.key, amount: $0.value.reduce(0.0) { $0 + $1.monto }) }
+            .sorted { $0.amount > $1.amount }
+        return sorted.first ?? ("Sin deuda registrada", 0)
     }
 
     private func buildLowStockItems() -> [StockAlertItem] {
@@ -278,5 +412,9 @@ private struct StockAlertItem {
 
     var shortDescription: String {
         "\(productName): \(Int(current.rounded()).formatted()) \(unit)"
+    }
+
+    var currentRounded: Int {
+        Int(current.rounded())
     }
 }

@@ -1,5 +1,8 @@
 import CoreData
 import UIKit
+#if canImport(FirebaseFirestore)
+import FirebaseFirestore
+#endif
 
 protocol ModalMovimientoViewControllerDelegate: AnyObject {
     func modalMovimientoViewControllerDidSave(_ controller: ModalMovimientoViewController)
@@ -16,6 +19,9 @@ final class ModalMovimientoViewController: UIViewController {
     @IBOutlet private weak var btnGuardar: UIButton?
 
     weak var delegate: ModalMovimientoViewControllerDelegate?
+    #if canImport(FirebaseFirestore)
+    private let firestore = Firestore.firestore()
+    #endif
 
     private let origenPicker = UIPickerView()
     private let destinoPicker = UIPickerView()
@@ -126,6 +132,85 @@ final class ModalMovimientoViewController: UIViewController {
         return nil
     }
 
+    private func movementPayload(
+        movementId: UUID,
+        type: String,
+        amount: Double,
+        producto: ProductoEntity,
+        almacen: AlmacenEntity,
+        origen: String?,
+        destino: String?
+    ) -> [String: Any] {
+        [
+            "id": movementId.uuidString,
+            "tipo": type,
+            "cantidadLitros": amount,
+            "productoId": producto.id?.uuidString ?? "",
+            "almacenId": almacen.id?.uuidString ?? "",
+            "origen": origen ?? "",
+            "destino": destino ?? "",
+            "nota": txtNota?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
+            "fecha": Timestamp(date: Date())
+        ]
+    }
+
+    private func saveRemoteStock(producto: ProductoEntity, almacen: AlmacenEntity, delta: Double) {
+        #if canImport(FirebaseFirestore)
+        guard FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled else { return }
+        guard let almacenId = almacen.id?.uuidString, let productoId = producto.id?.uuidString else { return }
+
+        firestore.collection("warehouse_stock")
+            .whereField("almacenId", isEqualTo: almacenId)
+            .whereField("productoId", isEqualTo: productoId)
+            .getDocuments { [weak self] snapshot, _ in
+                guard let self else { return }
+                let stockRef: DocumentReference
+                var currentStock = 0.0
+                let payloadId: String
+
+                if let existing = snapshot?.documents.first {
+                    stockRef = existing.reference
+                    payloadId = existing.documentID
+                    currentStock = (existing.data()["stockActual"] as? NSNumber)?.doubleValue ?? 0
+                } else {
+                    payloadId = UUID().uuidString
+                    stockRef = self.firestore.collection("warehouse_stock").document(payloadId)
+                }
+
+                stockRef.setData([
+                    "id": payloadId,
+                    "almacenId": almacenId,
+                    "productoId": productoId,
+                    "stockActual": max(currentStock + delta, 0),
+                    "stockMinimo": producto.stockMinimo,
+                    "capacidadTotal": producto.capacidadTotal,
+                    "unidadMedida": producto.unidadMedida ?? "L"
+                ], merge: true)
+            }
+        #endif
+    }
+
+    private func saveRemoteMovement(type: String, amount: Double, producto: ProductoEntity, almacen: AlmacenEntity, origen: String?, destino: String?) {
+        #if canImport(FirebaseFirestore)
+        guard FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled else { return }
+        let movementId = UUID()
+        firestore.collection("inventory_movements")
+            .document(movementId.uuidString)
+            .setData(
+                movementPayload(
+                    movementId: movementId,
+                    type: type,
+                    amount: amount,
+                    producto: producto,
+                    almacen: almacen,
+                    origen: origen,
+                    destino: destino
+                ),
+                merge: true
+            )
+        #endif
+    }
+
     private func saveMovement() throws {
         let typeIndex = tipoControl?.selectedSegmentIndex ?? 0
         let type = ["entrada", "salida", "transfer"][typeIndex]
@@ -138,13 +223,20 @@ final class ModalMovimientoViewController: UIViewController {
         case "entrada":
             adjustStock(producto: producto, almacen: origen, delta: amount)
             createMovement(type: type, amount: amount, producto: producto, almacen: origen, origen: "Proveedor", destino: origen.nombre)
+            saveRemoteStock(producto: producto, almacen: origen, delta: amount)
+            saveRemoteMovement(type: type, amount: amount, producto: producto, almacen: origen, origen: "Proveedor", destino: origen.nombre)
         case "salida":
             adjustStock(producto: producto, almacen: origen, delta: -amount)
             createMovement(type: type, amount: -amount, producto: producto, almacen: origen, origen: origen.nombre, destino: "Operación")
+            saveRemoteStock(producto: producto, almacen: origen, delta: -amount)
+            saveRemoteMovement(type: type, amount: -amount, producto: producto, almacen: origen, origen: origen.nombre, destino: "Operación")
         default:
             adjustStock(producto: producto, almacen: origen, delta: -amount)
             adjustStock(producto: producto, almacen: destino, delta: amount)
             createMovement(type: type, amount: amount, producto: producto, almacen: origen, origen: origen.nombre, destino: destino.nombre)
+            saveRemoteStock(producto: producto, almacen: origen, delta: -amount)
+            saveRemoteStock(producto: producto, almacen: destino, delta: amount)
+            saveRemoteMovement(type: type, amount: amount, producto: producto, almacen: origen, origen: origen.nombre, destino: destino.nombre)
         }
 
         producto.stockLitros = totalStock(for: producto)

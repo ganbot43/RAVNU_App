@@ -1,5 +1,8 @@
 import UIKit
 import CoreData
+#if canImport(FirebaseFirestore)
+import FirebaseFirestore
+#endif
 
 protocol ModalClienteViewControllerDelegate: AnyObject {
     func modalClienteViewControllerDidSave(_ controller: ModalClienteViewController)
@@ -32,6 +35,9 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     private var filteredClientes: [ClienteEntity] = []
     private var currentFilter: ClienteFilter = .todos
     private var currentSearchText = ""
+    #if canImport(FirebaseFirestore)
+    private let firestore = Firestore.firestore()
+    #endif
 
     private var context: NSManagedObjectContext {
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -58,6 +64,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         searchBar.delegate = self
         configureSearchBar()
         configureAnalyticsView()
+        configureRoleAccess()
         loadClientes()
         showClientes()
     }
@@ -107,7 +114,28 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         searchBar.placeholder = "Buscar clientes..."
     }
 
+    private func configureRoleAccess() {
+        let shouldHideCreateActions = RoleAccessControl.isAdmin == false
+        RoleAccessControl.configureButtons(
+            in: view,
+            target: self,
+            selectors: [#selector(btnAgregarClienteTapped(_:))],
+            hidden: shouldHideCreateActions
+        )
+    }
+
     private func loadClientes() {
+        #if canImport(FirebaseFirestore)
+        if FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled {
+            loadClientesFromFirestore()
+            return
+        }
+        #endif
+
+        loadClientesFromLocalCache()
+    }
+
+    private func loadClientesFromLocalCache() {
         do {
             let request = ClienteEntity.fetchRequest()
             request.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
@@ -118,6 +146,117 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
             showAlert(title: "Error", message: "No se pudieron cargar los clientes.")
         }
     }
+
+    #if canImport(FirebaseFirestore)
+    private func loadClientesFromFirestore() {
+        firestore.collection("customers")
+            .order(by: "nombre")
+            .getDocuments { [weak self] snapshot, error in
+                guard let self else { return }
+
+                if let error {
+                    self.loadClientesFromLocalCache()
+                    self.showAlert(title: "Clientes", message: "No se pudo cargar desde Firebase. Se mostrará el caché local.\n\(error.localizedDescription)")
+                    return
+                }
+
+                do {
+                    try self.syncFirestoreClientsToLocal(snapshot?.documents ?? [])
+                    self.loadClientesFromLocalCache()
+                } catch {
+                    self.loadClientesFromLocalCache()
+                    self.showAlert(title: "Clientes", message: "No se pudo actualizar el caché local de clientes.")
+                }
+            }
+    }
+
+    private func syncFirestoreClientsToLocal(_ documents: [QueryDocumentSnapshot]) throws {
+        for document in documents {
+            let data = document.data()
+            let cliente = try fetchOrCreateCliente(documentId: document.documentID)
+            cliente.id = UUID(uuidString: stringValue(data, keys: ["id", "uuid", "coreDataId"]) ?? "") ?? stableUUID(from: document.documentID)
+            cliente.nombre = stringValue(data, keys: ["nombre", "name", "fullName"])
+            cliente.documento = stringValue(data, keys: ["documento", "documentNumber"])
+            cliente.telefono = stringValue(data, keys: ["telefono", "phone"])
+            cliente.direccion = stringValue(data, keys: ["direccion", "address"])
+            cliente.limiteCredito = doubleValue(data, keys: ["limiteCredito", "creditLimit"])
+            cliente.creditoUsado = doubleValue(data, keys: ["creditoUsado", "creditUsed"])
+            cliente.activo = boolValue(data, keys: ["activo", "active"], default: true)
+        }
+
+        if context.hasChanges {
+            try context.save()
+        }
+    }
+
+    private func fetchOrCreateCliente(documentId: String) throws -> ClienteEntity {
+        let request: NSFetchRequest<ClienteEntity> = ClienteEntity.fetchRequest()
+        request.fetchLimit = 1
+        request.predicate = NSPredicate(format: "id == %@", stableUUID(from: documentId) as CVarArg)
+
+        if let existing = try context.fetch(request).first {
+            return existing
+        }
+
+        let cliente = ClienteEntity(context: context)
+        cliente.id = stableUUID(from: documentId)
+        return cliente
+    }
+
+    private func stringValue(_ data: [String: Any], keys: [String]) -> String? {
+        for key in keys {
+            if let value = data[key] as? String, value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
+                return value
+            }
+        }
+        return nil
+    }
+
+    private func doubleValue(_ data: [String: Any], keys: [String]) -> Double {
+        for key in keys {
+            if let value = data[key] as? Double { return value }
+            if let value = data[key] as? Int { return Double(value) }
+            if let value = data[key] as? Int64 { return Double(value) }
+            if let value = data[key] as? NSNumber { return value.doubleValue }
+            if let value = data[key] as? String, let parsed = Double(value.replacingOccurrences(of: ",", with: ".")) {
+                return parsed
+            }
+        }
+        return 0
+    }
+
+    private func boolValue(_ data: [String: Any], keys: [String], default defaultValue: Bool) -> Bool {
+        for key in keys {
+            if let value = data[key] as? Bool { return value }
+            if let value = data[key] as? NSNumber { return value.boolValue }
+            if let value = data[key] as? String {
+                switch value.lowercased() {
+                case "true", "1", "si", "sí":
+                    return true
+                case "false", "0", "no":
+                    return false
+                default:
+                    break
+                }
+            }
+        }
+        return defaultValue
+    }
+
+    private func stableUUID(from identifier: String) -> UUID {
+        if let uuid = UUID(uuidString: identifier) {
+            return uuid
+        }
+
+        var hasher = Hasher()
+        hasher.combine(identifier)
+        let hash = UInt64(bitPattern: Int64(hasher.finalize()))
+        let upper = String(format: "%08X", UInt32((hash >> 32) & 0xffffffff))
+        let lower = String(format: "%08X", UInt32(hash & 0xffffffff))
+        let composed = "\(upper)-0000-4000-8000-\(lower)\(lower.prefix(4))"
+        return UUID(uuidString: composed) ?? UUID()
+    }
+    #endif
 
     private func applyFilters() {
         filteredClientes = clientes.filter { cliente in
@@ -257,6 +396,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     @IBAction private func btnAgregarClienteTapped(_ sender: UIButton) {
+        guard RoleAccessControl.isAdmin else { return }
         performSegue(withIdentifier: "mostrarModalCliente", sender: sender)
     }
 

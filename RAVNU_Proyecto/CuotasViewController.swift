@@ -54,6 +54,7 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
         super.viewDidLoad()
         configureTextBehavior()
         configureTableView()
+        configureRoleAccess()
         loadCuotas()
         updateFilterButtons()
         showAnalitica()
@@ -95,6 +96,16 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
             button?.titleLabel?.adjustsFontSizeToFitWidth = true
             button?.titleLabel?.minimumScaleFactor = 0.72
         }
+    }
+
+    private func configureRoleAccess() {
+        let shouldHideCreateActions = RoleAccessControl.isAdmin == false
+        RoleAccessControl.configureButtons(
+            in: view,
+            target: self,
+            selectors: [#selector(btnPagarTapped(_:))],
+            hidden: shouldHideCreateActions
+        )
     }
 
     private func loadCuotas() {
@@ -258,6 +269,7 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
     }
 
     @IBAction private func btnPagarTapped(_ sender: UIButton) {
+        guard RoleAccessControl.isAdmin else { return }
         performSegue(withIdentifier: "mostrarModalCuota", sender: nil)
     }
 

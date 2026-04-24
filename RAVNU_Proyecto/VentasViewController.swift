@@ -54,6 +54,7 @@ class VentasViewController: UIViewController, UITableViewDelegate, UITableViewDa
         tblListaVentas.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 24, right: 0)
         tblListaVentas.showsVerticalScrollIndicator = false
         configureSummaryLabels()
+        configureRoleAccess()
         loadCatalogData()
         loadVentas()
         showResumen()
@@ -74,7 +75,18 @@ class VentasViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
 
     @IBAction func btnNuevaVentaTapped(_ sender: UIButton) {
+        guard RoleAccessControl.isAdmin else { return }
         performSegue(withIdentifier: "mostrarModalVenta", sender: sender)
+    }
+
+    private func configureRoleAccess() {
+        let shouldHideCreateActions = RoleAccessControl.isAdmin == false
+        RoleAccessControl.configureButtons(
+            in: view,
+            target: self,
+            selectors: [#selector(btnNuevaVentaTapped(_:))],
+            hidden: shouldHideCreateActions
+        )
     }
 
     private func showResumen() {

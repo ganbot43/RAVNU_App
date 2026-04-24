@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24506" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="3vH-Ti-HC8">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24765" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="3vH-Ti-HC8">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24504"/>
-        <capability name="Image references" minToolsVersion="12.0"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24743"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
-        <capability name="UIMenu" message="Requires Xcode 11 or later." minToolsVersion="11.0" requiredIntegratedClassName="UICommandDiff"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -24,8 +22,8 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="USUARIO" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xH6-aa-lOx">
-                                <rect key="frame" x="16" y="424.33333333333331" width="69.333333333333329" height="18"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="CORREO" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xH6-aa-lOx">
+                                <rect key="frame" x="15.999999999999996" y="424.33333333333331" width="63.666666666666657" height="18"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                 <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
@@ -52,23 +50,6 @@
                                 <color key="textColor" systemColor="systemGrayColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" showsMenuAsPrimaryAction="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qv1-f1-2H0">
-                                <rect key="frame" x="30" y="628.33333333333337" width="333" height="35"/>
-                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <menu key="menu" id="9y0-SH-Qj2">
-                                    <children>
-                                        <command title="Item 1" id="5hY-Ha-CRO"/>
-                                        <command title="Item 2" id="qOk-4b-DPd"/>
-                                    </children>
-                                </menu>
-                                <state key="normal" title="Seleccionar tipo de Usuario">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <imageReference key="image" image="chevron.down.circle.fill" catalog="system" symbolScale="small" variableValue="0.80000000000000004"/>
-                                </state>
-                                <buttonConfiguration key="configuration" style="tinted" title="Seleccionar tipo de Usuario">
-                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                </buttonConfiguration>
-                            </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Vk4-oy-abN">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="307.33333333333331"/>
                                 <subviews>
@@ -118,7 +99,6 @@
                         <constraints>
                             <constraint firstItem="mXa-wp-N36" firstAttribute="top" secondItem="fXM-OQ-IED" secondAttribute="bottom" constant="18" id="05x-Ja-8ow"/>
                             <constraint firstItem="Vk4-oy-abN" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="0GT-3f-l4R"/>
-                            <constraint firstItem="qv1-f1-2H0" firstAttribute="top" secondItem="Gb9-wR-CWk" secondAttribute="bottom" constant="14" id="1QP-hk-lkq"/>
                             <constraint firstItem="Vk4-oy-abN" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="4V2-XX-CVY"/>
                             <constraint firstItem="mXa-wp-N36" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="30" id="4dI-SG-vJw"/>
                             <constraint firstItem="Vk4-oy-abN" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailing" id="8w8-Vv-uYw"/>
@@ -131,27 +111,23 @@
                             <constraint firstItem="j9a-8z-tEl" firstAttribute="top" secondItem="YPh-qD-6VS" secondAttribute="bottom" constant="8" id="IHL-8E-WnF"/>
                             <constraint firstItem="j9a-8z-tEl" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="IXd-0N-zho"/>
                             <constraint firstItem="Gb9-wR-CWk" firstAttribute="top" secondItem="mXa-wp-N36" secondAttribute="bottom" constant="17" id="Jes-LX-3qy"/>
-                            <constraint firstItem="qv1-f1-2H0" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="30" id="Kb5-iX-CYJ"/>
                             <constraint firstItem="xH6-aa-lOx" firstAttribute="top" secondItem="j9a-8z-tEl" secondAttribute="bottom" constant="35" id="Mp1-Kr-22I"/>
                             <constraint firstItem="Tqt-3b-GoD" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="30" id="Nlj-8Y-lSQ"/>
                             <constraint firstItem="fXM-OQ-IED" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="QYI-uA-BG2"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="j9a-8z-tEl" secondAttribute="trailing" constant="16" id="Qe4-xf-YiP"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Tqt-3b-GoD" secondAttribute="trailing" constant="30" id="Rnn-rZ-b7B"/>
                             <constraint firstItem="Gb9-wR-CWk" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="30" id="Vcf-6L-SQ9"/>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="qv1-f1-2H0" secondAttribute="trailing" constant="30" id="W8E-8G-mfL"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Gb9-wR-CWk" secondAttribute="trailing" constant="30" id="XW8-L1-Mjd"/>
                             <constraint firstItem="xH6-aa-lOx" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="Y0m-y0-rS6"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="xH6-aa-lOx" secondAttribute="trailing" constant="16" id="YsE-wl-ug3"/>
                             <constraint firstItem="Tqt-3b-GoD" firstAttribute="height" constant="34" id="ZQb-6N-B7V"/>
                             <constraint firstItem="mXa-wp-N36" firstAttribute="height" constant="34" id="dR9-Qh-j90"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="fXM-OQ-IED" secondAttribute="trailing" constant="16" id="fLh-Z4-Ga7"/>
-                            <constraint firstItem="qv1-f1-2H0" firstAttribute="height" constant="35" id="gKs-aU-AGd"/>
                             <constraint firstItem="Gb9-wR-CWk" firstAttribute="height" constant="35" id="lHl-OP-Lrr"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="UFT-L5-dz9"/>
                     <connections>
-                        <outlet property="btnSelectorRol" destination="qv1-f1-2H0" id="6gd-S3-k9y"/>
                         <outlet property="txtContraseña" destination="mXa-wp-N36" id="cbz-gm-zdc"/>
                         <outlet property="txtUsuario" destination="Tqt-3b-GoD" id="ERM-eP-tg1"/>
                         <segue destination="x09-qe-Lad" kind="presentation" identifier="verAdmin" modalPresentationStyle="fullScreen" id="WbL-fd-AvX"/>
@@ -2020,12 +1996,12 @@
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
                                                         <color key="textColor" systemColor="systemGrayColor"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="⛽ Almacén -40L" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l4A-I8-Mj0">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="⛽ Almacén -40L" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l4A-I8-Mj0">
                                                         <rect key="frame" x="16" y="37.666666666666742" width="121" height="17"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                                         <color key="textColor" red="0.93725490196078431" green="0.26666666666666666" blue="0.26666666666666666" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     </label>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" ambiguous="YES" text="💰 Tesorería +S/248" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y9x-TP-Vs9">
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="💰 Tesorería +S/248" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y9x-TP-Vs9">
                                                         <rect key="frame" x="155" y="37.666666666666742" width="142.33333333333337" height="17"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
                                                         <color key="textColor" red="0.22745098039215686" green="0.5607843137254902" blue="0.32941176470588235" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -5387,28 +5363,27 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="alm-tab-rel-001"/>
+        <segue reference="6hO-vM-N6Y"/>
     </inferredMetricsTieBreakers>
     <resources>
         <image name="app" width="512" height="512"/>
         <image name="cart" catalog="system" width="128" height="102"/>
-        <image name="chevron.down.circle.fill" catalog="system" width="128" height="123"/>
         <image name="ellipsis" catalog="system" width="128" height="37"/>
         <image name="house" catalog="system" width="128" height="104"/>
         <image name="magnifyingglass" catalog="system" width="128" height="117"/>
         <image name="person.2.fill" catalog="system" width="128" height="86"/>
         <image name="shippingbox" catalog="system" width="128" height="123"/>
         <systemColor name="systemBlueColor">
-            <color red="0.0" green="0.53333333333333333" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.0" green="0.53333333329999999" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGray5Color">
-            <color red="0.89803921568627454" green="0.89803921568627454" blue="0.91764705882352937" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.8980392157" green="0.8980392157" blue="0.91764705879999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemGrayColor">
-            <color red="0.55686274509803924" green="0.55686274509803924" blue="0.57647058823529407" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="0.5568627451" green="0.5568627451" blue="0.57647058819999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
         <systemColor name="systemRedColor">
-            <color red="1" green="0.2196078431372549" blue="0.23529411764705882" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+            <color red="1" green="0.21960784310000001" blue="0.23529411759999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>

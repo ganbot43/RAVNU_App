@@ -1,5 +1,8 @@
 import CoreData
 import UIKit
+#if canImport(FirebaseFirestore)
+import FirebaseFirestore
+#endif
 
 protocol ModalAlmacenViewControllerDelegate: AnyObject {
     func modalAlmacenViewControllerDidSave(_ controller: ModalAlmacenViewController)
@@ -13,6 +16,9 @@ final class ModalAlmacenViewController: UIViewController {
     @IBOutlet private weak var btnGuardar: UIButton?
 
     weak var delegate: ModalAlmacenViewControllerDelegate?
+    #if canImport(FirebaseFirestore)
+    private let firestore = Firestore.firestore()
+    #endif
 
     private var context: NSManagedObjectContext {
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -38,15 +44,57 @@ final class ModalAlmacenViewController: UIViewController {
         return nil
     }
 
-    private func saveAlmacen() throws {
+    private func payload(for almacenId: UUID) -> [String: Any] {
+        [
+            "id": almacenId.uuidString,
+            "nombre": txtNombre?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
+            "direccion": txtDireccion?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
+            "responsable": txtResponsable?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
+            "activo": true,
+            "createdAt": Timestamp(date: Date())
+        ]
+    }
+
+    private func saveAlmacenToLocal(id: UUID) throws {
         let almacen = AlmacenEntity(context: context)
-        almacen.id = UUID()
+        almacen.id = id
         almacen.nombre = txtNombre?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
         almacen.direccion = txtDireccion?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
         almacen.responsable = txtResponsable?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
         almacen.activo = true
         createInitialStocks(for: almacen)
         try context.save()
+    }
+
+    private func saveAlmacen() throws {
+        let almacenId = UUID()
+
+        #if canImport(FirebaseFirestore)
+        if FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled {
+            let warehouseRef = firestore.collection("warehouses").document(almacenId.uuidString)
+            let batch = firestore.batch()
+            batch.setData(payload(for: almacenId), forDocument: warehouseRef, merge: true)
+
+            let request: NSFetchRequest<ProductoEntity> = ProductoEntity.fetchRequest()
+            let productos = (try? context.fetch(request)) ?? []
+            for producto in productos {
+                let stockId = UUID().uuidString
+                let stockRef = firestore.collection("warehouse_stock").document(stockId)
+                batch.setData([
+                    "id": stockId,
+                    "almacenId": almacenId.uuidString,
+                    "productoId": producto.id?.uuidString ?? UUID().uuidString,
+                    "stockActual": 0.0,
+                    "stockMinimo": producto.stockMinimo,
+                    "capacidadTotal": producto.capacidadTotal,
+                    "unidadMedida": producto.unidadMedida ?? "L"
+                ], forDocument: stockRef, merge: true)
+            }
+            batch.commit()
+        }
+        #endif
+
+        try saveAlmacenToLocal(id: almacenId)
     }
 
     private func createInitialStocks(for almacen: AlmacenEntity) {
