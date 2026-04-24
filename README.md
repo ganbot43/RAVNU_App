@@ -796,5 +796,5 @@ El prototipo incluye 4 cuentas demo — una por cada rol — y es completamente 
 
 ---
 
-*RAVNU · App nativa iOS · UIKit + Storyboard + Firebase*
+*RAVNU · App nativa iOS · UIKit + Storyboard + SwiftUI + Firebase*
 
