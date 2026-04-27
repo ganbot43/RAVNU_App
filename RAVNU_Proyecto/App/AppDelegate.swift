@@ -126,6 +126,10 @@ final class AppSession {
     private enum Keys {
         static let usuario = "usuarioLogueado"
         static let rol = "rolLogueado"
+        static let userId = "userDocumentId"
+        static let authUid = "authUid"
+        static let email = "userEmail"
+        static let adminAPIAuthToken = "adminAPIAuthToken"
         static let remoteEnabled = "remoteDataEnabled"
         static let lastSync = "remoteLastSyncDate"
     }
@@ -144,6 +148,26 @@ final class AppSession {
         set { defaults.set(newValue, forKey: Keys.rol) }
     }
 
+    var userDocumentId: String? {
+        get { defaults.string(forKey: Keys.userId) }
+        set { defaults.set(newValue, forKey: Keys.userId) }
+    }
+
+    var authUid: String? {
+        get { defaults.string(forKey: Keys.authUid) }
+        set { defaults.set(newValue, forKey: Keys.authUid) }
+    }
+
+    var userEmail: String? {
+        get { defaults.string(forKey: Keys.email) }
+        set { defaults.set(newValue, forKey: Keys.email) }
+    }
+
+    var adminAPIAuthToken: String? {
+        get { defaults.string(forKey: Keys.adminAPIAuthToken) }
+        set { defaults.set(newValue, forKey: Keys.adminAPIAuthToken) }
+    }
+
     var remoteDataEnabled: Bool {
         get { defaults.object(forKey: Keys.remoteEnabled) as? Bool ?? true }
         set { defaults.set(newValue, forKey: Keys.remoteEnabled) }
@@ -157,6 +181,10 @@ final class AppSession {
     func clear() {
         defaults.removeObject(forKey: Keys.usuario)
         defaults.removeObject(forKey: Keys.rol)
+        defaults.removeObject(forKey: Keys.userId)
+        defaults.removeObject(forKey: Keys.authUid)
+        defaults.removeObject(forKey: Keys.email)
+        defaults.removeObject(forKey: Keys.adminAPIAuthToken)
     }
 }
 
@@ -824,10 +852,17 @@ enum RoleAccessControl {
     static var canCreateSales: Bool { can(.createSales) }
     static var canManageCollections: Bool { can(.manageCollections) }
     static var canManageCustomers: Bool { can(.manageCustomers) }
+    static var canCreateCustomers: Bool { currentRole == .admin || currentRole == .supervisor }
     static var canManageWarehouse: Bool { can(.manageWarehouse) }
     static var canManagePurchases: Bool { can(.managePurchases) }
     static var canViewTreasury: Bool { can(.viewTreasury) }
     static var canAddTreasuryAdjustments: Bool { can(.addTreasuryAdjustments) }
+    static var canRequestCustomerCreation: Bool { currentRole == .supervisor }
+    static var canRequestProductCreation: Bool { currentRole == .almacen }
+    static var canRequestWarehouseCreation: Bool { currentRole == .almacen }
+    static var canRequestSupplierCreation: Bool { currentRole == .almacen }
+    static var canRequestPurchaseOrders: Bool { currentRole == .almacen }
+    static var canRequestSaleChanges: Bool { currentRole == .cajero || currentRole == .supervisor }
 
     static func can(_ permission: AppPermission) -> Bool {
         switch (currentRole, permission) {

@@ -191,6 +191,14 @@ class LoginViewController: UIViewController {
         let datos = "\(nombreMostrado) - \(rol)"
         AppSession.shared.usuarioLogueado = nombreMostrado
         AppSession.shared.rolLogueado = rol
+        AppSession.shared.userDocumentId = documento.documentID
+        #if canImport(FirebaseAuth)
+        AppSession.shared.authUid = Auth.auth().currentUser?.uid
+        AppSession.shared.userEmail = Auth.auth().currentUser?.email ?? (data["email"] as? String)
+        #else
+        AppSession.shared.authUid = nil
+        AppSession.shared.userEmail = data["email"] as? String
+        #endif
         performSegue(withIdentifier: "verCajero", sender: datos)
     }
     #else

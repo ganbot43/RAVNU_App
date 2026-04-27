@@ -24,6 +24,10 @@ final class ModalAlmacenViewController: UIViewController {
     private var responsablesDisponibles: [String] = []
     private let selectorResponsable = UIPickerView()
 
+    private var puedeGestionarDirecto: Bool {
+        RoleAccessControl.isAdmin
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         btnGuardar?.layer.cornerRadius = 16
@@ -127,6 +131,73 @@ final class ModalAlmacenViewController: UIViewController {
         present(alert, animated: true)
     }
 
+    private func solicitarMotivoYEnviar() {
+        let alert = UIAlertController(
+            title: "Enviar solicitud",
+            message: "Se enviará una solicitud al panel administrativo para crear el almacén.",
+            preferredStyle: .alert
+        )
+        alert.addTextField { textField in
+            textField.placeholder = "Motivo de la solicitud"
+        }
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+            guard let self else { return }
+            let motivo = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard motivo.isEmpty == false else {
+                self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
+                return
+            }
+            Task {
+                do {
+                    try await self.enviarSolicitudAlmacen(motivo: motivo)
+                    await MainActor.run {
+                        self.showAlertAndDismiss(
+                            title: "Solicitud enviada",
+                            message: "La solicitud fue enviada al panel administrativo."
+                        )
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.showAlert(title: "Error", message: error.localizedDescription)
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    private func enviarSolicitudAlmacen(motivo: String) async throws {
+        let requester = try AdminRequestService.currentRequester()
+        let payload = AdminRequestPayload(
+            requestId: UUID().uuidString,
+            type: "create_warehouse",
+            module: "almacen",
+            status: "pending",
+            requestedBy: requester,
+            target: nil,
+            payload: [
+                "nombre": .string(txtNombre?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""),
+                "direccion": .string(txtDireccion?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""),
+                "responsable": .string(txtResponsable?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "")
+            ],
+            reason: motivo,
+            createdAt: ISO8601DateFormatter().string(from: Date()),
+            reviewedAt: nil,
+            reviewedBy: nil,
+            rejectionReason: nil
+        )
+        try await AdminRequestService.submit(payload)
+    }
+
+    private func showAlertAndDismiss(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Aceptar", style: .default) { [weak self] _ in
+            self?.dismiss(animated: true)
+        })
+        present(alert, animated: true)
+    }
+
     private func configurarSelectorResponsable() {
         selectorResponsable.dataSource = self
         selectorResponsable.delegate = self
@@ -180,17 +251,28 @@ final class ModalAlmacenViewController: UIViewController {
     }
 
     @IBAction private func btnGuardarTapped(_ sender: UIButton) {
+        guard RoleAccessControl.canManageWarehouse else {
+            showAlert(title: "Permiso denegado", message: RoleAccessControl.denialMessage(for: .manageWarehouse))
+            return
+        }
+
         if let message = validateInputs() {
             showAlert(title: "Validación", message: message)
             return
         }
 
-        do {
-            try saveAlmacen()
-            delegate?.modalAlmacenViewControllerDidSave(self)
-            dismiss(animated: true)
-        } catch {
-            showAlert(title: "Error", message: "No se pudo guardar el almacén.")
+        if puedeGestionarDirecto {
+            do {
+                try saveAlmacen()
+                delegate?.modalAlmacenViewControllerDidSave(self)
+                dismiss(animated: true)
+            } catch {
+                showAlert(title: "Error", message: "No se pudo guardar el almacén.")
+            }
+        } else if RoleAccessControl.canRequestWarehouseCreation {
+            solicitarMotivoYEnviar()
+        } else {
+            showAlert(title: "Permiso denegado", message: "Tu rol no puede solicitar nuevos almacenes.")
         }
     }
 }

@@ -18,7 +18,6 @@ struct LoginHybridView: View {
                             titleSection
                             credentialsSection
                             loginButton
-                            footerNote
                         }
                         .padding(.horizontal, 16)
                         .padding(.top, 26)
@@ -101,12 +100,6 @@ struct LoginHybridView: View {
         }
         .buttonStyle(.plain)
         .padding(.top, 8)
-    }
-
-    private var footerNote: some View {
-        Text(usaFirebase ? "El rol se obtiene automáticamente desde Firestore." : "La app requiere Firebase configurado para iniciar sesión.")
-            .font(.system(size: 13, weight: .regular))
-            .foregroundStyle(Color(.systemGray))
     }
 
     private func fieldLabel(_ text: String) -> some View {

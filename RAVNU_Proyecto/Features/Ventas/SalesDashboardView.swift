@@ -41,7 +41,8 @@ struct DatosDashboardVentas {
     }
 
     struct FilaVenta: Identifiable {
-        let id = UUID()
+        let id: String
+        let entityId: String
         let clientName: String
         let productInfo: String
         let total: String
@@ -53,6 +54,7 @@ struct DatosDashboardVentas {
     let title: String
     let subtitle: String
     let canCreateSale: Bool
+    let canRequestSaleChanges: Bool
     let metricas: [Metrica]
     let barrasSemanales: [BarraSemanal]
     let barrasTendencia: [BarraTendencia]
@@ -66,6 +68,8 @@ struct DatosDashboardVentas {
 struct SalesDashboardView: View {
     let data: DatosDashboardVentas
     let onNewSale: () -> Void
+    let onRequestEditSale: (DatosDashboardVentas.FilaVenta) -> Void
+    let onRequestCancelSale: (DatosDashboardVentas.FilaVenta) -> Void
 
     @State private var pestanaActual: Tab = .summary
 
@@ -173,7 +177,16 @@ struct SalesDashboardView: View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 12) {
                 ForEach(data.filasVenta) { sale in
-                    SaleRowCardView(sale: sale)
+                    SaleRowCardView(
+                        sale: sale,
+                        showsAdminRequestMenu: data.canRequestSaleChanges,
+                        onRequestEditSale: {
+                            onRequestEditSale(sale)
+                        },
+                        onRequestCancelSale: {
+                            onRequestCancelSale(sale)
+                        }
+                    )
                 }
                 if data.filasVenta.isEmpty {
                     Text("Sin ventas registradas")
@@ -395,6 +408,9 @@ struct SalesDashboardView: View {
 
 private struct SaleRowCardView: View {
     let sale: DatosDashboardVentas.FilaVenta
+    let showsAdminRequestMenu: Bool
+    let onRequestEditSale: () -> Void
+    let onRequestCancelSale: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -415,10 +431,22 @@ private struct SaleRowCardView: View {
                         .foregroundStyle(Color(hex: "D1D5DB"))
                 }
                 Spacer()
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(sale.total)
-                        .font(.system(size: 16, weight: .black))
-                        .foregroundStyle(Color.black)
+                VStack(alignment: .trailing, spacing: 8) {
+                    HStack(spacing: 8) {
+                        if showsAdminRequestMenu {
+                            Menu {
+                                Button("Solicitar edición", action: onRequestEditSale)
+                                Button("Solicitar anulación", role: .destructive, action: onRequestCancelSale)
+                            } label: {
+                                Image(systemName: "ellipsis.circle")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundStyle(Color(uiColor: .systemGray))
+                            }
+                        }
+                        Text(sale.total)
+                            .font(.system(size: 16, weight: .black))
+                            .foregroundStyle(Color.black)
+                    }
                     Text(sale.paymentType)
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(Color.white)

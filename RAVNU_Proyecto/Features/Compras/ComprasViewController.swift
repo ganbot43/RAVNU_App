@@ -87,6 +87,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     #endif
 
     private let contexto = AppCoreData.viewContext
+    private lazy var isoFormatter = ISO8601DateFormatter()
 
     private let formateadorMoneda: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -739,6 +740,10 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     private func presentAddProviderFlow() {
+        guard RoleAccessControl.canManagePurchases else {
+            presentPermissionDeniedAlert(message: RoleAccessControl.denialMessage(for: .managePurchases))
+            return
+        }
         let controller = UIHostingController(
             rootView: AddSupplierSheetView(
                 onCancel: { [weak self] in self?.dismiss(animated: true) },
@@ -766,6 +771,15 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         existingRequest.predicate = NSPredicate(format: "nombre =[c] %@", trimmedName)
         if ((try? contexto.fetch(existingRequest)) ?? []).isEmpty == false {
             showAlert(title: "Proveedor", message: "Ya existe un proveedor con ese nombre.")
+            return
+        }
+
+        if RoleAccessControl.isAdmin == false {
+            guard RoleAccessControl.canRequestSupplierCreation else {
+                showAlert(title: "Permiso denegado", message: "Tu rol no puede solicitar nuevos proveedores.")
+                return
+            }
+            solicitarMotivoProveedor(draft)
             return
         }
 
@@ -812,6 +826,15 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
 
         guard draft.precioUnitario > 0 else {
             showAlert(title: "Compras", message: "Ingresa un precio válido.")
+            return
+        }
+
+        if RoleAccessControl.isAdmin == false {
+            guard RoleAccessControl.canRequestPurchaseOrders else {
+                showAlert(title: "Permiso denegado", message: "Tu rol no puede solicitar órdenes de compra.")
+                return
+            }
+            solicitarMotivoOrdenCompra(draft)
             return
         }
 
@@ -934,31 +957,241 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             preferredStyle: .actionSheet
         )
 
-        switch status {
-        case .registrada:
-            alert.addAction(UIAlertAction(title: "Aprobar", style: .default) { [weak self] _ in
-                self?.updateOrderStatus(orden, to: .aprobada)
-            })
-        case .aprobada:
-            alert.addAction(UIAlertAction(title: "Marcar pagada", style: .default) { [weak self] _ in
-                self?.updateOrderStatus(orden, to: .pagada)
-            })
-        case .pagada:
-            alert.addAction(UIAlertAction(title: "Ingresar a almacén", style: .default) { [weak self] _ in
-                self?.receivePurchaseOrder(orden)
-            })
-        case .recibida, .cancelada:
-            break
-        }
+        if RoleAccessControl.isAdmin {
+            switch status {
+            case .registrada:
+                alert.addAction(UIAlertAction(title: "Aprobar", style: .default) { [weak self] _ in
+                    self?.updateOrderStatus(orden, to: .aprobada)
+                })
+            case .aprobada:
+                alert.addAction(UIAlertAction(title: "Marcar pagada", style: .default) { [weak self] _ in
+                    self?.updateOrderStatus(orden, to: .pagada)
+                })
+            case .pagada:
+                alert.addAction(UIAlertAction(title: "Ingresar a almacén", style: .default) { [weak self] _ in
+                    self?.receivePurchaseOrder(orden)
+                })
+            case .recibida, .cancelada:
+                break
+            }
 
-        if status != .recibida && status != .cancelada {
-            alert.addAction(UIAlertAction(title: "Cancelar", style: .destructive) { [weak self] _ in
-                self?.updateOrderStatus(orden, to: .cancelada)
-            })
+            if status != .recibida && status != .cancelada {
+                alert.addAction(UIAlertAction(title: "Cancelar", style: .destructive) { [weak self] _ in
+                    self?.updateOrderStatus(orden, to: .cancelada)
+                })
+            }
+        } else if RoleAccessControl.canRequestPurchaseOrders {
+            switch status {
+            case .registrada:
+                alert.addAction(UIAlertAction(title: "Solicitar aprobación", style: .default) { [weak self] _ in
+                    self?.solicitarCambioEstadoOrden(orden, requestedStatus: .aprobada)
+                })
+            case .aprobada:
+                alert.addAction(UIAlertAction(title: "Solicitar marcar pagada", style: .default) { [weak self] _ in
+                    self?.solicitarCambioEstadoOrden(orden, requestedStatus: .pagada)
+                })
+            case .pagada:
+                alert.addAction(UIAlertAction(title: "Solicitar ingreso a almacén", style: .default) { [weak self] _ in
+                    self?.solicitarCambioEstadoOrden(orden, requestedStatus: .recibida)
+                })
+            case .recibida, .cancelada:
+                break
+            }
+
+            if status != .recibida && status != .cancelada {
+                alert.addAction(UIAlertAction(title: "Solicitar cancelación", style: .destructive) { [weak self] _ in
+                    self?.solicitarCambioEstadoOrden(orden, requestedStatus: .cancelada)
+                })
+            }
         }
 
         alert.addAction(UIAlertAction(title: "Cerrar", style: .cancel))
         present(alert, animated: true)
+    }
+
+    private func solicitarMotivoProveedor(_ draft: AddSupplierDraft) {
+        let alert = UIAlertController(
+            title: "Enviar solicitud",
+            message: "Se enviará una solicitud al panel administrativo para crear el proveedor.",
+            preferredStyle: .alert
+        )
+        alert.addTextField { $0.placeholder = "Motivo de la solicitud" }
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+            guard let self else { return }
+            let reason = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard reason.isEmpty == false else {
+                self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
+                return
+            }
+            Task {
+                do {
+                    try await self.enviarSolicitudProveedor(draft: draft, reason: reason)
+                    await MainActor.run {
+                        self.showAlert(title: "Solicitud enviada", message: "La solicitud fue enviada al panel administrativo.")
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.showAlert(title: "Error", message: error.localizedDescription)
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    private func solicitarMotivoOrdenCompra(_ draft: BorradorOrdenCompra) {
+        let alert = UIAlertController(
+            title: "Enviar solicitud",
+            message: "Se enviará una solicitud al panel administrativo para registrar la orden de compra.",
+            preferredStyle: .alert
+        )
+        alert.addTextField { $0.placeholder = "Motivo de la solicitud" }
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+            guard let self else { return }
+            let reason = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard reason.isEmpty == false else {
+                self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
+                return
+            }
+            Task {
+                do {
+                    try await self.enviarSolicitudOrdenCompra(draft: draft, reason: reason)
+                    await MainActor.run {
+                        self.showAlert(title: "Solicitud enviada", message: "La solicitud fue enviada al panel administrativo.")
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.showAlert(title: "Error", message: error.localizedDescription)
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    private func solicitarCambioEstadoOrden(_ orden: OrdenCompraEntity, requestedStatus: EstadoOrdenCompra) {
+        let alert = UIAlertController(
+            title: "Enviar solicitud",
+            message: "Se enviará una solicitud al panel administrativo para cambiar el estado de la orden a \(requestedStatus.title.lowercased()).",
+            preferredStyle: .alert
+        )
+        alert.addTextField { $0.placeholder = "Motivo de la solicitud" }
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+            guard let self else { return }
+            let reason = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard reason.isEmpty == false else {
+                self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
+                return
+            }
+            Task {
+                do {
+                    try await self.enviarSolicitudCambioEstadoOrden(orden: orden, requestedStatus: requestedStatus, reason: reason)
+                    await MainActor.run {
+                        self.showAlert(title: "Solicitud enviada", message: "La solicitud fue enviada al panel administrativo.")
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.showAlert(title: "Error", message: error.localizedDescription)
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    private func enviarSolicitudProveedor(draft: AddSupplierDraft, reason: String) async throws {
+        let requester = try AdminRequestService.currentRequester()
+        let request = AdminRequestPayload(
+            requestId: UUID().uuidString,
+            type: "create_supplier",
+            module: "compras",
+            status: "pending",
+            requestedBy: requester,
+            target: nil,
+            payload: [
+                "name": .string(draft.name.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "category": .string(draft.category),
+                "phone": .string(draft.phone.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "email": .string(draft.email.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "address": .string(draft.address.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "rating": .number(Double(draft.rating)),
+                "isPreferred": .bool(draft.isPreferred),
+                "isVerified": .bool(draft.isVerified)
+            ],
+            reason: reason,
+            createdAt: isoFormatter.string(from: Date()),
+            reviewedAt: nil,
+            reviewedBy: nil,
+            rejectionReason: nil
+        )
+        try await AdminRequestService.submit(request)
+    }
+
+    private func enviarSolicitudOrdenCompra(draft: BorradorOrdenCompra, reason: String) async throws {
+        let requester = try AdminRequestService.currentRequester()
+        let proveedor = proveedores[draft.indiceProveedor]
+        let producto = productos[draft.indiceProducto]
+        let almacen = almacenes[draft.indiceAlmacen]
+        let request = AdminRequestPayload(
+            requestId: UUID().uuidString,
+            type: "create_purchase_order",
+            module: "compras",
+            status: "pending",
+            requestedBy: requester,
+            target: nil,
+            payload: [
+                "supplierId": .string(proveedor.id?.uuidString ?? ""),
+                "supplierName": .string(proveedor.nombre ?? "Proveedor"),
+                "productId": .string(producto.id?.uuidString ?? ""),
+                "productName": .string(producto.nombre ?? "Producto"),
+                "warehouseId": .string(almacen.id?.uuidString ?? ""),
+                "warehouseName": .string(almacen.nombre ?? "Almacén"),
+                "cantidadLitros": .number(draft.cantidad),
+                "precioUnitario": .number(draft.precioUnitario),
+                "total": .number(draft.cantidad * draft.precioUnitario),
+                "notes": .string(draft.notas.trimmingCharacters(in: .whitespacesAndNewlines))
+            ],
+            reason: reason,
+            createdAt: isoFormatter.string(from: Date()),
+            reviewedAt: nil,
+            reviewedBy: nil,
+            rejectionReason: nil
+        )
+        try await AdminRequestService.submit(request)
+    }
+
+    private func enviarSolicitudCambioEstadoOrden(
+        orden: OrdenCompraEntity,
+        requestedStatus: EstadoOrdenCompra,
+        reason: String
+    ) async throws {
+        let requester = try AdminRequestService.currentRequester()
+        let request = AdminRequestPayload(
+            requestId: UUID().uuidString,
+            type: "update_purchase_order_status",
+            module: "compras",
+            status: "pending",
+            requestedBy: requester,
+            target: .init(entity: "purchase_order", entityId: orden.id?.uuidString ?? ""),
+            payload: [
+                "currentStatus": .string(orden.estado ?? EstadoOrdenCompra.registrada.rawValue),
+                "requestedStatus": .string(requestedStatus.rawValue),
+                "supplierName": .string(orden.proveedor?.nombre ?? "Proveedor"),
+                "productName": .string(orden.producto?.nombre ?? "Producto"),
+                "warehouseName": .string(orden.almacen?.nombre ?? "Almacén"),
+                "cantidadLitros": .number(orden.cantidadLitros),
+                "total": .number(orden.total)
+            ],
+            reason: reason,
+            createdAt: isoFormatter.string(from: Date()),
+            reviewedAt: nil,
+            reviewedBy: nil,
+            rejectionReason: nil
+        )
+        try await AdminRequestService.submit(request)
     }
 
     private func updateOrderStatus(_ orden: OrdenCompraEntity, to newStatus: EstadoOrdenCompra) {

@@ -495,7 +495,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     private func configurarAccesoPorRol() {
-        navigationItem.rightBarButtonItem?.customView?.isHidden = RoleAccessControl.canManageCustomers == false
+        navigationItem.rightBarButtonItem?.customView?.isHidden = RoleAccessControl.canCreateCustomers == false
     }
 
     private func configurarBuscador() {
@@ -1103,7 +1103,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     @IBAction private func btnAgregarClienteTapped(_ sender: Any) {
-        guard RoleAccessControl.canManageCustomers else {
+        guard RoleAccessControl.canCreateCustomers else {
             presentPermissionDeniedAlert(message: RoleAccessControl.denialMessage(for: .manageCustomers))
             return
         }

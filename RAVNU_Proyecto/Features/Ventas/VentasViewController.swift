@@ -36,6 +36,7 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
     private var clientes: [ClienteEntity] = []
     private var productos: [ProductoEntity] = []
     private var hostingController: UIHostingController<SalesDashboardView>?
+    private lazy var isoFormatter = ISO8601DateFormatter()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -159,6 +160,12 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
             data: crearDatosDashboard(),
             onNewSale: { [weak self] in
                 self?.presentNewSaleFlow()
+            },
+            onRequestEditSale: { [weak self] sale in
+                self?.solicitarEdicionVenta(sale)
+            },
+            onRequestCancelSale: { [weak self] sale in
+                self?.solicitarAnulacionVenta(sale)
             }
         )
     }
@@ -184,7 +191,10 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
             DatosDashboardVentas.FilaDistribucion(colorHex: "3B82F6", label: "Crédito", value: formatearMoneda(creditoTotal))
         ]
         let salesRows = ventas.prefix(20).map { sale in
-            DatosDashboardVentas.FilaVenta(
+            let entityId = sale.id?.uuidString ?? UUID().uuidString
+            return DatosDashboardVentas.FilaVenta(
+                id: entityId,
+                entityId: entityId,
                 clientName: sale.cliente?.nombre ?? "Cliente sin nombre",
                 productInfo: "\(sale.producto?.nombre ?? "Producto") · \(formatLiters(sale.cantidadLitros))",
                 total: formatearMoneda(sale.total),
@@ -198,6 +208,7 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
             title: "Ventas",
             subtitle: "\(ventas.count) transacciones este período",
             canCreateSale: RoleAccessControl.canCreateSales,
+            canRequestSaleChanges: RoleAccessControl.canRequestSaleChanges,
             metricas: metrics,
             barrasSemanales: weekBars,
             barrasTendencia: trendBars,
@@ -308,6 +319,140 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
         performSegue(withIdentifier: "mostrarModalVenta", sender: nil)
     }
 
+    private func solicitarEdicionVenta(_ sale: DatosDashboardVentas.FilaVenta) {
+        guard RoleAccessControl.canRequestSaleChanges else { return }
+        let alert = UIAlertController(
+            title: "Solicitar edición",
+            message: "Describe los cambios requeridos para esta venta y el motivo de la solicitud.",
+            preferredStyle: .alert
+        )
+        alert.addTextField { textField in
+            textField.placeholder = "Cambios solicitados"
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Motivo de la solicitud"
+        }
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+            guard let self else { return }
+            let changes = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let reason = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard changes.isEmpty == false else {
+                self.showErrorAlert(message: "Describe los cambios que deseas realizar.")
+                return
+            }
+            guard reason.isEmpty == false else {
+                self.showErrorAlert(message: "Ingresa el motivo de la solicitud.")
+                return
+            }
+            Task {
+                do {
+                    try await self.enviarSolicitudVenta(
+                        type: "edit_sale",
+                        sale: sale,
+                        reason: reason,
+                        extraPayload: [
+                            "requestedChanges": .string(changes)
+                        ]
+                    )
+                    await MainActor.run {
+                        self.showSuccessAndDismissAlert(title: "Solicitud enviada", message: "La solicitud de edición fue enviada al panel administrativo.")
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.showErrorAlert(message: error.localizedDescription)
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    private func solicitarAnulacionVenta(_ sale: DatosDashboardVentas.FilaVenta) {
+        guard RoleAccessControl.canRequestSaleChanges else { return }
+        let alert = UIAlertController(
+            title: "Solicitar anulación",
+            message: "Esta venta no se anulará desde la app. Se enviará una solicitud al panel administrativo.",
+            preferredStyle: .alert
+        )
+        alert.addTextField { textField in
+            textField.placeholder = "Motivo de la anulación"
+        }
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Enviar", style: .destructive) { [weak self] _ in
+            guard let self else { return }
+            let reason = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard reason.isEmpty == false else {
+                self.showErrorAlert(message: "Ingresa el motivo de la anulación.")
+                return
+            }
+            Task {
+                do {
+                    try await self.enviarSolicitudVenta(
+                        type: "cancel_sale",
+                        sale: sale,
+                        reason: reason,
+                        extraPayload: [:]
+                    )
+                    await MainActor.run {
+                        self.showSuccessAndDismissAlert(title: "Solicitud enviada", message: "La solicitud de anulación fue enviada al panel administrativo.")
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.showErrorAlert(message: error.localizedDescription)
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    private func enviarSolicitudVenta(
+        type: String,
+        sale: DatosDashboardVentas.FilaVenta,
+        reason: String,
+        extraPayload: [String: JSONValue]
+    ) async throws {
+        let requester = try AdminRequestService.currentRequester()
+        let currentSale = ventaEntity(for: sale.entityId)
+        var payload: [String: JSONValue] = [
+            "clientName": .string(sale.clientName),
+            "productInfo": .string(sale.productInfo),
+            "total": .string(sale.total),
+            "paymentType": .string(sale.paymentType),
+            "dateLabel": .string(sale.date)
+        ]
+        if let currentSale {
+            payload["estadoActual"] = .string(currentSale.estado ?? "pendiente")
+            payload["cantidadLitros"] = .number(currentSale.cantidadLitros)
+            payload["precioUnitario"] = .number(currentSale.precioUnitario)
+            payload["totalActual"] = .number(currentSale.total)
+            payload["metodoPagoActual"] = .string(currentSale.metodoPago ?? "")
+            payload["fechaVenta"] = .string(isoFormatter.string(from: currentSale.fechaVenta ?? Date()))
+        }
+        extraPayload.forEach { payload[$0.key] = $0.value }
+
+        let request = AdminRequestPayload(
+            requestId: UUID().uuidString,
+            type: type,
+            module: "ventas",
+            status: "pending",
+            requestedBy: requester,
+            target: .init(entity: "sale", entityId: sale.entityId),
+            payload: payload,
+            reason: reason,
+            createdAt: isoFormatter.string(from: Date()),
+            reviewedAt: nil,
+            reviewedBy: nil,
+            rejectionReason: nil
+        )
+        try await AdminRequestService.submit(request)
+    }
+
+    private func ventaEntity(for entityId: String) -> VentaEntity? {
+        ventas.first { $0.id?.uuidString == entityId }
+    }
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard segue.identifier == "mostrarModalVenta",
               let destination = segue.destination as? ModalVentaViewController else {
@@ -321,6 +466,12 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
 
     private func showErrorAlert(message: String) {
         let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Aceptar", style: .default))
+        present(alert, animated: true)
+    }
+
+    private func showSuccessAndDismissAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Aceptar", style: .default))
         present(alert, animated: true)
     }

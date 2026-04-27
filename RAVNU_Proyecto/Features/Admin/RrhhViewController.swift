@@ -90,7 +90,7 @@ final class RrhhViewController: UIViewController {
     }
 
     private var puedeGestionarRrhh: Bool {
-        AppSession.shared.rolLogueado == "Admin"
+        RoleAccessControl.isAdmin
     }
 
     private func presentarModalAgregarTrabajador() {
@@ -101,8 +101,8 @@ final class RrhhViewController: UIViewController {
         }
 
         let controlador = UIHostingController(
-            rootView: TrabajadorSheetView(modo: .crear) { [weak self] borrador in
-                try await self?.registrarTrabajador(borrador: borrador)
+            rootView: TrabajadorSheetView(modo: .crear) { [weak self] envio in
+                try await self?.procesarEnvioTrabajador(envio)
             }
         )
         presentarSheet(controlador)
@@ -119,8 +119,8 @@ final class RrhhViewController: UIViewController {
         let controlador = UIHostingController(
             rootView: TrabajadorSheetView(
                 modo: .editar(trabajador),
-                onGuardar: { [weak self] borrador in
-                    try await self?.actualizarTrabajador(trabajador, con: borrador)
+                onGuardar: { [weak self] envio in
+                    try await self?.procesarEnvioTrabajador(envio)
                 }
             )
         )
@@ -272,6 +272,17 @@ final class RrhhViewController: UIViewController {
                 }
                 continuation.resume(returning: ())
             }
+        }
+    }
+
+    private func procesarEnvioTrabajador(_ envio: TrabajadorSheetSubmission) async throws {
+        switch envio.modo {
+        case .crear:
+            try await registrarTrabajador(borrador: envio.borrador)
+        case .editar(let trabajador):
+            try await actualizarTrabajador(trabajador, con: envio.borrador)
+        case .solicitarAlta, .solicitarEdicion:
+            throw ErrorRegistroTrabajador.mensaje("RRHH está reservado para administradores.")
         }
     }
 

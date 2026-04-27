@@ -925,6 +925,8 @@ struct BorradorTrabajador {
 enum ModoTrabajadorSheet {
     case crear
     case editar(TrabajadorRemoto)
+    case solicitarAlta
+    case solicitarEdicion(TrabajadorRemoto)
 
     var titulo: String {
         switch self {
@@ -932,6 +934,10 @@ enum ModoTrabajadorSheet {
             return "Agregar Trabajador"
         case .editar:
             return "Editar Trabajador"
+        case .solicitarAlta:
+            return "Solicitar Alta"
+        case .solicitarEdicion:
+            return "Solicitar Cambio"
         }
     }
 
@@ -941,6 +947,8 @@ enum ModoTrabajadorSheet {
             return "Agregar Trabajador"
         case .editar:
             return "Guardar Cambios"
+        case .solicitarAlta, .solicitarEdicion:
+            return "Enviar Solicitud"
         }
     }
 
@@ -948,29 +956,56 @@ enum ModoTrabajadorSheet {
         switch self {
         case .crear:
             return true
-        case .editar:
+        case .editar, .solicitarAlta, .solicitarEdicion:
             return false
+        }
+    }
+
+    var requiereMotivo: Bool {
+        switch self {
+        case .solicitarAlta, .solicitarEdicion:
+            return true
+        case .crear, .editar:
+            return false
+        }
+    }
+
+    var descripcionMotivo: String {
+        switch self {
+        case .solicitarAlta:
+            return "Explica por qué solicitas crear este trabajador."
+        case .solicitarEdicion:
+            return "Explica por qué solicitas modificar los datos del trabajador."
+        case .crear, .editar:
+            return ""
         }
     }
 }
 
+struct TrabajadorSheetSubmission {
+    let modo: ModoTrabajadorSheet
+    let borrador: BorradorTrabajador
+    let motivo: String
+}
+
 struct TrabajadorSheetView: View {
     let modo: ModoTrabajadorSheet
-    let onGuardar: (BorradorTrabajador) async throws -> Void
+    let onGuardar: (TrabajadorSheetSubmission) async throws -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var borrador: BorradorTrabajador
     @State private var guardando = false
     @State private var mensajeError = ""
     @State private var mostrarError = false
+    @State private var motivoSolicitud = ""
 
-    init(modo: ModoTrabajadorSheet, onGuardar: @escaping (BorradorTrabajador) async throws -> Void) {
+    init(modo: ModoTrabajadorSheet, onGuardar: @escaping (TrabajadorSheetSubmission) async throws -> Void) {
         self.modo = modo
         self.onGuardar = onGuardar
         switch modo {
-        case .crear:
+        case .crear, .solicitarAlta:
             _borrador = State(initialValue: BorradorTrabajador())
-        case .editar(let trabajador):
+        case .editar(let trabajador), .solicitarEdicion(let trabajador):
             _borrador = State(initialValue: BorradorTrabajador(trabajador: trabajador))
         }
     }
@@ -1013,6 +1048,15 @@ struct TrabajadorSheetView: View {
                     selectorRol
                     selectorTurno
                     selectorEstado
+
+                    if modo.requiereMotivo {
+                        campoTexto(
+                            titulo: "Motivo de la solicitud",
+                            placeholder: modo.descripcionMotivo,
+                            text: $motivoSolicitud,
+                            axis: .vertical
+                        )
+                    }
 
                     campoTexto(
                         titulo: "Salario mensual (S/)",
@@ -1176,7 +1220,8 @@ struct TrabajadorSheetView: View {
         text: Binding<String>,
         keyboardType: UIKeyboardType = .default,
         secure: Bool = false,
-        autocapitalization: TextInputAutocapitalization? = .sentences
+        autocapitalization: TextInputAutocapitalization? = .sentences,
+        axis: Axis = .horizontal
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(titulo)
@@ -1187,7 +1232,7 @@ struct TrabajadorSheetView: View {
                 if secure {
                     SecureField(placeholder, text: text)
                 } else {
-                    TextField(placeholder, text: text)
+                    TextField(placeholder, text: text, axis: axis)
                 }
             }
             .font(.system(size: 17, weight: .medium))
@@ -1196,7 +1241,8 @@ struct TrabajadorSheetView: View {
             .keyboardType(keyboardType)
             .autocorrectionDisabled()
             .padding(.horizontal, 16)
-            .frame(height: 54)
+            .padding(.vertical, axis == .vertical ? 14 : 0)
+            .frame(minHeight: 54)
             .background(Color(hex: "F6F8FC"))
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
@@ -1208,11 +1254,22 @@ struct TrabajadorSheetView: View {
             mostrarError = true
             return
         }
+        if modo.requiereMotivo && motivoSolicitud.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            mensajeError = "Ingresa el motivo de la solicitud."
+            mostrarError = true
+            return
+        }
 
         guardando = true
         Task {
             do {
-                try await onGuardar(borrador)
+                try await onGuardar(
+                    TrabajadorSheetSubmission(
+                        modo: modo,
+                        borrador: borrador,
+                        motivo: motivoSolicitud
+                    )
+                )
                 await MainActor.run {
                     guardando = false
                     dismiss()

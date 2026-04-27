@@ -25,6 +25,10 @@ final class ModalClienteViewController: UIViewController {
 
     private let contexto = AppCoreData.viewContext
 
+    private var puedeGestionarDirecto: Bool {
+        RoleAccessControl.isAdmin
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         ocultarFormularioLegacy()
@@ -72,17 +76,28 @@ final class ModalClienteViewController: UIViewController {
     }
 
     private func guardarDesdeFormulario(_ form: ClienteModalFormData) {
+        guard RoleAccessControl.canCreateCustomers else {
+            mostrarAlerta(title: "Permiso denegado", message: "Tu rol no tiene permiso para agregar clientes.")
+            return
+        }
+
         if let validationError = validar(form: form) {
             mostrarAlerta(title: "Validación", message: validationError)
             return
         }
 
-        do {
-            try guardarCliente(form: form)
-            delegate?.modalClienteViewControllerDidSave(self)
-            dismiss(animated: true)
-        } catch {
-            mostrarAlerta(title: "Error", message: "No se pudo guardar el cliente.")
+        if puedeGestionarDirecto {
+            do {
+                try guardarCliente(form: form)
+                delegate?.modalClienteViewControllerDidSave(self)
+                dismiss(animated: true)
+            } catch {
+                mostrarAlerta(title: "Error", message: "No se pudo guardar el cliente.")
+            }
+        } else if RoleAccessControl.canRequestCustomerCreation {
+            solicitarMotivoYEnviar(form: form)
+        } else {
+            mostrarAlerta(title: "Permiso denegado", message: "Tu rol no puede crear ni solicitar nuevos clientes.")
         }
     }
 
@@ -169,6 +184,75 @@ final class ModalClienteViewController: UIViewController {
     private func mostrarAlerta(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Aceptar", style: .default))
+        present(alert, animated: true)
+    }
+
+    private func solicitarMotivoYEnviar(form: ClienteModalFormData) {
+        let alert = UIAlertController(
+            title: "Enviar solicitud",
+            message: "Se enviará una solicitud al panel administrativo para crear el cliente.",
+            preferredStyle: .alert
+        )
+        alert.addTextField { textField in
+            textField.placeholder = "Motivo de la solicitud"
+        }
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+            guard let self else { return }
+            let motivo = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard motivo.isEmpty == false else {
+                self.mostrarAlerta(title: "Validación", message: "Ingresa el motivo de la solicitud.")
+                return
+            }
+            Task {
+                do {
+                    try await self.enviarSolicitudCliente(form: form, motivo: motivo)
+                    await MainActor.run {
+                        self.mostrarAlertaYSalir(
+                            title: "Solicitud enviada",
+                            message: "La solicitud fue enviada al panel administrativo."
+                        )
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.mostrarAlerta(title: "Error", message: error.localizedDescription)
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    private func enviarSolicitudCliente(form: ClienteModalFormData, motivo: String) async throws {
+        let requester = try AdminRequestService.currentRequester()
+        let payload = AdminRequestPayload(
+            requestId: UUID().uuidString,
+            type: "create_customer",
+            module: "clientes",
+            status: "pending",
+            requestedBy: requester,
+            target: nil,
+            payload: [
+                "nombre": .string(form.nombre.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "documento": .string(valorDocumento(desde: form)),
+                "telefono": .string(form.telefono.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "direccion": .string(form.direccion.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "limiteCredito": .number(convertirCredito(form.limiteCredito))
+            ],
+            reason: motivo,
+            createdAt: ISO8601DateFormatter().string(from: Date()),
+            reviewedAt: nil,
+            reviewedBy: nil,
+            rejectionReason: nil
+        )
+        try await AdminRequestService.submit(payload)
+    }
+
+    private func mostrarAlertaYSalir(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Aceptar", style: .default) { [weak self] _ in
+            self?.dismiss(animated: true)
+        })
         present(alert, animated: true)
     }
 

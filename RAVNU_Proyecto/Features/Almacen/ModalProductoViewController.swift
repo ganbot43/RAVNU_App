@@ -25,6 +25,10 @@ final class ModalProductoViewController: UIViewController {
 
     private let context = AppCoreData.viewContext
 
+    private var puedeGestionarDirecto: Bool {
+        RoleAccessControl.isAdmin
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         [txtPrecio, txtStockMinimo, txtCapacidad].forEach { $0?.keyboardType = .decimalPad }
@@ -148,22 +152,103 @@ final class ModalProductoViewController: UIViewController {
         present(alert, animated: true)
     }
 
+    private func solicitarMotivoYEnviar() {
+        let alert = UIAlertController(
+            title: "Enviar solicitud",
+            message: "Se enviará una solicitud al panel administrativo para crear el producto.",
+            preferredStyle: .alert
+        )
+        alert.addTextField { textField in
+            textField.placeholder = "Motivo de la solicitud"
+        }
+        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+            guard let self else { return }
+            let motivo = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            guard motivo.isEmpty == false else {
+                self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
+                return
+            }
+            Task {
+                do {
+                    try await self.enviarSolicitudProducto(motivo: motivo)
+                    await MainActor.run {
+                        self.showAlertAndDismiss(
+                            title: "Solicitud enviada",
+                            message: "La solicitud fue enviada al panel administrativo."
+                        )
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.showAlert(title: "Error", message: error.localizedDescription)
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
+    }
+
+    private func enviarSolicitudProducto(motivo: String) async throws {
+        let requester = try AdminRequestService.currentRequester()
+        let payload = AdminRequestPayload(
+            requestId: UUID().uuidString,
+            type: "create_product",
+            module: "almacen",
+            status: "pending",
+            requestedBy: requester,
+            target: nil,
+            payload: [
+                "nombre": .string(txtNombre?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""),
+                "precioPorLitro": .number(parseDouble(txtPrecio?.text)),
+                "unidadMedida": .string((txtUnidad?.text ?? "L").trimmingCharacters(in: .whitespacesAndNewlines)),
+                "stockMinimo": .number(parseDouble(txtStockMinimo?.text)),
+                "capacidadTotal": .number(parseDouble(txtCapacidad?.text)),
+                "tipo": .string(tipoControl?.selectedSegmentIndex == 1 ? "GLP" : "Combustible")
+            ],
+            reason: motivo,
+            createdAt: ISO8601DateFormatter().string(from: Date()),
+            reviewedAt: nil,
+            reviewedBy: nil,
+            rejectionReason: nil
+        )
+        try await AdminRequestService.submit(payload)
+    }
+
+    private func showAlertAndDismiss(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Aceptar", style: .default) { [weak self] _ in
+            self?.dismiss(animated: true)
+        })
+        present(alert, animated: true)
+    }
+
     @IBAction private func btnCancelarTapped(_ sender: UIButton) {
         dismiss(animated: true)
     }
 
     @IBAction private func btnGuardarTapped(_ sender: UIButton) {
+        guard RoleAccessControl.canManageWarehouse else {
+            showAlert(title: "Permiso denegado", message: RoleAccessControl.denialMessage(for: .manageWarehouse))
+            return
+        }
+
         if let message = validateInputs() {
             showAlert(title: "Validación", message: message)
             return
         }
 
-        do {
-            try saveProducto()
-            delegate?.modalProductoViewControllerDidSave(self)
-            dismiss(animated: true)
-        } catch {
-            showAlert(title: "Error", message: "No se pudo guardar el producto.")
+        if puedeGestionarDirecto {
+            do {
+                try saveProducto()
+                delegate?.modalProductoViewControllerDidSave(self)
+                dismiss(animated: true)
+            } catch {
+                showAlert(title: "Error", message: "No se pudo guardar el producto.")
+            }
+        } else if RoleAccessControl.canRequestProductCreation {
+            solicitarMotivoYEnviar()
+        } else {
+            showAlert(title: "Permiso denegado", message: "Tu rol no puede solicitar nuevos productos.")
         }
     }
 }
