@@ -1,5 +1,7 @@
 import UIKit
 import CoreData
+import SwiftUI
+import Combine
 #if canImport(FirebaseAuth)
 import FirebaseAuth
 #endif
@@ -10,110 +12,99 @@ import FirebaseFirestore
 class LoginViewController: UIViewController {
 
     @IBOutlet weak var txtUsuario: UITextField!
-    
     @IBOutlet weak var txtContraseña: UITextField!
 
-    private weak var btnSelectorRol: UIButton?
-    
-    
-    var rolSeleccionado: String = ""
+    private var hostingController: UIHostingController<LoginHybridView>?
+    private let estadoFormulario = EstadoFormularioLogin()
     private lazy var contexto: NSManagedObjectContext = AppCoreData.viewContext
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureLoginMode()
+        configurarModoLogin()
+        configurarVistaHibrida()
     }
 
-    private var isRemoteLoginEnabled: Bool {
+    private var usaFirebase: Bool {
         FirebaseBootstrap.shared.isConfigured
     }
 
-    private func configureLoginMode() {
-        txtUsuario.placeholder = isRemoteLoginEnabled ? "Correo electrónico" : "Usuario"
+    private func configurarModoLogin() {
+        txtUsuario.placeholder = "Correo electrónico"
         txtContraseña.isSecureTextEntry = true
-
-        if isRemoteLoginEnabled {
-            btnSelectorRol?.isHidden = true
-            btnSelectorRol?.isEnabled = false
-        } else {
-            seedUsuariosInicialesSiEsNecesario()
-            configureLocalRoleSelector()
-        }
     }
 
-    private func configureLocalRoleSelector() {
-        let roles = [
-            UIAction(title: "Administrador", handler: { _ in
-                self.rolSeleccionado = "Admin"
-                self.btnSelectorRol?.setTitle("Administrador", for: .normal)
-            }),
-            UIAction(title: "Cajero", handler: { _ in
-                self.rolSeleccionado = "Cajero"
-                self.btnSelectorRol?.setTitle("Cajero", for: .normal)
-            }),
-            UIAction(title: "Supervisor", handler: { _ in
-                self.rolSeleccionado = "Super"
-                self.btnSelectorRol?.setTitle("Supervisor", for: .normal)
-            }),
-            UIAction(title: "Almacenero", handler: { _ in
-                self.rolSeleccionado = "Almacen"
-                self.btnSelectorRol?.setTitle("Almacenero", for: .normal)
-            })
-        ]
+    private func configurarVistaHibrida() {
+        txtUsuario.isHidden = true
+        txtContraseña.isHidden = true
+        view.subviews
+            .filter { $0 is UIButton && $0 !== txtUsuario && $0 !== txtContraseña }
+            .forEach { $0.isHidden = true }
 
-        btnSelectorRol?.menu = UIMenu(title: "Seleccione su cargo", children: roles)
-        btnSelectorRol?.showsMenuAsPrimaryAction = true
-        btnSelectorRol?.changesSelectionAsPrimaryAction = true
+        let host = UIHostingController(rootView: crearVistaLogin())
+        addChild(host)
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        host.view.backgroundColor = .clear
+        view.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.topAnchor.constraint(equalTo: view.topAnchor),
+            host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        host.didMove(toParent: self)
+        hostingController = host
     }
-    
+
+    private func actualizarVistaHibrida() {
+        hostingController?.rootView = crearVistaLogin()
+    }
+
+    private func crearVistaLogin() -> LoginHybridView {
+        LoginHybridView(
+            estado: estadoFormulario,
+            usaFirebase: usaFirebase,
+            onLogin: { [weak self] in
+                self?.iniciarSesion(
+                    usuario: self?.estadoFormulario.usuario ?? "",
+                    contraseña: self?.estadoFormulario.contraseña ?? "",
+                    rol: self?.estadoFormulario.rolSeleccionado ?? ""
+                )
+            }
+        )
+    }
+
     @IBAction func btnIngresar(_ sender: UIButton) {
         let usuario = (txtUsuario.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        let password = (txtContraseña.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let contraseña = (txtContraseña.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        iniciarSesion(usuario: usuario, contraseña: contraseña, rol: estadoFormulario.rolSeleccionado)
+    }
 
-        guard !usuario.isEmpty, !password.isEmpty else {
+    private func iniciarSesion(usuario: String, contraseña: String, rol: String) {
+        guard !usuario.isEmpty, !contraseña.isEmpty else {
             mostrarAlerta(mensaje: "Completa usuario y contraseña.")
             return
         }
 
-        if isRemoteLoginEnabled {
-            guard isValidEmail(usuario) else {
-                mostrarAlerta(mensaje: "Ingresa un correo válido para iniciar sesión con Firebase.")
-                return
-            }
-            loginWithFirebase(email: usuario, password: password)
+        guard usaFirebase else {
+            mostrarAlerta(mensaje: "Firebase no está configurado. Verifica la integración y vuelve a intentar.")
             return
         }
 
-        guard !rolSeleccionado.isEmpty else {
-            mostrarAlerta(mensaje: "Selecciona un rol antes de ingresar.")
+        guard esCorreoValido(usuario) else {
+            mostrarAlerta(mensaje: "Ingresa un correo válido para iniciar sesión con Firebase.")
             return
         }
-        
-        guard let login = buscarLogin(usuario: usuario, contrasena: password, rol: rolSeleccionado) else {
-            mostrarAlerta(mensaje: "Credenciales incorrectas para el rol seleccionado.")
-            return
-        }
-        
-        let datos = "\(login.usuario ?? usuario) - \(login.rol ?? rolSeleccionado)"
 
-        AppSession.shared.usuarioLogueado = login.usuario ?? usuario
-        AppSession.shared.rolLogueado = login.rol ?? rolSeleccionado
-
-        switch rolSeleccionado {
-        case "Admin", "Cajero", "Super", "Almacen":
-            performSegue(withIdentifier: "verCajero", sender: datos)
-        default:
-            mostrarAlerta(mensaje: "Rol no valido.")
-        }
+        iniciarSesionConFirebase(correo: usuario, contraseña: contraseña)
     }
 
     #if canImport(FirebaseAuth) && canImport(FirebaseFirestore)
-    private func loginWithFirebase(email: String, password: String) {
-        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
+    private func iniciarSesionConFirebase(correo: String, contraseña: String) {
+        Auth.auth().signIn(withEmail: correo, password: contraseña) { [weak self] result, error in
             guard let self else { return }
 
             if let error {
-                self.mostrarAlerta(mensaje: self.firebaseLoginMessage(for: error))
+                self.mostrarAlerta(mensaje: self.mensajeErrorFirebase(error))
                 return
             }
 
@@ -122,89 +113,92 @@ class LoginViewController: UIViewController {
                 return
             }
 
-            self.fetchRemoteProfile(for: user)
+            self.obtenerPerfilRemoto(usuarioAuth: user)
         }
     }
 
-    private func fetchRemoteProfile(for authUser: User) {
-        let usersCollection = Firestore.firestore().collection("users")
+    private func obtenerPerfilRemoto(usuarioAuth: User) {
+        let firestore = Firestore.firestore()
+        let lookupRef = firestore.collection("users_lookup").document(usuarioAuth.uid)
 
-        usersCollection
-            .whereField("authUid", isEqualTo: authUser.uid)
-            .limit(to: 1)
-            .getDocuments { [weak self] snapshot, error in
+        lookupRef.getDocument { [weak self] snapshot, error in
+            guard let self else { return }
+
+            if let error {
+                self.mostrarAlerta(mensaje: "No se pudo consultar el acceso del usuario: \(error.localizedDescription)")
+                return
+            }
+
+            guard let snapshot, snapshot.exists, let data = snapshot.data() else {
+                self.mostrarAlerta(mensaje: "No existe el acceso del usuario en users_lookup. Solicita que un administrador regularice tu cuenta.")
+                return
+            }
+
+            let estaActivo = data["active"] as? Bool ?? true
+            guard estaActivo else {
+                self.mostrarAlerta(mensaje: "Tu usuario está inactivo. Contacta al administrador.")
+                return
+            }
+
+            guard let userId = data["userId"] as? String, userId.isEmpty == false else {
+                self.mostrarAlerta(mensaje: "El acceso del usuario no tiene un perfil asociado.")
+                return
+            }
+
+            firestore.collection("users").document(userId).getDocument { [weak self] userSnapshot, userError in
                 guard let self else { return }
 
-                if let error {
-                    self.mostrarAlerta(mensaje: "No se pudo consultar el perfil remoto: \(error.localizedDescription)")
+                if let userError {
+                    self.mostrarAlerta(mensaje: "No se pudo obtener el perfil del usuario: \(userError.localizedDescription)")
                     return
                 }
 
-                if let document = snapshot?.documents.first {
-                    self.completeRemoteLogin(with: document)
+                guard let userSnapshot, userSnapshot.exists else {
+                    self.mostrarAlerta(mensaje: "No existe el perfil del usuario asociado al acceso.")
                     return
                 }
 
-                guard let email = authUser.email else {
-                    self.mostrarAlerta(mensaje: "No se encontró el correo del usuario autenticado.")
-                    return
-                }
-
-                usersCollection
-                    .whereField("email", isEqualTo: email)
-                    .limit(to: 1)
-                    .getDocuments { [weak self] emailSnapshot, emailError in
-                        guard let self else { return }
-
-                        if let emailError {
-                            self.mostrarAlerta(mensaje: "No se pudo obtener el rol del usuario: \(emailError.localizedDescription)")
-                            return
-                        }
-
-                        guard let emailDocument = emailSnapshot?.documents.first else {
-                            self.mostrarAlerta(mensaje: "No existe un perfil de usuario en Firestore para este acceso.")
-                            return
-                        }
-
-                        emailDocument.reference.setData(["authUid": authUser.uid], merge: true)
-                        self.completeRemoteLogin(with: emailDocument)
-                    }
+                self.completarLoginRemoto(documento: userSnapshot)
             }
+        }
     }
 
-    private func completeRemoteLogin(with document: QueryDocumentSnapshot) {
-        let data = document.data()
-        let rawRole = (data["roleId"] as? String) ?? (data["role"] as? String) ?? ""
-        let role = normalizedRole(from: rawRole)
-        let isActive = data["active"] as? Bool ?? true
+    private func completarLoginRemoto(documento: DocumentSnapshot) {
+        guard let data = documento.data() else {
+            mostrarAlerta(mensaje: "No se pudo leer el perfil remoto del usuario.")
+            return
+        }
+        let rolCrudo = (data["roleId"] as? String) ?? (data["role"] as? String) ?? ""
+        let rol = normalizarRol(rolCrudo)
+        let estaActivo = data["active"] as? Bool ?? true
 
-        guard isActive else {
+        guard estaActivo else {
             mostrarAlerta(mensaje: "Tu usuario está inactivo. Contacta al administrador.")
             return
         }
 
-        guard !role.isEmpty else {
+        guard !rol.isEmpty else {
             mostrarAlerta(mensaje: "El usuario no tiene un rol válido configurado en Firestore.")
             return
         }
 
-        let displayName =
+        let nombreMostrado =
             (data["username"] as? String) ??
             (data["fullName"] as? String) ??
             (data["email"] as? String) ??
-            (txtUsuario.text ?? "Usuario")
+            (estadoFormulario.usuario.isEmpty ? "Usuario" : estadoFormulario.usuario)
 
-        let datos = "\(displayName) - \(role)"
-        AppSession.shared.usuarioLogueado = displayName
-        AppSession.shared.rolLogueado = role
+        let datos = "\(nombreMostrado) - \(rol)"
+        AppSession.shared.usuarioLogueado = nombreMostrado
+        AppSession.shared.rolLogueado = rol
         performSegue(withIdentifier: "verCajero", sender: datos)
     }
     #else
-    private func loginWithFirebase(email: String, password: String) {
+    private func iniciarSesionConFirebase(correo: String, contraseña: String) {
         mostrarAlerta(mensaje: "Firebase Auth y Firestore aún no están integrados en el target.")
     }
     #endif
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         configurarBienvenida(en: segue.destination, nombre: sender as? String)
     }
@@ -225,61 +219,14 @@ class LoginViewController: UIViewController {
             configurarBienvenida(en: topViewController, nombre: nombre)
         }
     }
-    
-    private func buscarLogin(usuario: String, contrasena: String, rol: String) -> LoginEntity? {
-        let request: NSFetchRequest<LoginEntity> = LoginEntity.fetchRequest()
-        request.fetchLimit = 1
-        request.predicate = NSPredicate(
-            format: "usuario ==[c] %@ AND contrasena == %@ AND rol == %@",
-            usuario,
-            contrasena,
-            rol
-        )
-        
-        do {
-            return try contexto.fetch(request).first
-        } catch {
-            print("Error consultando Core Data: \(error.localizedDescription)")
-            return nil
-        }
-    }
-    
-    private func seedUsuariosInicialesSiEsNecesario() {
-        let request: NSFetchRequest<LoginEntity> = LoginEntity.fetchRequest()
-        request.fetchLimit = 1
-        
-        do {
-            let existeData = try contexto.count(for: request) > 0
-            guard !existeData else { return }
-            
-            let usuariosIniciales = [
-                ("Ruth", "1234", "Admin"),
-                ("Ruth", "1234", "Cajero"),
-                ("Ruth", "1234", "Super"),
-                ("Ruth", "1234", "Almacen")
-            ]
-            
-            for usuario in usuariosIniciales {
-                let nuevoLogin = LoginEntity(context: contexto)
-                nuevoLogin.id = UUID()
-                nuevoLogin.usuario = usuario.0
-                nuevoLogin.contrasena = usuario.1
-                nuevoLogin.rol = usuario.2
-            }
-            
-            try contexto.save()
-        } catch {
-            print("Error guardando usuarios iniciales: \(error.localizedDescription)")
-        }
-    }
-    
+
     private func mostrarAlerta(mensaje: String) {
         let alerta = UIAlertController(title: "Login", message: mensaje, preferredStyle: .alert)
         alerta.addAction(UIAlertAction(title: "OK", style: .default))
         present(alerta, animated: true)
     }
 
-    private func isValidEmail(_ value: String) -> Bool {
+    private func esCorreoValido(_ value: String) -> Bool {
         let email = value.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !email.isEmpty else { return false }
         let pattern = #"^[A-Z0-9a-z._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$"#
@@ -287,7 +234,7 @@ class LoginViewController: UIViewController {
     }
 
     #if canImport(FirebaseAuth)
-    private func firebaseLoginMessage(for error: Error) -> String {
+    private func mensajeErrorFirebase(_ error: Error) -> String {
         guard let authError = error as NSError?,
               let code = AuthErrorCode(rawValue: authError.code) else {
             return "No se pudo iniciar sesión: \(error.localizedDescription)"
@@ -310,8 +257,8 @@ class LoginViewController: UIViewController {
     }
     #endif
 
-    private func normalizedRole(from rawValue: String) -> String {
-        switch rawValue.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+    private func normalizarRol(_ valorCrudo: String) -> String {
+        switch valorCrudo.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
         case "admin", "administrador":
             return "Admin"
         case "cajero":
@@ -321,14 +268,19 @@ class LoginViewController: UIViewController {
         case "almacen", "almacenero":
             return "Almacen"
         default:
-            return rawValue
+            return valorCrudo
         }
     }
 }
 
+final class EstadoFormularioLogin: ObservableObject {
+    @Published var usuario: String = ""
+    @Published var contraseña: String = ""
+    @Published var rolSeleccionado: String = "Admin"
+}
+
 extension UIViewController {
     func cerrarSesionUniversal() {
-        print("Cerrando sesión de Ruth...")
         self.dismiss(animated: true, completion: nil)
     }
 }

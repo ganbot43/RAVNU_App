@@ -1,8 +1,8 @@
 import Charts
 import SwiftUI
 
-struct SalesDashboardViewData {
-    struct Metric: Identifiable {
+struct DatosDashboardVentas {
+    struct Metrica: Identifiable {
         let id = UUID()
         let icon: String
         let label: String
@@ -11,21 +11,21 @@ struct SalesDashboardViewData {
         let colorHex: String
     }
 
-    struct WeekBar: Identifiable {
+    struct BarraSemanal: Identifiable {
         let id = UUID()
         let label: String
         let value: Double
         var isHighlighted: Bool = false
     }
 
-    struct TrendBar: Identifiable {
+    struct BarraTendencia: Identifiable {
         let id = UUID()
         let label: String
         let cash: Double
         let credit: Double
     }
 
-    struct ProductRow: Identifiable {
+    struct FilaProducto: Identifiable {
         let id = UUID()
         let name: String
         let revenue: Double
@@ -33,14 +33,14 @@ struct SalesDashboardViewData {
         let colorHex: String
     }
 
-    struct DistributionRow: Identifiable {
+    struct FilaDistribucion: Identifiable {
         let id = UUID()
         let colorHex: String
         let label: String
         let value: String
     }
 
-    struct SaleRow: Identifiable {
+    struct FilaVenta: Identifiable {
         let id = UUID()
         let clientName: String
         let productInfo: String
@@ -53,21 +53,21 @@ struct SalesDashboardViewData {
     let title: String
     let subtitle: String
     let canCreateSale: Bool
-    let metrics: [Metric]
-    let weekBars: [WeekBar]
-    let trendBars: [TrendBar]
-    let productRows: [ProductRow]
-    let distributionRows: [DistributionRow]
+    let metricas: [Metrica]
+    let barrasSemanales: [BarraSemanal]
+    let barrasTendencia: [BarraTendencia]
+    let filasProducto: [FilaProducto]
+    let filasDistribucion: [FilaDistribucion]
     let totalSalesCountText: String
     let cashPercent: Double
-    let salesRows: [SaleRow]
+    let filasVenta: [FilaVenta]
 }
 
 struct SalesDashboardView: View {
-    let data: SalesDashboardViewData
+    let data: DatosDashboardVentas
     let onNewSale: () -> Void
 
-    @State private var currentTab: Tab = .summary
+    @State private var pestanaActual: Tab = .summary
 
     enum Tab {
         case summary
@@ -80,7 +80,7 @@ struct SalesDashboardView: View {
             tabs
 
             Group {
-                if currentTab == .summary {
+                if pestanaActual == .summary {
                     summaryContent
                 } else {
                     listContent
@@ -142,15 +142,15 @@ struct SalesDashboardView: View {
     }
 
     private func tabButton(title: String, tab: Tab) -> some View {
-        Button(action: { currentTab = tab }) {
+        Button(action: { pestanaActual = tab }) {
             Text(title)
                 .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(currentTab == tab ? Color.black : Color(uiColor: .systemGray))
+                .foregroundStyle(pestanaActual == tab ? Color.black : Color(uiColor: .systemGray))
                 .frame(maxWidth: .infinity)
                 .frame(height: 36)
-                .background(currentTab == tab ? Color.white : Color.clear)
+                .background(pestanaActual == tab ? Color.white : Color.clear)
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .shadow(color: currentTab == tab ? Color.black.opacity(0.08) : .clear, radius: 2, x: 0, y: 1)
+                .shadow(color: pestanaActual == tab ? Color.black.opacity(0.08) : .clear, radius: 2, x: 0, y: 1)
         }
         .buttonStyle(.plain)
     }
@@ -158,7 +158,7 @@ struct SalesDashboardView: View {
     private var summaryContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 12) {
-                metricsSection
+                metricasSection
                 weeklyChartCard
                 trendChartCard
                 productChartCard
@@ -172,10 +172,10 @@ struct SalesDashboardView: View {
     private var listContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 12) {
-                ForEach(data.salesRows) { sale in
+                ForEach(data.filasVenta) { sale in
                     SaleRowCardView(sale: sale)
                 }
-                if data.salesRows.isEmpty {
+                if data.filasVenta.isEmpty {
                     Text("Sin ventas registradas")
                         .font(.system(size: 13, weight: .regular))
                         .foregroundStyle(Color(uiColor: .systemGray))
@@ -187,9 +187,9 @@ struct SalesDashboardView: View {
         }
     }
 
-    private var metricsSection: some View {
+    private var metricasSection: some View {
         HStack(spacing: 10) {
-            ForEach(data.metrics) { metric in
+            ForEach(data.metricas) { metric in
                 VStack(alignment: .leading, spacing: 6) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10, style: .continuous)
@@ -237,7 +237,7 @@ struct SalesDashboardView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
             }
 
-            Chart(data.weekBars) { item in
+            Chart(data.barrasSemanales) { item in
                 BarMark(x: .value("Día", item.label), y: .value("Monto", item.value))
                     .foregroundStyle(item.isHighlighted ? SalesColor.blue : Color(hex: "BFDBFE"))
                     .clipShape(RoundedRectangle(cornerRadius: 5))
@@ -263,7 +263,7 @@ struct SalesDashboardView: View {
                 .foregroundStyle(Color.black)
 
             Chart {
-                ForEach(data.trendBars) { item in
+                ForEach(data.barrasTendencia) { item in
                     BarMark(x: .value("Mes", item.label), y: .value("Monto", item.credit))
                         .foregroundStyle(SalesColor.blue)
                     BarMark(x: .value("Mes", item.label), y: .value("Monto", item.cash))
@@ -296,7 +296,7 @@ struct SalesDashboardView: View {
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(Color.black)
 
-            ForEach(data.productRows) { row in
+            ForEach(data.filasProducto) { row in
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Circle()
@@ -343,7 +343,7 @@ struct SalesDashboardView: View {
                     .frame(width: 100, height: 100)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(data.distributionRows) { row in
+                    ForEach(data.filasDistribucion) { row in
                         HStack(spacing: 6) {
                             Circle()
                                 .fill(Color(hex: row.colorHex))
@@ -394,7 +394,7 @@ struct SalesDashboardView: View {
 }
 
 private struct SaleRowCardView: View {
-    let sale: SalesDashboardViewData.SaleRow
+    let sale: DatosDashboardVentas.FilaVenta
 
     var body: some View {
         VStack(spacing: 0) {

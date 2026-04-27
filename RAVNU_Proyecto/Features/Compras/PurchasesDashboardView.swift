@@ -1,7 +1,7 @@
 import SwiftUI
 
-struct PurchasesDashboardData {
-    struct ProviderCard: Identifiable {
+struct DatosDashboardCompras {
+    struct TarjetaProveedor: Identifiable {
         let id: String
         let initials: String
         let name: String
@@ -14,7 +14,7 @@ struct PurchasesDashboardData {
         let progress: Double
     }
 
-    struct OrderCard: Identifiable {
+    struct TarjetaOrden: Identifiable {
         let id: String
         let initials: String
         let providerName: String
@@ -30,7 +30,7 @@ struct PurchasesDashboardData {
         let accentHex: String
     }
 
-    struct RankingRow: Identifiable {
+    struct FilaRanking: Identifiable {
         let id = UUID()
         let rank: Int
         let initials: String
@@ -41,7 +41,7 @@ struct PurchasesDashboardData {
         let progress: Double
     }
 
-    struct ProductSlice: Identifiable {
+    struct SegmentoProducto: Identifiable {
         let id = UUID()
         let name: String
         let valueText: String
@@ -49,7 +49,7 @@ struct PurchasesDashboardData {
         let share: Double
     }
 
-    struct ProductBar: Identifiable {
+    struct BarraProducto: Identifiable {
         let id = UUID()
         let shortName: String
         let accentHex: String
@@ -61,45 +61,45 @@ struct PurchasesDashboardData {
     let pendingBadgeText: String
     let canCreateOrder: Bool
     let providerCountText: String
-    let providerCards: [ProviderCard]
+    let tarjetasProveedor: [TarjetaProveedor]
     let totalSpendText: String
     let pendingCountText: String
     let receivedCountText: String
     let cancelledCountText: String
-    let orderCards: [OrderCard]
-    let rankingRows: [RankingRow]
-    let productSlices: [ProductSlice]
-    let productBars: [ProductBar]
+    let tarjetasOrden: [TarjetaOrden]
+    let filasRanking: [FilaRanking]
+    let segmentosProducto: [SegmentoProducto]
+    let barrasProducto: [BarraProducto]
     let totalVolumeText: String
     let totalProvidersText: String
 }
 
 struct PurchasesDashboardView: View {
-    enum Tab: String, CaseIterable {
+    enum Pestana: String, CaseIterable {
         case providers = "Proveedores"
         case orders = "Órdenes"
         case analytics = "Análisis"
     }
 
-    enum OrderFilter: String, CaseIterable {
+    enum FiltroOrden: String, CaseIterable {
         case all = "Todas"
         case pending = "Pendiente"
         case received = "Recibido"
         case cancelled = "Cancelado"
     }
 
-    let data: PurchasesDashboardData
+    let data: DatosDashboardCompras
     let onBack: () -> Void
     let onAddProvider: () -> Void
     let onNewOrder: () -> Void
     let onSelectOrder: (String) -> Void
 
-    @State private var selectedTab: Tab = .orders
-    @State private var selectedOrderFilter: OrderFilter = .all
-    @State private var providerSearch = ""
-    @State private var analyticsMode: AnalyticsMode = .spend
+    @State private var pestanaSeleccionada: Pestana = .orders
+    @State private var filtroOrdenSeleccionado: FiltroOrden = .all
+    @State private var busquedaProveedor = ""
+    @State private var modoAnalitica: ModoAnalitica = .spend
 
-    enum AnalyticsMode: String, CaseIterable {
+    enum ModoAnalitica: String, CaseIterable {
         case spend = "Gasto"
         case volume = "Volumen"
     }
@@ -114,7 +114,7 @@ struct PurchasesDashboardView: View {
 
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 16) {
-                        switch selectedTab {
+                        switch pestanaSeleccionada {
                         case .providers:
                             providersContent
                         case .orders:
@@ -171,9 +171,9 @@ struct PurchasesDashboardView: View {
 
     private var tabStrip: some View {
         HStack(spacing: 8) {
-            ForEach(Tab.allCases, id: \.rawValue) { tab in
+            ForEach(Pestana.allCases, id: \.rawValue) { tab in
                 Button {
-                    selectedTab = tab
+                    pestanaSeleccionada = tab
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: iconName(for: tab))
@@ -181,10 +181,10 @@ struct PurchasesDashboardView: View {
                         Text(tab.rawValue)
                             .font(.system(size: 13, weight: .semibold, design: .rounded))
                     }
-                    .foregroundStyle(selectedTab == tab ? Color(hex: "172033") : Color(hex: "7A8699"))
+                    .foregroundStyle(pestanaSeleccionada == tab ? Color(hex: "172033") : Color(hex: "7A8699"))
                     .frame(maxWidth: .infinity)
                     .frame(height: 38)
-                    .background(selectedTab == tab ? Color.white : Color.clear)
+                    .background(pestanaSeleccionada == tab ? Color.white : Color.clear)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
                 .buttonStyle(.plain)
@@ -202,7 +202,7 @@ struct PurchasesDashboardView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(Color(hex: "A7B0BE"))
-                    TextField("Buscar proveedor...", text: $providerSearch)
+                    TextField("Buscar proveedor...", text: $busquedaProveedor)
                         .font(.system(size: 15, weight: .medium, design: .rounded))
                 }
                 .padding(.horizontal, 14)
@@ -242,7 +242,7 @@ struct PurchasesDashboardView: View {
                 .buttonStyle(.plain)
             }
 
-            ForEach(filteredProviders) { provider in
+            ForEach(proveedoresFiltrados) { provider in
                 providerCard(provider)
             }
         }
@@ -258,16 +258,16 @@ struct PurchasesDashboardView: View {
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    ForEach(OrderFilter.allCases, id: \.rawValue) { filter in
+                    ForEach(FiltroOrden.allCases, id: \.rawValue) { filter in
                         Button {
-                            selectedOrderFilter = filter
+                            filtroOrdenSeleccionado = filter
                         } label: {
                             Text(filterTitle(filter))
                                 .font(.system(size: 13, weight: .semibold, design: .rounded))
-                                .foregroundStyle(selectedOrderFilter == filter ? .white : Color(hex: "7A8699"))
+                                .foregroundStyle(filtroOrdenSeleccionado == filter ? .white : Color(hex: "7A8699"))
                                 .padding(.horizontal, 12)
                                 .frame(height: 34)
-                                .background(selectedOrderFilter == filter ? Color(hex: "172033") : Color.white)
+                                .background(filtroOrdenSeleccionado == filter ? Color(hex: "172033") : Color.white)
                                 .clipShape(Capsule())
                         }
                         .buttonStyle(.plain)
@@ -275,7 +275,7 @@ struct PurchasesDashboardView: View {
                 }
             }
 
-            ForEach(filteredOrders) { order in
+            ForEach(ordenesFiltradas) { order in
                 orderCard(order)
             }
 
@@ -308,12 +308,12 @@ struct PurchasesDashboardView: View {
                         .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundStyle(Color(hex: "172033"))
                     Spacer()
-                    Text("\(data.rankingRows.count) activos")
+                    Text("\(data.filasRanking.count) activos")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(Color(hex: "8E9AAD"))
                 }
 
-                ForEach(data.rankingRows) { row in
+                ForEach(data.filasRanking) { row in
                     rankingRow(row)
                 }
             }
@@ -326,11 +326,11 @@ struct PurchasesDashboardView: View {
                     .foregroundStyle(Color(hex: "172033"))
 
                 HStack(spacing: 18) {
-                    DonutChartView(slices: data.productSlices)
+                    DonutChartView(slices: data.segmentosProducto)
                         .frame(width: 110, height: 110)
 
                     VStack(spacing: 10) {
-                        ForEach(data.productSlices) { slice in
+                        ForEach(data.segmentosProducto) { slice in
                             HStack {
                                 Circle()
                                     .fill(Color(hex: slice.accentHex))
@@ -358,16 +358,16 @@ struct PurchasesDashboardView: View {
                     Spacer()
 
                     HStack(spacing: 6) {
-                        ForEach(AnalyticsMode.allCases, id: \.rawValue) { mode in
+                        ForEach(ModoAnalitica.allCases, id: \.rawValue) { mode in
                             Button {
-                                analyticsMode = mode
+                                modoAnalitica = mode
                             } label: {
                                 Text(mode.rawValue)
                                     .font(.system(size: 12, weight: .bold, design: .rounded))
-                                    .foregroundStyle(analyticsMode == mode ? Color(hex: "172033") : Color(hex: "8E9AAD"))
+                                    .foregroundStyle(modoAnalitica == mode ? Color(hex: "172033") : Color(hex: "8E9AAD"))
                                     .padding(.horizontal, 12)
                                     .frame(height: 30)
-                                    .background(analyticsMode == mode ? Color.white : Color.clear)
+                                    .background(modoAnalitica == mode ? Color.white : Color.clear)
                                     .clipShape(Capsule())
                             }
                             .buttonStyle(.plain)
@@ -379,11 +379,11 @@ struct PurchasesDashboardView: View {
                 }
 
                 HStack(alignment: .bottom, spacing: 28) {
-                    ForEach(data.productBars) { bar in
+                    ForEach(data.barrasProducto) { bar in
                         VStack(spacing: 10) {
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
                                 .fill(Color(hex: bar.accentHex))
-                                .frame(width: 34, height: max(18, 110 * (analyticsMode == .spend ? bar.amountRatio : bar.volumeRatio)))
+                                .frame(width: 34, height: max(18, 110 * (modoAnalitica == .spend ? bar.amountRatio : bar.volumeRatio)))
                             Text(bar.shortName)
                                 .font(.system(size: 13, weight: .bold, design: .rounded))
                                 .foregroundStyle(Color(hex: "8E9AAD"))
@@ -398,31 +398,31 @@ struct PurchasesDashboardView: View {
         }
     }
 
-    private var filteredProviders: [PurchasesDashboardData.ProviderCard] {
-        let query = providerSearch.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard !query.isEmpty else { return data.providerCards }
-        return data.providerCards.filter {
+    private var proveedoresFiltrados: [DatosDashboardCompras.TarjetaProveedor] {
+        let query = busquedaProveedor.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !query.isEmpty else { return data.tarjetasProveedor }
+        return data.tarjetasProveedor.filter {
             $0.name.lowercased().contains(query) || $0.subtitle.lowercased().contains(query)
         }
     }
 
-    private var filteredOrders: [PurchasesDashboardData.OrderCard] {
-        switch selectedOrderFilter {
+    private var ordenesFiltradas: [DatosDashboardCompras.TarjetaOrden] {
+        switch filtroOrdenSeleccionado {
         case .all:
-            return data.orderCards
+            return data.tarjetasOrden
         case .pending:
-            return data.orderCards.filter { $0.statusText.lowercased().contains("registr") || $0.statusText.lowercased().contains("aprobad") || $0.statusText.lowercased().contains("pagad") }
+            return data.tarjetasOrden.filter { $0.statusText.lowercased().contains("registr") || $0.statusText.lowercased().contains("aprobad") || $0.statusText.lowercased().contains("pagad") }
         case .received:
-            return data.orderCards.filter { $0.statusText.lowercased().contains("recib") }
+            return data.tarjetasOrden.filter { $0.statusText.lowercased().contains("recib") }
         case .cancelled:
-            return data.orderCards.filter { $0.statusText.lowercased().contains("cancel") }
+            return data.tarjetasOrden.filter { $0.statusText.lowercased().contains("cancel") }
         }
     }
 
-    private func filterTitle(_ filter: OrderFilter) -> String {
+    private func filterTitle(_ filter: FiltroOrden) -> String {
         switch filter {
         case .all:
-            return "Todas (\(data.orderCards.count))"
+            return "Todas (\(data.tarjetasOrden.count))"
         case .pending:
             return "Pendiente (\(data.pendingCountText))"
         case .received:
@@ -432,7 +432,7 @@ struct PurchasesDashboardView: View {
         }
     }
 
-    private func iconName(for tab: Tab) -> String {
+    private func iconName(for tab: Pestana) -> String {
         switch tab {
         case .providers: return "shippingbox"
         case .orders: return "doc.text"
@@ -440,7 +440,7 @@ struct PurchasesDashboardView: View {
         }
     }
 
-    private func providerCard(_ provider: PurchasesDashboardData.ProviderCard) -> some View {
+    private func providerCard(_ provider: DatosDashboardCompras.TarjetaProveedor) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
                 Text(provider.initials)
@@ -502,7 +502,7 @@ struct PurchasesDashboardView: View {
         .background(cardBackground)
     }
 
-    private func orderCard(_ order: PurchasesDashboardData.OrderCard) -> some View {
+    private func orderCard(_ order: DatosDashboardCompras.TarjetaOrden) -> some View {
         Button {
             onSelectOrder(order.id)
         } label: {
@@ -564,7 +564,7 @@ struct PurchasesDashboardView: View {
         .buttonStyle(.plain)
     }
 
-    private func rankingRow(_ row: PurchasesDashboardData.RankingRow) -> some View {
+    private func rankingRow(_ row: DatosDashboardCompras.FilaRanking) -> some View {
         VStack(spacing: 8) {
             HStack {
                 Text("#\(row.rank)")
@@ -649,7 +649,7 @@ struct PurchasesDashboardView: View {
 }
 
 private struct DonutChartView: View {
-    let slices: [PurchasesDashboardData.ProductSlice]
+    let slices: [DatosDashboardCompras.SegmentoProducto]
 
     var body: some View {
         ZStack {

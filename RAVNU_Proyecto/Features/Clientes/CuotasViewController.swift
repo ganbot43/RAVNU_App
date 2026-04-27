@@ -31,13 +31,13 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
 
     private var cuotas: [CuotaEntity] = []
     private var filteredCuotas: [CuotaEntity] = []
-    private var selectedFilter: Filter = .todos
-    private var selectedCuotaID: UUID?
+    private var filtroSeleccionado: Filter = .todos
+    private var cuotaSeleccionadaID: UUID?
     private var hostingController: UIHostingController<CollectionsDashboardView>?
 
-    private let context = AppCoreData.viewContext
+    private let contexto = AppCoreData.viewContext
 
-    private let currencyFormatter: NumberFormatter = {
+    private let formateadorMoneda: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "PEN"
@@ -49,17 +49,17 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureRoleAccess()
-        configureHybridView()
-        loadCuotas()
+        configurarAccesoPorRol()
+        configurarVistaHibrida()
+        cargarCuotas()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadCuotas()
+        cargarCuotas()
     }
 
-    private func configureRoleAccess() {
+    private func configurarAccesoPorRol() {
         let shouldHideCreateActions = RoleAccessControl.canManageCollections == false
         RoleAccessControl.configureButtons(
             in: view,
@@ -69,9 +69,9 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
         )
     }
 
-    private func configureHybridView() {
-        hideLegacyUI()
-        let host = UIHostingController(rootView: makeRootView())
+    private func configurarVistaHibrida() {
+        ocultarVistaLegacy()
+        let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
         host.view.backgroundColor = .clear
@@ -86,7 +86,7 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
         hostingController = host
     }
 
-    private func hideLegacyUI() {
+    private func ocultarVistaLegacy() {
         [
             analyticsScrollView,
             tblCuotas,
@@ -110,24 +110,24 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
         tblCuotas?.delegate = self
     }
 
-    private func loadCuotas() {
+    private func cargarCuotas() {
         let request: NSFetchRequest<CuotaEntity> = CuotaEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "fechaVencimiento", ascending: true)]
 
         do {
-            cuotas = try context.fetch(request)
-            applyFilter()
-            refreshHybridView()
+            cuotas = try contexto.fetch(request)
+            aplicarFiltro()
+            actualizarVistaHibrida()
         } catch {
             cuotas = []
             filteredCuotas = []
-            refreshHybridView()
+            actualizarVistaHibrida()
         }
     }
 
-    private func applyFilter() {
+    private func aplicarFiltro() {
         let today = Calendar.current.startOfDay(for: Date())
-        switch selectedFilter {
+        switch filtroSeleccionado {
         case .todos:
             filteredCuotas = cuotas
         case .pendiente:
@@ -142,31 +142,31 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
         }
     }
 
-    private func refreshHybridView() {
-        hostingController?.rootView = makeRootView()
+    private func actualizarVistaHibrida() {
+        hostingController?.rootView = crearVistaRaiz()
     }
 
-    private func makeRootView() -> CollectionsDashboardView {
+    private func crearVistaRaiz() -> CollectionsDashboardView {
         CollectionsDashboardView(
-            data: makeDashboardData(),
+            data: crearDatosDashboard(),
             onBack: { [weak self] in self?.dismiss(animated: true) },
             onOpenPayment: { [weak self] cuotaID in
-                self?.selectedCuotaID = cuotaID
+                self?.cuotaSeleccionadaID = cuotaID
                 self?.performSegue(withIdentifier: "mostrarModalCuota", sender: nil)
             },
             onOpenGenericPayment: { [weak self] in
-                self?.selectedCuotaID = nil
+                self?.cuotaSeleccionadaID = nil
                 self?.performSegue(withIdentifier: "mostrarModalCuota", sender: nil)
             },
-            onSelectFilter: { [weak self] filter in
-                self?.selectedFilter = filter
-                self?.applyFilter()
-                self?.refreshHybridView()
+            onSelectFilter: { [weak self] filtro in
+                self?.filtroSeleccionado = filtro
+                self?.aplicarFiltro()
+                self?.actualizarVistaHibrida()
             }
         )
     }
 
-    private func makeDashboardData() -> CollectionsDashboardData {
+    private func crearDatosDashboard() -> DatosDashboardCobros {
         let today = Calendar.current.startOfDay(for: Date())
         let pendientes = cuotas.filter { !$0.pagada }
         let vencidas = pendientes.filter {
@@ -197,50 +197,50 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
         let debtRows = buildDebtRows()
         let cuotaRows = filteredCuotas.map { cuota in
             let totalCuotas = max(cuota.venta?.cuotas?.count ?? Int(cuota.numero), Int(cuota.numero))
-            let status = cuota.pagada ? CollectionsDashboardData.CuotaRow.Status.pagado : (isVencida(cuota) ? .vencido : .pendiente)
-            return CollectionsDashboardData.CuotaRow(
+            let status = cuota.pagada ? DatosDashboardCobros.FilaCuota.Status.pagado : (isVencida(cuota) ? .vencido : .pendiente)
+            return DatosDashboardCobros.FilaCuota(
                 id: cuota.id?.uuidString ?? UUID().uuidString,
                 clientName: cuota.venta?.cliente?.nombre ?? "Cliente",
                 installmentText: "Cuota \(cuota.numero) de \(totalCuotas)",
-                amountText: formatCurrency(cuota.monto),
-                dueText: "Vence \(formatDate(cuota.fechaVencimiento))",
+                amountText: formatearMoneda(cuota.monto),
+                dueText: "Vence \(formatearFecha(cuota.fechaVencimiento))",
                 progressText: "\(min(Int(cuota.numero), totalCuotas))/\(totalCuotas)",
                 progressValue: totalCuotas > 0 ? Double(cuota.numero) / Double(totalCuotas) : 0,
                 status: status
             )
         }
 
-        return CollectionsDashboardData(
-            overdueMetric: .init(title: "VENCIDO", value: formatCurrency(overdueAmount), detail: "\(vencidas.count) cuota\(vencidas.count == 1 ? "" : "s")", accentHex: "EF4444"),
-            pendingMetric: .init(title: "PENDIENTE", value: formatCurrency(pendingAmount), detail: "\(pendientesNoVencidas.count) cuota\(pendientesNoVencidas.count == 1 ? "" : "s")", accentHex: "F59E0B"),
-            todayMetric: .init(title: "HOY", value: formatCurrency(paidTodayAmount), detail: "cobrado", accentHex: "22C55E"),
+        return DatosDashboardCobros(
+            overdueMetric: DatosDashboardCobros.Metrica(title: "VENCIDO", value: formatearMoneda(overdueAmount), detail: "\(vencidas.count) cuota\(vencidas.count == 1 ? "" : "s")", accentHex: "EF4444"),
+            pendingMetric: DatosDashboardCobros.Metrica(title: "PENDIENTE", value: formatearMoneda(pendingAmount), detail: "\(pendientesNoVencidas.count) cuota\(pendientesNoVencidas.count == 1 ? "" : "s")", accentHex: "F59E0B"),
+            todayMetric: DatosDashboardCobros.Metrica(title: "HOY", value: formatearMoneda(paidTodayAmount), detail: "cobrado", accentHex: "22C55E"),
             progressText: "\(Int((collectionProgress * 100).rounded()))%",
             progressSlices: [
-                .init(label: "Vencido", valueText: formatCurrency(overdueAmount), accentHex: "EF4444", share: currentMonthTotal > 0 ? overdueAmount / currentMonthTotal : 0),
-                .init(label: "Pendiente", valueText: formatCurrency(pendingAmount), accentHex: "F59E0B", share: currentMonthTotal > 0 ? pendingAmount / currentMonthTotal : 0),
-                .init(label: "Cobrado", valueText: formatCurrency(currentMonthPaid), accentHex: "4CCB63", share: currentMonthTotal > 0 ? currentMonthPaid / currentMonthTotal : 0)
+                .init(label: "Vencido", valueText: formatearMoneda(overdueAmount), accentHex: "EF4444", share: currentMonthTotal > 0 ? overdueAmount / currentMonthTotal : 0),
+                .init(label: "Pendiente", valueText: formatearMoneda(pendingAmount), accentHex: "F59E0B", share: currentMonthTotal > 0 ? pendingAmount / currentMonthTotal : 0),
+                .init(label: "Cobrado", valueText: formatearMoneda(currentMonthPaid), accentHex: "4CCB63", share: currentMonthTotal > 0 ? currentMonthPaid / currentMonthTotal : 0)
             ],
             alertText: vencidas.isEmpty ? nil : "\(vencidas.count) cuota vencida\(vencidas.count == 1 ? "" : "s") — contacta a los clientes de inmediato para evitar más retrasos.",
             debtRows: debtRows,
             cuotaRows: cuotaRows,
-            selectedFilter: selectedFilter,
-            canPay: RoleAccessControl.canManageCollections
+            selectedFilter: filtroSeleccionado,
+            puedeCobrar: RoleAccessControl.canManageCollections
         )
     }
 
-    private func buildDebtRows() -> [CollectionsDashboardData.DebtRow] {
+    private func buildDebtRows() -> [DatosDashboardCobros.FilaDeuda] {
         let grouped = Dictionary(grouping: cuotas.filter { !$0.pagada }) { $0.venta?.cliente }
         return grouped.compactMap { cliente, cuotas in
             guard let cliente else { return nil }
             let debt = cuotas.reduce(0.0) { $0 + $1.monto }
             let limit = max(cliente.limiteCredito, 1)
             let usage = min(max(debt / limit, 0), 1)
-            let status: CollectionsDashboardData.DebtRow.Status = debt >= limit * 0.6 ? .vencido : .enRiesgo
-            return CollectionsDashboardData.DebtRow(
+            let status: DatosDashboardCobros.FilaDeuda.Status = debt >= limit * 0.6 ? .vencido : .enRiesgo
+            return DatosDashboardCobros.FilaDeuda(
                 id: cliente.id?.uuidString ?? UUID().uuidString,
                 name: cliente.nombre ?? "Cliente",
-                amountText: formatCurrency(debt),
-                detailText: "\(Int((usage * 100).rounded()))% del límite \(formatCurrency(limit))",
+                amountText: formatearMoneda(debt),
+                detailText: "\(Int((usage * 100).rounded()))% del límite \(formatearMoneda(limit))",
                 status: status,
                 progressValue: usage
             )
@@ -258,15 +258,15 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
         return Calendar.current.startOfDay(for: fecha) < Calendar.current.startOfDay(for: Date())
     }
 
-    private func formatCurrency(_ amount: Double) -> String {
-        currencyFormatter.string(from: NSNumber(value: amount)) ?? "S/0"
+    private func formatearMoneda(_ amount: Double) -> String {
+        formateadorMoneda.string(from: NSNumber(value: amount)) ?? "S/0"
     }
 
-    private func formatDate(_ date: Date?) -> String {
+    private func formatearFecha(_ date: Date?) -> String {
         guard let date else { return "Sin fecha" }
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "MMM d, yyyy"
+        formatter.locale = Locale(identifier: "es_PE")
+        formatter.dateFormat = "d MMM, yyyy"
         return formatter.string(from: date)
     }
 
@@ -279,14 +279,14 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
             presentPermissionDeniedAlert(message: RoleAccessControl.denialMessage(for: .manageCollections))
             return
         }
-        selectedCuotaID = nil
+        cuotaSeleccionadaID = nil
         performSegue(withIdentifier: "mostrarModalCuota", sender: nil)
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let modalCuota = segue.destination as? ModalCuotaViewController {
             modalCuota.delegate = self
-            modalCuota.preferredCuotaID = selectedCuotaID
+            modalCuota.preferredCuotaID = cuotaSeleccionadaID
         }
     }
 
@@ -301,6 +301,6 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
 
 extension CuotasViewController: ModalCuotaViewControllerDelegate {
     func modalCuotaViewControllerDidSavePago(_ controller: ModalCuotaViewController) {
-        loadCuotas()
+        cargarCuotas()
     }
 }

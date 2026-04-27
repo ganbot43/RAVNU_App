@@ -1,20 +1,20 @@
 import SwiftUI
 
-struct WarehouseDashboardData {
-    struct SummaryMetric: Identifiable {
+struct DatosDashboardAlmacen {
+    struct MetricaResumen: Identifiable {
         let id = UUID()
         let title: String
         let value: String
         let colorHex: String
     }
 
-    struct WarehouseFilter: Identifiable, Hashable {
+    struct FiltroAlmacen: Identifiable, Hashable {
         let id: String
         let title: String
         let colorHex: String
     }
 
-    struct WarehouseCard: Identifiable {
+    struct TarjetaAlmacen: Identifiable {
         let id: String
         let name: String
         let shortName: String
@@ -29,7 +29,7 @@ struct WarehouseDashboardData {
         let valueText: String
     }
 
-    struct WarehouseProductStock: Identifiable {
+    struct StockProductoPorAlmacen: Identifiable {
         let id = UUID()
         let warehouseName: String
         let colorHex: String
@@ -38,7 +38,7 @@ struct WarehouseDashboardData {
         let isLow: Bool
     }
 
-    struct ProductCard: Identifiable {
+    struct TarjetaProducto: Identifiable {
         let id: String
         let name: String
         let priceText: String
@@ -50,15 +50,15 @@ struct WarehouseDashboardData {
         let bgHex: String
         let symbolName: String
         let isLow: Bool
-        let stocks: [WarehouseProductStock]
+        let stocks: [StockProductoPorAlmacen]
     }
 
-    struct MovementCard: Identifiable {
+    struct TarjetaMovimiento: Identifiable {
         let id: String
         let warehouseId: String
         let destinationWarehouseId: String?
         let productName: String
-        let type: MovementType
+        let type: TipoMovimiento
         let quantityText: String
         let note: String
         let actorText: String
@@ -73,7 +73,7 @@ struct WarehouseDashboardData {
         let symbolName: String
     }
 
-    enum MovementType: String, CaseIterable {
+    enum TipoMovimiento: String, CaseIterable {
         case entrada
         case salida
         case transfer
@@ -82,7 +82,7 @@ struct WarehouseDashboardData {
             switch self {
             case .entrada: return "Entrada"
             case .salida: return "Salida"
-            case .transfer: return "Transfer"
+            case .transfer: return "Transferencia"
             }
         }
 
@@ -100,12 +100,12 @@ struct WarehouseDashboardData {
     let canRegister: Bool
     let inventoryValueText: String
     let totalWarehousesText: String
-    let summaryMetrics: [SummaryMetric]
+    let summaryMetrics: [MetricaResumen]
     let lowStockBannerText: String?
-    let warehouseFilters: [WarehouseFilter]
-    let warehouseCards: [WarehouseCard]
-    let productCards: [ProductCard]
-    let movementCards: [MovementCard]
+    let warehouseFilters: [FiltroAlmacen]
+    let warehouseCards: [TarjetaAlmacen]
+    let productCards: [TarjetaProducto]
+    let movementCards: [TarjetaMovimiento]
 }
 
 struct WarehouseDashboardView: View {
@@ -115,33 +115,33 @@ struct WarehouseDashboardView: View {
         case movements = "Movimientos"
     }
 
-    let data: WarehouseDashboardData
+    let data: DatosDashboardAlmacen
     let onRegister: () -> Void
     let onSelectWarehouse: (String) -> Void
 
-    @State private var currentTab: Tab = .general
-    @State private var movementWarehouseFilter = "all"
-    @State private var movementTypeFilter: WarehouseDashboardData.MovementType?
+    @State private var pestanaActual: Tab = .general
+    @State private var filtroAlmacenMovimiento = "all"
+    @State private var filtroTipoMovimiento: DatosDashboardAlmacen.TipoMovimiento?
 
-    private var filteredMovements: [WarehouseDashboardData.MovementCard] {
+    private var movimientosFiltrados: [DatosDashboardAlmacen.TarjetaMovimiento] {
         data.movementCards.filter { item in
-            let warehouseMatches = movementWarehouseFilter == "all"
-                || item.warehouseId == movementWarehouseFilter
-                || item.destinationWarehouseId == movementWarehouseFilter
-            let typeMatches = movementTypeFilter == nil || item.type == movementTypeFilter
+            let warehouseMatches = filtroAlmacenMovimiento == "all"
+                || item.warehouseId == filtroAlmacenMovimiento
+                || item.destinationWarehouseId == filtroAlmacenMovimiento
+            let typeMatches = filtroTipoMovimiento == nil || item.type == filtroTipoMovimiento
             return warehouseMatches && typeMatches
         }
     }
 
-    private var movementSummaryMetrics: [WarehouseDashboardData.SummaryMetric] {
-        let entries = filteredMovements.filter { $0.type == .entrada }.count
-        let exits = filteredMovements.filter { $0.type == .salida }.count
-        let transfers = filteredMovements.filter { $0.type == .transfer }.count
+    private var metricasResumenMovimiento: [DatosDashboardAlmacen.MetricaResumen] {
+        let entries = movimientosFiltrados.filter { $0.type == .entrada }.count
+        let exits = movimientosFiltrados.filter { $0.type == .salida }.count
+        let transfers = movimientosFiltrados.filter { $0.type == .transfer }.count
         return [
             .init(title: "ENTRADA", value: "\(entries)", colorHex: "22C55E"),
             .init(title: "SALIDA", value: "\(exits)", colorHex: "EF4444"),
-            .init(title: "TRANSFER", value: "\(transfers)", colorHex: "8B5CF6"),
-            .init(title: "EVENTOS", value: "\(filteredMovements.count)", colorHex: "3B82F6")
+            .init(title: "TRANSF.", value: "\(transfers)", colorHex: "8B5CF6"),
+            .init(title: "EVENTOS", value: "\(movimientosFiltrados.count)", colorHex: "3B82F6")
         ]
     }
 
@@ -151,7 +151,7 @@ struct WarehouseDashboardView: View {
             tabBar
 
             Group {
-                switch currentTab {
+                switch pestanaActual {
                 case .general:
                     generalContent
                 case .products:
@@ -161,7 +161,7 @@ struct WarehouseDashboardView: View {
                 }
             }
         }
-        .background(WarehousePalette.background.ignoresSafeArea())
+        .background(PaletaAlmacen.background.ignoresSafeArea())
     }
 
     private var header: some View {
@@ -188,7 +188,7 @@ struct WarehouseDashboardView: View {
                     .foregroundStyle(Color.white)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
-                    .background(WarehousePalette.blue)
+                    .background(PaletaAlmacen.blue)
                     .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -213,19 +213,19 @@ struct WarehouseDashboardView: View {
     }
 
     private func tabButton(title: String, tab: Tab, icon: String) -> some View {
-        Button(action: { currentTab = tab }) {
+        Button(action: { pestanaActual = tab }) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 11, weight: .semibold))
                 Text(title)
                     .font(.system(size: 13, weight: .bold))
             }
-            .foregroundStyle(currentTab == tab ? Color.black : Color(uiColor: .systemGray))
+            .foregroundStyle(pestanaActual == tab ? Color.black : Color(uiColor: .systemGray))
             .frame(maxWidth: .infinity)
             .frame(height: 36)
-            .background(currentTab == tab ? Color.white : Color.clear)
+            .background(pestanaActual == tab ? Color.white : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .shadow(color: currentTab == tab ? Color.black.opacity(0.08) : .clear, radius: 2, x: 0, y: 1)
+            .shadow(color: pestanaActual == tab ? Color.black.opacity(0.08) : .clear, radius: 2, x: 0, y: 1)
         }
         .buttonStyle(.plain)
     }
@@ -265,10 +265,10 @@ struct WarehouseDashboardView: View {
                 filterRow
                 movementTypeRow
                 movementSummaryRow
-                ForEach(filteredMovements) { movement in
+                ForEach(movimientosFiltrados) { movement in
                     movementCard(movement)
                 }
-                if filteredMovements.isEmpty {
+                if movimientosFiltrados.isEmpty {
                     Text("Sin movimientos registrados")
                         .font(.system(size: 13, weight: .regular))
                         .foregroundStyle(Color(uiColor: .systemGray))
@@ -344,7 +344,7 @@ struct WarehouseDashboardView: View {
                     .foregroundStyle(Color(hex: "92400E"))
                 Text("Toca un almacén para registrar un movimiento.")
                     .font(.system(size: 12, weight: .regular))
-                    .foregroundStyle(WarehousePalette.orange)
+                    .foregroundStyle(PaletaAlmacen.orange)
             }
             Spacer(minLength: 0)
         }
@@ -357,7 +357,7 @@ struct WarehouseDashboardView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
-    private func warehouseCard(_ warehouse: WarehouseDashboardData.WarehouseCard) -> some View {
+    private func warehouseCard(_ warehouse: DatosDashboardAlmacen.TarjetaAlmacen) -> some View {
         Button(action: { onSelectWarehouse(warehouse.id) }) {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(alignment: .center, spacing: 12) {
@@ -424,7 +424,7 @@ struct WarehouseDashboardView: View {
         .buttonStyle(.plain)
     }
 
-    private func productCard(_ product: WarehouseDashboardData.ProductCard) -> some View {
+    private func productCard(_ product: DatosDashboardAlmacen.TarjetaProducto) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Rectangle()
                 .fill(Color(hex: product.colorHex))
@@ -455,11 +455,11 @@ struct WarehouseDashboardView: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(product.totalStockText)
                         .font(.system(size: 14, weight: .black))
-                        .foregroundStyle(product.isLow ? WarehousePalette.red : Color.black)
+                        .foregroundStyle(product.isLow ? PaletaAlmacen.red : Color.black)
                     if product.isLow {
                         Text("STOCK BAJO")
                             .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(WarehousePalette.red)
+                            .foregroundStyle(PaletaAlmacen.red)
                     }
                 }
             }
@@ -479,7 +479,7 @@ struct WarehouseDashboardView: View {
                     Capsule()
                         .fill(Color(hex: "F3F4F6"))
                     Capsule()
-                        .fill(product.isLow ? WarehousePalette.red : Color(hex: product.colorHex))
+                        .fill(product.isLow ? PaletaAlmacen.red : Color(hex: product.colorHex))
                         .frame(width: geometry.size.width * max(0, min(1, product.fillRatio)))
                 }
             }
@@ -503,7 +503,7 @@ struct WarehouseDashboardView: View {
                                 Capsule()
                                     .fill(Color(hex: "F3F4F6"))
                                 Capsule()
-                                    .fill(stock.isLow ? WarehousePalette.red : Color(hex: stock.colorHex))
+                                    .fill(stock.isLow ? PaletaAlmacen.red : Color(hex: stock.colorHex))
                                     .frame(width: geometry.size.width * max(0, min(1, stock.fillRatio)))
                             }
                         }
@@ -511,7 +511,7 @@ struct WarehouseDashboardView: View {
 
                         Text(stock.stockText)
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(stock.isLow ? WarehousePalette.red : Color.black)
+                            .foregroundStyle(stock.isLow ? PaletaAlmacen.red : Color.black)
                             .frame(width: 64, alignment: .trailing)
                     }
                 }
@@ -524,22 +524,22 @@ struct WarehouseDashboardView: View {
     private var filterRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                Button(action: { movementWarehouseFilter = "all" }) {
+                Button(action: { filtroAlmacenMovimiento = "all" }) {
                     Text("Todos")
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(movementWarehouseFilter == "all" ? Color.white : Color(uiColor: .secondaryLabel))
+                        .foregroundStyle(filtroAlmacenMovimiento == "all" ? Color.white : Color(uiColor: .secondaryLabel))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
-                        .background(movementWarehouseFilter == "all" ? Color(hex: "1F2937") : Color.white)
+                        .background(filtroAlmacenMovimiento == "all" ? Color(hex: "1F2937") : Color.white)
                         .clipShape(Capsule())
                         .overlay(
-                            Capsule().stroke(movementWarehouseFilter == "all" ? Color.clear : Color(uiColor: .separator), lineWidth: 1)
+                            Capsule().stroke(filtroAlmacenMovimiento == "all" ? Color.clear : Color(uiColor: .separator), lineWidth: 1)
                         )
                 }
                 .buttonStyle(.plain)
 
                 ForEach(data.warehouseFilters) { warehouse in
-                    Button(action: { movementWarehouseFilter = warehouse.id }) {
+                    Button(action: { filtroAlmacenMovimiento = warehouse.id }) {
                         HStack(spacing: 6) {
                             Circle()
                                 .fill(Color(hex: warehouse.colorHex))
@@ -547,13 +547,13 @@ struct WarehouseDashboardView: View {
                             Text(warehouse.title)
                                 .font(.system(size: 12, weight: .bold))
                         }
-                        .foregroundStyle(movementWarehouseFilter == warehouse.id ? Color.white : Color(uiColor: .secondaryLabel))
+                        .foregroundStyle(filtroAlmacenMovimiento == warehouse.id ? Color.white : Color(uiColor: .secondaryLabel))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
-                        .background(movementWarehouseFilter == warehouse.id ? Color(hex: warehouse.colorHex) : Color.white)
+                        .background(filtroAlmacenMovimiento == warehouse.id ? Color(hex: warehouse.colorHex) : Color.white)
                         .clipShape(Capsule())
                         .overlay(
-                            Capsule().stroke(movementWarehouseFilter == warehouse.id ? Color.clear : Color(uiColor: .separator), lineWidth: 1)
+                            Capsule().stroke(filtroAlmacenMovimiento == warehouse.id ? Color.clear : Color(uiColor: .separator), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -569,22 +569,22 @@ struct WarehouseDashboardView: View {
             movementTypeButton(title: "Todos", type: nil, activeHex: "1F2937")
             movementTypeButton(title: "↓ Entrada", type: .entrada, activeHex: "22C55E")
             movementTypeButton(title: "↑ Salida", type: .salida, activeHex: "EF4444")
-            movementTypeButton(title: "⇄ Transfer", type: .transfer, activeHex: "8B5CF6")
+            movementTypeButton(title: "⇄ Transfer.", type: .transfer, activeHex: "8B5CF6")
         }
     }
 
-    private func movementTypeButton(title: String, type: WarehouseDashboardData.MovementType?, activeHex: String) -> some View {
-        Button(action: { movementTypeFilter = type }) {
+    private func movementTypeButton(title: String, type: DatosDashboardAlmacen.TipoMovimiento?, activeHex: String) -> some View {
+        Button(action: { filtroTipoMovimiento = type }) {
             Text(title)
                 .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(movementTypeFilter == type ? Color.white : Color(uiColor: .secondaryLabel))
+                .foregroundStyle(filtroTipoMovimiento == type ? Color.white : Color(uiColor: .secondaryLabel))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
-                .background(movementTypeFilter == type ? Color(hex: activeHex) : Color.white)
+                .background(filtroTipoMovimiento == type ? Color(hex: activeHex) : Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(movementTypeFilter == type ? Color.clear : Color(uiColor: .separator), lineWidth: 1)
+                        .stroke(filtroTipoMovimiento == type ? Color.clear : Color(uiColor: .separator), lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -592,7 +592,7 @@ struct WarehouseDashboardView: View {
 
     private var movementSummaryRow: some View {
         HStack(spacing: 6) {
-            ForEach(movementSummaryMetrics) { metric in
+            ForEach(metricasResumenMovimiento) { metric in
                 VStack(spacing: 2) {
                     Text(metric.title)
                         .font(.system(size: 9, weight: .bold))
@@ -613,7 +613,7 @@ struct WarehouseDashboardView: View {
         }
     }
 
-    private func movementCard(_ movement: WarehouseDashboardData.MovementCard) -> some View {
+    private func movementCard(_ movement: DatosDashboardAlmacen.TarjetaMovimiento) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Rectangle()
                 .fill(Color(hex: movement.accentHex))
@@ -696,7 +696,7 @@ struct WarehouseDashboardView: View {
     }
 }
 
-private enum WarehousePalette {
+private enum PaletaAlmacen {
     static let background = Color(hex: "F4F6FA")
     static let blue = Color(hex: "3B82F6")
     static let green = Color(hex: "22C55E")

@@ -115,10 +115,17 @@ final class MasViewController: UIViewController {
             return Calendar.current.startOfDay(for: fecha) >= hoy
         }
 
-        let ingresosVentas = ventas.reduce(0.0) { $0 + $1.total }
+        let ingresosVentas = ventas
+            .filter { ($0.metodoPago ?? "").lowercased() == "efectivo" }
+            .reduce(0.0) { $0 + $1.total }
         let ingresosCuotas = cuotas.filter { $0.pagada }.reduce(0.0) { $0 + $1.monto }
         let ingresosTotales = ingresosVentas + ingresosCuotas
-        let gastosTotales = ordenes.reduce(0.0) { $0 + $1.total }
+        let gastosTotales = ordenes
+            .filter {
+                let status = ($0.estado ?? "").lowercased()
+                return status == "pagada" || status == "recibida"
+            }
+            .reduce(0.0) { $0 + $1.total }
         let saldo = ingresosTotales - gastosTotales
 
         let ordenesPendientes = ordenes.filter {

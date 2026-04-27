@@ -1,14 +1,14 @@
 import SwiftUI
 
-struct CollectionsDashboardData {
-    struct Metric {
+struct DatosDashboardCobros {
+    struct Metrica {
         let title: String
         let value: String
         let detail: String
         let accentHex: String
     }
 
-    struct ProgressSlice: Identifiable {
+    struct SegmentoProgreso: Identifiable {
         let id = UUID()
         let label: String
         let valueText: String
@@ -16,7 +16,7 @@ struct CollectionsDashboardData {
         let share: Double
     }
 
-    struct DebtRow: Identifiable {
+    struct FilaDeuda: Identifiable {
         enum Status {
             case vencido
             case enRiesgo
@@ -44,7 +44,7 @@ struct CollectionsDashboardData {
         let progressValue: Double
     }
 
-    struct CuotaRow: Identifiable {
+    struct FilaCuota: Identifiable {
         enum Status {
             case pendiente
             case vencido
@@ -77,26 +77,26 @@ struct CollectionsDashboardData {
         let status: Status
     }
 
-    let overdueMetric: Metric
-    let pendingMetric: Metric
-    let todayMetric: Metric
+    let overdueMetric: Metrica
+    let pendingMetric: Metrica
+    let todayMetric: Metrica
     let progressText: String
-    let progressSlices: [ProgressSlice]
+    let progressSlices: [SegmentoProgreso]
     let alertText: String?
-    let debtRows: [DebtRow]
-    let cuotaRows: [CuotaRow]
+    let debtRows: [FilaDeuda]
+    let cuotaRows: [FilaCuota]
     let selectedFilter: CuotasViewController.Filter
-    let canPay: Bool
+    let puedeCobrar: Bool
 }
 
 struct CollectionsDashboardView: View {
-    let data: CollectionsDashboardData
+    let data: DatosDashboardCobros
     let onBack: () -> Void
     let onOpenPayment: (UUID?) -> Void
     let onOpenGenericPayment: () -> Void
     let onSelectFilter: (CuotasViewController.Filter) -> Void
 
-    @State private var selectedTab: Tab = .analitica
+    @State private var pestanaSeleccionada: Tab = .analitica
 
     enum Tab {
         case analitica
@@ -112,10 +112,10 @@ struct CollectionsDashboardView: View {
                     header
                     tabBar
 
-                    if selectedTab == .analitica {
-                        analyticsTab
+                    if pestanaSeleccionada == .analitica {
+                        pestanaAnalitica
                     } else {
-                        cuotasTab
+                        pestanaCuotas
                     }
                 }
                 .padding(.horizontal, 16)
@@ -133,7 +133,7 @@ struct CollectionsDashboardView: View {
                 .font(.system(size: 17, weight: .bold, design: .rounded))
                 .foregroundStyle(Color(hex: "1F2937"))
             Spacer()
-            if data.canPay {
+            if data.puedeCobrar {
                 Button(action: onOpenGenericPayment) {
                     HStack(spacing: 6) {
                         Image(systemName: "plus")
@@ -155,11 +155,11 @@ struct CollectionsDashboardView: View {
 
     private var tabBar: some View {
         HStack(spacing: 8) {
-            collectionsTabButton(title: "Analítica", isActive: selectedTab == .analitica) {
-                selectedTab = .analitica
+            collectionsTabButton(title: "Analítica", isActive: pestanaSeleccionada == .analitica) {
+                pestanaSeleccionada = .analitica
             }
-            collectionsTabButton(title: "Cuotas", isActive: selectedTab == .cuotas) {
-                selectedTab = .cuotas
+            collectionsTabButton(title: "Cuotas", isActive: pestanaSeleccionada == .cuotas) {
+                pestanaSeleccionada = .cuotas
             }
         }
         .padding(6)
@@ -180,7 +180,7 @@ struct CollectionsDashboardView: View {
         .buttonStyle(.plain)
     }
 
-    private var analyticsTab: some View {
+    private var pestanaAnalitica: some View {
         VStack(spacing: 16) {
             HStack(spacing: 12) {
                 metricCard(data.overdueMetric)
@@ -246,7 +246,7 @@ struct CollectionsDashboardView: View {
         }
     }
 
-    private var cuotasTab: some View {
+    private var pestanaCuotas: some View {
         VStack(alignment: .leading, spacing: 16) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
@@ -266,14 +266,14 @@ struct CollectionsDashboardView: View {
             }
 
             ForEach(data.cuotaRows) { cuota in
-                CuotaCardView(cuota: cuota, canPay: data.canPay) {
+                CuotaCardView(cuota: cuota, puedeCobrar: data.puedeCobrar) {
                     onOpenPayment(UUID(uuidString: cuota.id))
                 }
             }
         }
     }
 
-    private func metricCard(_ metric: CollectionsDashboardData.Metric) -> some View {
+    private func metricCard(_ metric: DatosDashboardCobros.Metrica) -> some View {
         VStack(spacing: 8) {
             Circle()
                 .fill(Color(hex: metric.accentHex).opacity(0.12))
@@ -323,7 +323,7 @@ private struct DashboardCard<Content: View>: View {
 }
 
 private struct CollectionsLegendRow: View {
-    let slice: CollectionsDashboardData.ProgressSlice
+    let slice: DatosDashboardCobros.SegmentoProgreso
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -352,7 +352,7 @@ private struct CollectionsLegendRow: View {
 }
 
 private struct CollectionsDonutChart: View {
-    let items: [CollectionsDashboardData.ProgressSlice]
+    let items: [DatosDashboardCobros.SegmentoProgreso]
 
     var body: some View {
         ZStack {
@@ -377,7 +377,7 @@ private struct CollectionsDonutChart: View {
 }
 
 private struct DebtRowView: View {
-    let row: CollectionsDashboardData.DebtRow
+    let row: DatosDashboardCobros.FilaDeuda
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -415,8 +415,8 @@ private struct DebtRowView: View {
 }
 
 private struct CuotaCardView: View {
-    let cuota: CollectionsDashboardData.CuotaRow
-    let canPay: Bool
+    let cuota: DatosDashboardCobros.FilaCuota
+    let puedeCobrar: Bool
     let onRegister: () -> Void
 
     var body: some View {
@@ -479,7 +479,7 @@ private struct CuotaCardView: View {
                         .foregroundStyle(Color(hex: cuota.status.accentHex))
                 }
                 Spacer()
-                if canPay && cuota.status != .pagado {
+                if puedeCobrar && cuota.status != .pagado {
                     Button(action: onRegister) {
                         Text("$ Registrar")
                             .font(.system(size: 13, weight: .bold, design: .rounded))

@@ -28,31 +28,31 @@ final class ModalMovimientoViewController: UIViewController {
     private var almacenes: [AlmacenEntity] = []
     private var productos: [ProductoEntity] = []
     private var proveedores: [ProveedorEntity] = []
-    private var hostingController: UIHostingController<MovementModalRootView>?
+    private var hostingController: UIHostingController<VistaRaizModalMovimiento>?
 
-    private let context = AppCoreData.viewContext
+    private let contexto = AppCoreData.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureLegacyUI()
-        loadData()
-        configureHybridView()
+        configurarVistaLegacy()
+        cargarDatos()
+        configurarVistaHibrida()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadData()
-        refreshHybridView()
+        cargarDatos()
+        actualizarVistaHibrida()
     }
 
-    private func configureLegacyUI() {
+    private func configurarVistaLegacy() {
         [tipoControl, txtOrigen, txtDestino, txtProducto, txtCantidad, txtNota, btnGuardar].forEach {
             $0?.isHidden = true
         }
     }
 
-    private func configureHybridView() {
-        let host = UIHostingController(rootView: makeRootView())
+    private func configurarVistaHibrida() {
+        let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
         host.view.backgroundColor = .clear
@@ -67,39 +67,39 @@ final class ModalMovimientoViewController: UIViewController {
         hostingController = host
     }
 
-    private func refreshHybridView() {
-        hostingController?.rootView = makeRootView()
+    private func actualizarVistaHibrida() {
+        hostingController?.rootView = crearVistaRaiz()
     }
 
-    private func makeRootView() -> MovementModalRootView {
-        MovementModalRootView(
-            data: makeViewData(),
+    private func crearVistaRaiz() -> VistaRaizModalMovimiento {
+        VistaRaizModalMovimiento(
+            data: crearDatosVista(),
             onCancel: { [weak self] in
                 self?.dismiss(animated: true)
             },
             onSave: { [weak self] draft in
-                self?.handleDraft(draft)
+                self?.manejarBorrador(draft)
             }
         )
     }
 
-    private func loadData() {
+    private func cargarDatos() {
         let almacenRequest: NSFetchRequest<AlmacenEntity> = AlmacenEntity.fetchRequest()
         almacenRequest.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-        almacenes = (try? context.fetch(almacenRequest)) ?? []
+        almacenes = (try? contexto.fetch(almacenRequest)) ?? []
 
         let productoRequest: NSFetchRequest<ProductoEntity> = ProductoEntity.fetchRequest()
         productoRequest.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-        productos = (try? context.fetch(productoRequest)) ?? []
+        productos = (try? contexto.fetch(productoRequest)) ?? []
 
         let proveedorRequest: NSFetchRequest<ProveedorEntity> = ProveedorEntity.fetchRequest()
         proveedorRequest.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-        proveedores = (try? context.fetch(proveedorRequest)) ?? []
+        proveedores = (try? contexto.fetch(proveedorRequest)) ?? []
     }
 
-    private func makeViewData() -> MovementModalViewData {
+    private func crearDatosVista() -> DatosVistaModalMovimiento {
         let warehouseRows = almacenes.map { almacen in
-            MovementModalWarehouseRow(
+            FilaAlmacenModalMovimiento(
                 id: almacen.id?.uuidString ?? UUID().uuidString,
                 name: almacen.nombre ?? "Almacén",
                 managerName: almacen.responsable ?? "Sin responsable"
@@ -112,7 +112,7 @@ final class ModalMovimientoViewController: UIViewController {
                     (almacen.id?.uuidString ?? "", stockAmount(producto: producto, almacen: almacen))
                 }
             )
-            return MovementModalProductRow(
+            return FilaProductoModalMovimiento(
                 id: producto.id?.uuidString ?? UUID().uuidString,
                 name: producto.nombre ?? "Producto",
                 unit: producto.unidadMedida?.isEmpty == false ? producto.unidadMedida! : "L",
@@ -123,13 +123,13 @@ final class ModalMovimientoViewController: UIViewController {
         }
 
         let supplierRows = proveedores.map { proveedor in
-            MovementModalSupplierRow(
+            FilaProveedorModalMovimiento(
                 id: proveedor.id?.uuidString ?? UUID().uuidString,
                 name: proveedor.nombre ?? "Proveedor"
             )
         }
 
-        return MovementModalViewData(
+        return DatosVistaModalMovimiento(
             warehouses: warehouseRows,
             products: productRows,
             suppliers: supplierRows
@@ -140,25 +140,25 @@ final class ModalMovimientoViewController: UIViewController {
         let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
-        return (try? context.fetch(request).first?.stockActual) ?? 0
+        return (try? contexto.fetch(request).first?.stockActual) ?? 0
     }
 
-    private func handleDraft(_ draft: MovementModalDraft) {
-        if let message = validateDraft(draft) {
-            showAlert(title: "Validación", message: message)
+    private func manejarBorrador(_ draft: BorradorModalMovimiento) {
+        if let message = validarBorrador(draft) {
+            mostrarAlerta(title: "Validación", message: message)
             return
         }
 
         do {
-            try saveMovement(using: draft)
+            try guardarMovimiento(using: draft)
             delegate?.modalMovimientoViewControllerDidSave(self)
             dismiss(animated: true)
         } catch {
-            showAlert(title: "Error", message: "No se pudo registrar el movimiento.")
+            mostrarAlerta(title: "Error", message: "No se pudo registrar el movimiento.")
         }
     }
 
-    private func validateDraft(_ draft: MovementModalDraft) -> String? {
+    private func validarBorrador(_ draft: BorradorModalMovimiento) -> String? {
         if almacenes.isEmpty {
             return "Registra al menos un almacén."
         }
@@ -172,7 +172,7 @@ final class ModalMovimientoViewController: UIViewController {
            draft.originWarehouseIndex == draft.destinationWarehouseIndex {
             return "El origen y destino deben ser diferentes."
         }
-        if draft.kind == .entry, draft.supplierIndex == nil, proveedores.isEmpty == false {
+        if draft.kind == .ingreso, draft.supplierIndex == nil, proveedores.isEmpty == false {
             return "Selecciona un proveedor."
         }
 
@@ -180,13 +180,13 @@ final class ModalMovimientoViewController: UIViewController {
         let origen = almacenes[draft.originWarehouseIndex]
         let stockOrigen = stockAmount(producto: producto, almacen: origen)
 
-        if draft.kind == .outgoing || draft.kind == .transfer {
+        if draft.kind == .salida || draft.kind == .transfer {
             if stockOrigen < draft.quantity {
                 return "No hay stock suficiente en el almacén de origen."
             }
         }
 
-        if draft.kind == .entry || draft.kind == .transfer {
+        if draft.kind == .ingreso || draft.kind == .transfer {
             let destino = draft.kind == .transfer
                 ? almacenes[draft.destinationWarehouseIndex]
                 : origen
@@ -199,13 +199,13 @@ final class ModalMovimientoViewController: UIViewController {
         return nil
     }
 
-    private func saveMovement(using draft: MovementModalDraft) throws {
+    private func guardarMovimiento(using draft: BorradorModalMovimiento) throws {
         let producto = productos[draft.productIndex]
         let origen = almacenes[draft.originWarehouseIndex]
         let noteText = draft.note.trimmingCharacters(in: .whitespacesAndNewlines)
 
         switch draft.kind {
-        case .entry:
+        case .ingreso:
             let supplierName = draft.supplierIndex.flatMap { proveedores.indices.contains($0) ? proveedores[$0].nombre : nil } ?? "Proveedor"
             adjustStock(producto: producto, almacen: origen, delta: draft.quantity)
             createMovement(
@@ -228,7 +228,7 @@ final class ModalMovimientoViewController: UIViewController {
                 note: noteText.isEmpty ? "Compra de proveedor" : noteText
             )
 
-        case .outgoing:
+        case .salida:
             adjustStock(producto: producto, almacen: origen, delta: -draft.quantity)
             createMovement(
                 type: draft.kind.rawValue,
@@ -277,7 +277,7 @@ final class ModalMovimientoViewController: UIViewController {
         }
 
         producto.stockLitros = totalStock(for: producto)
-        try context.save()
+        try contexto.save()
     }
 
     private func adjustStock(producto: ProductoEntity, almacen: AlmacenEntity, delta: Double) {
@@ -293,11 +293,11 @@ final class ModalMovimientoViewController: UIViewController {
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
 
-        if let existing = try? context.fetch(request).first {
+        if let existing = try? contexto.fetch(request).first {
             return existing
         }
 
-        let stock = StockAlmacenEntity(context: context)
+        let stock = StockAlmacenEntity(context: contexto)
         stock.id = UUID()
         stock.producto = producto
         stock.almacen = almacen
@@ -311,7 +311,7 @@ final class ModalMovimientoViewController: UIViewController {
     private func totalStock(for producto: ProductoEntity) -> Double {
         let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
         request.predicate = NSPredicate(format: "producto == %@", producto)
-        return ((try? context.fetch(request)) ?? []).reduce(0) { $0 + $1.stockActual }
+        return ((try? contexto.fetch(request)) ?? []).reduce(0) { $0 + $1.stockActual }
     }
 
     private func createMovement(
@@ -323,7 +323,7 @@ final class ModalMovimientoViewController: UIViewController {
         destino: String?,
         note: String
     ) {
-        let movimiento = MovimientoInventarioEntity(context: context)
+        let movimiento = MovimientoInventarioEntity(context: contexto)
         movimiento.id = UUID()
         movimiento.fecha = Date()
         movimiento.tipo = type
@@ -335,7 +335,7 @@ final class ModalMovimientoViewController: UIViewController {
         movimiento.nota = note
     }
 
-    private func showAlert(title: String, message: String) {
+    private func mostrarAlerta(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Aceptar", style: .default))
         present(alert, animated: true)
@@ -346,7 +346,7 @@ final class ModalMovimientoViewController: UIViewController {
     }
 
     @IBAction private func btnGuardarTapped(_ sender: UIButton) {
-        refreshHybridView()
+        actualizarVistaHibrida()
     }
 
     private func saveRemoteStock(producto: ProductoEntity, almacen: AlmacenEntity, delta: Double) {
@@ -414,65 +414,65 @@ final class ModalMovimientoViewController: UIViewController {
     }
 }
 
-private enum MovementKind: String, CaseIterable {
-    case entry = "entrada"
-    case outgoing = "salida"
+private enum TipoMovimientoModal: String, CaseIterable {
+    case ingreso = "entrada"
+    case salida = "salida"
     case transfer = "transfer"
 
     var title: String {
         switch self {
-        case .entry: return "Stock In"
-        case .outgoing: return "Stock Out"
+        case .ingreso: return "Ingreso"
+        case .salida: return "Salida"
         case .transfer: return "Transferencia"
         }
     }
 
     var actionTitle: String {
         switch self {
-        case .entry: return "Registrar Ingreso"
-        case .outgoing: return "Registrar Salida"
+        case .ingreso: return "Registrar Ingreso"
+        case .salida: return "Registrar Salida"
         case .transfer: return "Registrar Transferencia"
         }
     }
 
     var accentColor: UIColor {
         switch self {
-        case .entry: return UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1)
-        case .outgoing: return UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1)
+        case .ingreso: return UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1)
+        case .salida: return UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1)
         case .transfer: return UIColor(red: 0.545, green: 0.361, blue: 0.965, alpha: 1)
         }
     }
 
     var iconName: String {
         switch self {
-        case .entry: return "arrow.down"
-        case .outgoing: return "arrow.up"
+        case .ingreso: return "arrow.down"
+        case .salida: return "arrow.up"
         case .transfer: return "arrow.left.arrow.right"
         }
     }
 
     var routeTitle: String {
         switch self {
-        case .entry: return "PROVEEDOR -> ALMACÉN"
-        case .outgoing: return "ALMACÉN -> OPERACIÓN"
+        case .ingreso: return "PROVEEDOR -> ALMACÉN"
+        case .salida: return "ALMACÉN -> OPERACIÓN"
         case .transfer: return "ALMACÉN ORIGEN -> DESTINO"
         }
     }
 }
 
-private struct MovementModalViewData {
-    let warehouses: [MovementModalWarehouseRow]
-    let products: [MovementModalProductRow]
-    let suppliers: [MovementModalSupplierRow]
+private struct DatosVistaModalMovimiento {
+    let warehouses: [FilaAlmacenModalMovimiento]
+    let products: [FilaProductoModalMovimiento]
+    let suppliers: [FilaProveedorModalMovimiento]
 }
 
-private struct MovementModalWarehouseRow: Identifiable {
+private struct FilaAlmacenModalMovimiento: Identifiable {
     let id: String
     let name: String
     let managerName: String
 }
 
-private struct MovementModalProductRow: Identifiable {
+private struct FilaProductoModalMovimiento: Identifiable {
     let id: String
     let name: String
     let unit: String
@@ -481,13 +481,13 @@ private struct MovementModalProductRow: Identifiable {
     let stocksByWarehouse: [String: Double]
 }
 
-private struct MovementModalSupplierRow: Identifiable {
+private struct FilaProveedorModalMovimiento: Identifiable {
     let id: String
     let name: String
 }
 
-private struct MovementModalDraft {
-    let kind: MovementKind
+private struct BorradorModalMovimiento {
+    let kind: TipoMovimientoModal
     let supplierIndex: Int?
     let originWarehouseIndex: Int
     let destinationWarehouseIndex: Int
@@ -496,12 +496,12 @@ private struct MovementModalDraft {
     let note: String
 }
 
-private struct MovementModalRootView: View {
-    let data: MovementModalViewData
+private struct VistaRaizModalMovimiento: View {
+    let data: DatosVistaModalMovimiento
     let onCancel: () -> Void
-    let onSave: (MovementModalDraft) -> Void
+    let onSave: (BorradorModalMovimiento) -> Void
 
-    @State private var kind: MovementKind
+    @State private var kind: TipoMovimientoModal
     @State private var supplierIndex: Int?
     @State private var originWarehouseIndex: Int
     @State private var destinationWarehouseIndex: Int
@@ -511,14 +511,14 @@ private struct MovementModalRootView: View {
     @State private var activePicker: PickerTarget?
 
     init(
-        data: MovementModalViewData,
+        data: DatosVistaModalMovimiento,
         onCancel: @escaping () -> Void,
-        onSave: @escaping (MovementModalDraft) -> Void
+        onSave: @escaping (BorradorModalMovimiento) -> Void
     ) {
         self.data = data
         self.onCancel = onCancel
         self.onSave = onSave
-        _kind = State(initialValue: .entry)
+        _kind = State(initialValue: .ingreso)
         _supplierIndex = State(initialValue: data.suppliers.isEmpty ? nil : 0)
         _originWarehouseIndex = State(initialValue: 0)
         _destinationWarehouseIndex = State(initialValue: min(1, max(data.warehouses.count - 1, 0)))
@@ -535,19 +535,19 @@ private struct MovementModalRootView: View {
         case product
     }
 
-    private var selectedProduct: MovementModalProductRow? {
+    private var selectedProduct: FilaProductoModalMovimiento? {
         data.products.indices.contains(productIndex) ? data.products[productIndex] : nil
     }
 
-    private var selectedOrigin: MovementModalWarehouseRow? {
+    private var selectedOrigin: FilaAlmacenModalMovimiento? {
         data.warehouses.indices.contains(originWarehouseIndex) ? data.warehouses[originWarehouseIndex] : nil
     }
 
-    private var selectedDestination: MovementModalWarehouseRow? {
+    private var selectedDestination: FilaAlmacenModalMovimiento? {
         data.warehouses.indices.contains(destinationWarehouseIndex) ? data.warehouses[destinationWarehouseIndex] : nil
     }
 
-    private var selectedSupplier: MovementModalSupplierRow? {
+    private var selectedSupplier: FilaProveedorModalMovimiento? {
         guard let supplierIndex, data.suppliers.indices.contains(supplierIndex) else { return nil }
         return data.suppliers[supplierIndex]
     }
@@ -563,9 +563,9 @@ private struct MovementModalRootView: View {
 
     private var projectedSourceStock: Double {
         switch kind {
-        case .entry:
+        case .ingreso:
             return currentWarehouseStock + quantityValue
-        case .outgoing, .transfer:
+        case .salida, .transfer:
             return max(currentWarehouseStock - quantityValue, 0)
         }
     }
@@ -633,9 +633,9 @@ private struct MovementModalRootView: View {
 
     private var header: some View {
         HStack {
-            Button("Cancel", action: onCancel)
+            Button("Cancelar", action: onCancel)
                 .font(.system(size: 18, weight: .regular, design: .rounded))
-                .foregroundStyle(Color(.secondaryLabel))
+                .foregroundStyle(Color.blue)
 
             Spacer()
 
@@ -653,7 +653,7 @@ private struct MovementModalRootView: View {
 
     private var kindSelector: some View {
         HStack(spacing: 10) {
-            ForEach(MovementKind.allCases, id: \.rawValue) { option in
+            ForEach(TipoMovimientoModal.allCases, id: \.rawValue) { option in
                 Button {
                     kind = option
                 } label: {
@@ -683,7 +683,7 @@ private struct MovementModalRootView: View {
                 .foregroundStyle(Color(.secondaryLabel))
 
             switch kind {
-            case .entry:
+            case .ingreso:
                 HStack(spacing: 10) {
                     selectionCard(
                         title: "DEL PROVEEDOR",
@@ -707,7 +707,7 @@ private struct MovementModalRootView: View {
                     }
                 }
 
-            case .outgoing:
+            case .salida:
                 HStack(spacing: 10) {
                     selectionCard(
                         title: "DESDE",
@@ -800,7 +800,7 @@ private struct MovementModalRootView: View {
                     RoundedRectangle(cornerRadius: 4, style: .continuous)
                         .fill(
                             Color(
-                                uiColor: kind == .outgoing
+                                uiColor: kind == .salida
                                     ? UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1)
                                     : UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
                             )
@@ -877,7 +877,7 @@ private struct MovementModalRootView: View {
     private var saveButton: some View {
         Button {
             onSave(
-                MovementModalDraft(
+                BorradorModalMovimiento(
                     kind: kind,
                     supplierIndex: supplierIndex,
                     originWarehouseIndex: originWarehouseIndex,
@@ -966,9 +966,9 @@ private struct MovementModalRootView: View {
 
     private var stockTitle: String {
         switch kind {
-        case .entry:
+        case .ingreso:
             return "\(selectedOrigin?.name ?? "Almacén") — Tras recibir"
-        case .outgoing:
+        case .salida:
             return "\(selectedOrigin?.name ?? "Almacén") — Tras salida"
         case .transfer:
             return "\(selectedOrigin?.name ?? "Origen") — Tras transferir"
@@ -979,15 +979,15 @@ private struct MovementModalRootView: View {
         switch kind {
         case .transfer:
             return selectedDestination?.managerName ?? selectedOrigin?.managerName ?? "Sin responsable"
-        case .entry, .outgoing:
+        case .ingreso, .salida:
             return selectedOrigin?.managerName ?? "Sin responsable"
         }
     }
 
     private var notePlaceholder: String {
         switch kind {
-        case .entry: return "Compra de proveedor..."
-        case .outgoing: return "Salida de almacén..."
+        case .ingreso: return "Compra de proveedor..."
+        case .salida: return "Salida de almacén..."
         case .transfer: return "Transferencia entre almacenes..."
         }
     }

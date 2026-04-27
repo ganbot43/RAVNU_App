@@ -7,7 +7,7 @@ import FirebaseFirestore
 
 final class ComprasViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
 
-    private enum PurchaseOrderStatus: String {
+    private enum EstadoOrdenCompra: String {
         case registrada
         case aprobada
         case pagada
@@ -86,9 +86,9 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     private let firestore = Firestore.firestore()
     #endif
 
-    private let context = AppCoreData.viewContext
+    private let contexto = AppCoreData.viewContext
 
-    private let currencyFormatter: NumberFormatter = {
+    private let formateadorMoneda: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "PEN"
@@ -100,20 +100,20 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureUI()
-        configureRoleAccess()
-        configureHybridView()
-        loadData()
+        configurarUI()
+        configurarAccesoPorRol()
+        configurarVistaHibrida()
+        cargarDatos()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadData()
+        cargarDatos()
     }
 
-    private func configureHybridView() {
-        hideLegacyUI()
-        let host = UIHostingController(rootView: makeRootView())
+    private func configurarVistaHibrida() {
+        ocultarVistaLegacy()
+        let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
         host.view.backgroundColor = .clear
@@ -128,7 +128,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         hostingController = host
     }
 
-    private func hideLegacyUI() {
+    private func ocultarVistaLegacy() {
         [
             btnProveedores,
             btnOrdenes,
@@ -153,13 +153,13 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         ].forEach { $0?.isHidden = true }
     }
 
-    private func refreshHybridView() {
-        hostingController?.rootView = makeRootView()
+    private func actualizarVistaHibrida() {
+        hostingController?.rootView = crearVistaRaiz()
     }
 
-    private func makeRootView() -> PurchasesDashboardView {
+    private func crearVistaRaiz() -> PurchasesDashboardView {
         PurchasesDashboardView(
-            data: makeDashboardData(),
+            data: crearDatosDashboard(),
             onBack: { [weak self] in self?.dismiss(animated: true) },
             onAddProvider: { [weak self] in self?.presentAddProviderFlow() },
             onNewOrder: { [weak self] in self?.presentCreateOrderFlow() },
@@ -167,60 +167,60 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         )
     }
 
-    private func makeDashboardData() -> PurchasesDashboardData {
+    private func crearDatosDashboard() -> DatosDashboardCompras {
         let pendingOrders = ordenes.filter {
-            let status = purchaseOrderStatus(for: $0)
+            let status = estadoOrdenCompra(for: $0)
             return status == .registrada || status == .aprobada || status == .pagada
         }
-        let receivedOrders = ordenes.filter { purchaseOrderStatus(for: $0) == .recibida }
-        let cancelledOrders = ordenes.filter { purchaseOrderStatus(for: $0) == .cancelada }
+        let receivedOrders = ordenes.filter { estadoOrdenCompra(for: $0) == .recibida }
+        let cancelledOrders = ordenes.filter { estadoOrdenCompra(for: $0) == .cancelada }
         let totalAmount = ordenes.reduce(0.0) { $0 + $1.total }
         let totalVolume = ordenes.reduce(0.0) { $0 + $1.cantidadLitros }
 
-        let providerCards = proveedoresFiltrados.map { proveedor -> PurchasesDashboardData.ProviderCard in
+        let tarjetasProveedor = proveedoresFiltrados.map { proveedor -> DatosDashboardCompras.TarjetaProveedor in
             let providerOrders = ordenes.filter { $0.proveedor == proveedor }
             let total = providerOrders.reduce(0.0) { $0 + $1.total }
             let rating = providerRating(for: proveedor)
             let accent = providerAccentHex(for: proveedor)
-            return PurchasesDashboardData.ProviderCard(
+            return DatosDashboardCompras.TarjetaProveedor(
                 id: proveedor.id?.uuidString ?? UUID().uuidString,
                 initials: initials(for: proveedor.nombre),
                 name: proveedor.nombre ?? "Proveedor",
                 tags: providerTags(for: proveedor),
-                subtitle: providerSubtitle(for: proveedor),
+                subtitle: subtituloProveedor(for: proveedor),
                 orderCountText: "\(providerOrders.count) orden\(providerOrders.count == 1 ? "" : "es")",
-                totalAmountText: formatCurrency(total),
+                totalAmountText: formatearMoneda(total),
                 ratingText: String(format: "%.1f", rating),
                 accentHex: accent,
                 progress: providerProgressValue(total: total, overall: totalAmount)
             )
         }
 
-        let orderCards = ordenes.map { orden in
+        let tarjetasOrden = ordenes.map { orden in
             let accent = orderAccentHex(for: orden)
-            return PurchasesDashboardData.OrderCard(
+            return DatosDashboardCompras.TarjetaOrden(
                 id: orden.id?.uuidString ?? UUID().uuidString,
                 initials: initials(for: orden.proveedor?.nombre),
                 providerName: orden.proveedor?.nombre ?? "Proveedor",
                 productName: orden.producto?.nombre ?? "Producto",
-                amountText: formatCurrency(orden.total),
-                dateText: formatDate(orden.fecha),
+                amountText: formatearMoneda(orden.total),
+                dateText: formatearFecha(orden.fecha),
                 volumeText: "\(Int(orden.cantidadLitros.rounded()).formatted()) L",
                 warehouseText: orden.almacen?.nombre ?? "Almacén",
                 workerText: orden.almacen?.responsable ?? "Sin responsable",
-                noteText: purchaseOrderNote(for: orden),
-                statusText: purchaseOrderStatus(for: orden).title,
-                statusAccentHex: purchaseOrderStatus(for: orden).accentHex,
+                noteText: notaOrdenCompra(for: orden),
+                statusText: estadoOrdenCompra(for: orden).title,
+                statusAccentHex: estadoOrdenCompra(for: orden).accentHex,
                 accentHex: accent
             )
         }
 
-        let ranking = providerCards
+        let ranking = tarjetasProveedor
             .sorted { currencyValue($0.totalAmountText) > currencyValue($1.totalAmountText) }
             .prefix(3)
             .enumerated()
             .map { index, card in
-                PurchasesDashboardData.RankingRow(
+                DatosDashboardCompras.FilaRanking(
                     rank: index + 1,
                     initials: card.initials,
                     name: card.name,
@@ -241,8 +241,8 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             }
             .sorted { $0.total > $1.total }
 
-        let productSlices = productTotals.map {
-            PurchasesDashboardData.ProductSlice(
+        let segmentosProducto = productTotals.map {
+            DatosDashboardCompras.SegmentoProducto(
                 name: $0.name,
                 valueText: "\(Int((totalAmount > 0 ? ($0.total / totalAmount) * 100 : 0).rounded()))%",
                 accentHex: colorHexForProductName($0.name),
@@ -250,8 +250,8 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             )
         }
 
-        let productBars = productTotals.map {
-            PurchasesDashboardData.ProductBar(
+        let barrasProducto = productTotals.map {
+            DatosDashboardCompras.BarraProducto(
                 shortName: shortProductName($0.name),
                 accentHex: colorHexForProductName($0.name),
                 amountRatio: totalAmount > 0 ? $0.total / totalAmount : 0,
@@ -259,20 +259,20 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             )
         }
 
-        return PurchasesDashboardData(
+        return DatosDashboardCompras(
             title: "Compras",
             pendingBadgeText: "\(pendingOrders.count) pendiente\(pendingOrders.count == 1 ? "" : "s")",
             canCreateOrder: RoleAccessControl.canManagePurchases,
             providerCountText: "\(proveedores.count) PROVEEDORES",
-            providerCards: providerCards,
-            totalSpendText: formatCurrency(totalAmount),
+            tarjetasProveedor: tarjetasProveedor,
+            totalSpendText: formatearMoneda(totalAmount),
             pendingCountText: "\(pendingOrders.count)",
             receivedCountText: "\(receivedOrders.count)",
             cancelledCountText: "\(cancelledOrders.count)",
-            orderCards: orderCards,
-            rankingRows: Array(ranking),
-            productSlices: productSlices,
-            productBars: productBars,
+            tarjetasOrden: tarjetasOrden,
+            filasRanking: Array(ranking),
+            segmentosProducto: segmentosProducto,
+            barrasProducto: barrasProducto,
             totalVolumeText: "\(Int(totalVolume.rounded()).formatted())L",
             totalProvidersText: "\(proveedores.count)"
         )
@@ -305,14 +305,10 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         return tags
     }
 
-    private func providerSubtitle(for proveedor: ProveedorEntity) -> String {
+    private func subtituloProveedor(for proveedor: ProveedorEntity) -> String {
         if let categoria = proveedor.categoria, categoria.isEmpty == false {
             return categoria
         }
-        let name = (proveedor.nombre ?? "").lowercased()
-        if name.contains("petro") { return "State-owned" }
-        if name.contains("repsol") { return "International" }
-        if name.contains("primax") { return "National chain" }
         return "Proveedor activo"
     }
 
@@ -329,14 +325,11 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         return min(max(total / overall, 0), 1)
     }
 
-    private func purchaseOrderNote(for orden: OrdenCompraEntity) -> String {
+    private func notaOrdenCompra(for orden: OrdenCompraEntity) -> String {
         if let nota = orden.nota, nota.isEmpty == false {
             return "\"\(nota)\""
         }
-        let product = orden.producto?.nombre?.lowercased() ?? ""
-        if product.contains("diesel") { return "\"Entrega mensual regular\"" }
-        if product.contains("95") { return "\"Reposición de alto octanaje\"" }
-        return "\"Abastecimiento programado\""
+        return "\"Sin observaciones\""
     }
 
     private func colorHexForProductName(_ name: String) -> String {
@@ -365,7 +358,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         return Double(digits.trimmingCharacters(in: .whitespaces)) ?? 0
     }
 
-    private func configureUI() {
+    private func configurarUI() {
         configureTable(proveedoresTableView, identifier: proveedorCellIdentifier)
         configureTable(ordenesTableView, identifier: ordenCellIdentifier)
         proveedoresSearchBar?.delegate = self
@@ -405,7 +398,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         tableView?.showsVerticalScrollIndicator = false
     }
 
-    private func configureRoleAccess() {
+    private func configurarAccesoPorRol() {
         let shouldHideCreateActions = RoleAccessControl.canManagePurchases == false
         RoleAccessControl.configureButtons(
             in: view,
@@ -415,7 +408,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         )
     }
 
-    private func loadData() {
+    private func cargarDatos() {
         do {
             proveedores = try fetchProveedores()
             ordenes = try fetchOrdenes()
@@ -434,31 +427,31 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             updateProviderEmptyState()
             updateMetrics()
         }
-        refreshHybridView()
+        actualizarVistaHibrida()
     }
 
     private func fetchProveedores() throws -> [ProveedorEntity] {
         let request: NSFetchRequest<ProveedorEntity> = ProveedorEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-        return try context.fetch(request)
+        return try contexto.fetch(request)
     }
 
     private func fetchOrdenes() throws -> [OrdenCompraEntity] {
         let request: NSFetchRequest<OrdenCompraEntity> = OrdenCompraEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "fecha", ascending: false)]
-        return try context.fetch(request)
+        return try contexto.fetch(request)
     }
 
     private func fetchProductos() throws -> [ProductoEntity] {
         let request: NSFetchRequest<ProductoEntity> = ProductoEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-        return try context.fetch(request)
+        return try contexto.fetch(request)
     }
 
     private func fetchAlmacenes() throws -> [AlmacenEntity] {
         let request: NSFetchRequest<AlmacenEntity> = AlmacenEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-        return try context.fetch(request)
+        return try contexto.fetch(request)
     }
 
     private func updateMetrics() {
@@ -468,10 +461,10 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         let volumen = ordenes.reduce(0.0) { $0 + $1.cantidadLitros }
 
         lblPendientesBadge?.text = pendientes.isEmpty ? "Sin pendientes" : "\(pendientes.count) pendiente"
-        lblGastoTotal?.text = formatCurrency(total)
+        lblGastoTotal?.text = formatearMoneda(total)
         lblPendientes?.text = "\(pendientes.count)"
         lblRecibidas?.text = "\(recibidas.count)"
-        lblAnalisisGasto?.text = formatCurrency(total)
+        lblAnalisisGasto?.text = formatearMoneda(total)
         lblAnalisisVolumen?.text = "\(Int(volumen.rounded()).formatted())L"
         lblAnalisisProveedores?.text = "\(proveedores.count)"
         lblRanking?.text = rankingDescription()
@@ -517,7 +510,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
 
         guard !grouped.isEmpty else { return "Sin proveedores activos" }
         return grouped.prefix(3).enumerated().map { index, item in
-            "#\(index + 1) \(item.name) \(formatCurrency(item.total))"
+            "#\(index + 1) \(item.name) \(formatearMoneda(item.total))"
         }.joined(separator: " · ")
     }
 
@@ -527,7 +520,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             .sorted { $0.total > $1.total }
 
         guard !grouped.isEmpty else { return "Sin gasto por producto" }
-        return grouped.prefix(3).map { "\($0.name): \(formatCurrency($0.total))" }.joined(separator: " · ")
+        return grouped.prefix(3).map { "\($0.name): \(formatearMoneda($0.total))" }.joined(separator: " · ")
     }
 
     private func productVolumeDescription() -> String {
@@ -576,11 +569,11 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         button?.configuration = config
     }
 
-    private func formatCurrency(_ value: Double) -> String {
-        currencyFormatter.string(from: NSNumber(value: value)) ?? "S/0"
+    private func formatearMoneda(_ value: Double) -> String {
+        formateadorMoneda.string(from: NSNumber(value: value)) ?? "S/0"
     }
 
-    private func formatDate(_ date: Date?) -> String {
+    private func formatearFecha(_ date: Date?) -> String {
         guard let date else { return "Sin fecha" }
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "es_PE")
@@ -631,7 +624,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                 title: proveedor.nombre ?? "Proveedor",
                 subtitle: proveedor.documento ?? proveedor.telefono ?? "Sin datos",
                 detail: "\(ordenesProveedor.count) orden(es)",
-                amount: formatCurrency(total),
+                amount: formatearMoneda(total),
                 badge: proveedor.activo ? "Activo" : "Inactivo",
                 color: proveedor.activo ? UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1) : inactiveColor
             )
@@ -645,8 +638,8 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             initials: initials(for: orden.proveedor?.nombre),
             title: orden.proveedor?.nombre ?? "Proveedor",
             subtitle: orden.producto?.nombre ?? "Producto",
-            detail: "\(Int(orden.cantidadLitros.rounded()).formatted())L · \(orden.almacen?.nombre ?? "Almacén") · \(formatDate(orden.fecha))",
-            amount: formatCurrency(orden.total),
+            detail: "\(Int(orden.cantidadLitros.rounded()).formatted())L · \(orden.almacen?.nombre ?? "Almacén") · \(formatearFecha(orden.fecha))",
+            amount: formatearMoneda(orden.total),
             badge: estado,
             color: estadoColor
         )
@@ -683,8 +676,8 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         return UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 1)
     }
 
-    private func purchaseOrderStatus(for orden: OrdenCompraEntity) -> PurchaseOrderStatus {
-        PurchaseOrderStatus(value: orden.estado)
+    private func estadoOrdenCompra(for orden: OrdenCompraEntity) -> EstadoOrdenCompra {
+        EstadoOrdenCompra(value: orden.estado)
     }
 
     private func orderAccentHex(for orden: OrdenCompraEntity) -> String {
@@ -705,13 +698,13 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             return
         }
         let providerOptions = proveedores.map {
-            PurchaseOrderSheetView.ProviderOption(
+            PurchaseOrderSheetView.OpcionProveedor(
                 id: $0.id?.uuidString ?? UUID().uuidString,
                 name: $0.nombre ?? "Proveedor"
             )
         }
         let productOptions = productos.map {
-            PurchaseOrderSheetView.ProductOption(
+            PurchaseOrderSheetView.OpcionProducto(
                 id: $0.id?.uuidString ?? UUID().uuidString,
                 name: $0.nombre ?? "Producto",
                 availableStock: $0.stockLitros,
@@ -719,7 +712,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             )
         }
         let warehouseOptions = almacenes.map {
-            PurchaseOrderSheetView.WarehouseOption(
+            PurchaseOrderSheetView.OpcionAlmacen(
                 id: $0.id?.uuidString ?? UUID().uuidString,
                 name: $0.nombre ?? "Almacén",
                 managerName: $0.responsable ?? "Sin responsable"
@@ -732,7 +725,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                 products: productOptions,
                 warehouses: warehouseOptions,
                 onCancel: { [weak self] in self?.dismiss(animated: true) },
-                onSave: { [weak self] draft in self?.handlePurchaseOrderDraft(draft) }
+                onSave: { [weak self] draft in self?.handleBorradorOrdenCompra(draft) }
             )
         )
         controller.modalPresentationStyle = .pageSheet
@@ -771,12 +764,12 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         let existingRequest: NSFetchRequest<ProveedorEntity> = ProveedorEntity.fetchRequest()
         existingRequest.fetchLimit = 1
         existingRequest.predicate = NSPredicate(format: "nombre =[c] %@", trimmedName)
-        if ((try? context.fetch(existingRequest)) ?? []).isEmpty == false {
+        if ((try? contexto.fetch(existingRequest)) ?? []).isEmpty == false {
             showAlert(title: "Proveedor", message: "Ya existe un proveedor con ese nombre.")
             return
         }
 
-        let proveedor = ProveedorEntity(context: context)
+        let proveedor = ProveedorEntity(context: contexto)
         proveedor.id = UUID()
         proveedor.nombre = trimmedName
         proveedor.categoria = draft.category
@@ -790,64 +783,64 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         proveedor.activo = true
 
         do {
-            try context.save()
+            try contexto.save()
             syncSupplierToRemote(proveedor, draft: draft)
             dismiss(animated: true) { [weak self] in
-                self?.loadData()
+                self?.cargarDatos()
                 self?.showAlert(title: "Compras", message: "Proveedor agregado.")
             }
         } catch {
-            context.rollback()
+            contexto.rollback()
             showAlert(title: "Error", message: "No se pudo guardar el proveedor.")
         }
     }
 
-    private func handlePurchaseOrderDraft(_ draft: PurchaseOrderDraft) {
+    private func handleBorradorOrdenCompra(_ draft: BorradorOrdenCompra) {
         guard
-            proveedores.indices.contains(draft.providerIndex),
-            productos.indices.contains(draft.productIndex),
-            almacenes.indices.contains(draft.warehouseIndex)
+            proveedores.indices.contains(draft.indiceProveedor),
+            productos.indices.contains(draft.indiceProducto),
+            almacenes.indices.contains(draft.indiceAlmacen)
         else {
             showAlert(title: "Compras", message: "Completa los datos de la orden.")
             return
         }
 
-        guard draft.quantity > 0 else {
+        guard draft.cantidad > 0 else {
             showAlert(title: "Compras", message: "Ingresa una cantidad válida.")
             return
         }
 
-        guard draft.unitPrice > 0 else {
+        guard draft.precioUnitario > 0 else {
             showAlert(title: "Compras", message: "Ingresa un precio válido.")
             return
         }
 
-        let proveedor = proveedores[draft.providerIndex]
-        let producto = productos[draft.productIndex]
-        let almacen = almacenes[draft.warehouseIndex]
+        let proveedor = proveedores[draft.indiceProveedor]
+        let producto = productos[draft.indiceProducto]
+        let almacen = almacenes[draft.indiceAlmacen]
         ensureIdentifiers(proveedor: proveedor, producto: producto, almacen: almacen)
 
-        let orden = OrdenCompraEntity(context: context)
+        let orden = OrdenCompraEntity(context: contexto)
         orden.id = UUID()
         orden.proveedor = proveedor
         orden.producto = producto
         orden.almacen = almacen
-        orden.cantidadLitros = draft.quantity
-        orden.precioUnitarioCompra = draft.unitPrice
-        orden.total = draft.quantity * draft.unitPrice
+        orden.cantidadLitros = draft.cantidad
+        orden.precioUnitarioCompra = draft.precioUnitario
+        orden.total = draft.cantidad * draft.precioUnitario
         orden.fecha = Date()
-        orden.estado = PurchaseOrderStatus.registrada.rawValue
-        orden.nota = draft.notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        orden.estado = EstadoOrdenCompra.registrada.rawValue
+        orden.nota = draft.notas.trimmingCharacters(in: .whitespacesAndNewlines)
 
         do {
-            try context.save()
-            syncPurchaseOrderToRemote(orden, event: .registrada, note: draft.notes, unitPrice: draft.unitPrice)
+            try contexto.save()
+            syncPurchaseOrderToRemote(orden, event: .registrada, note: draft.notas, unitPrice: draft.precioUnitario)
             dismiss(animated: true) { [weak self] in
-                self?.loadData()
+                self?.cargarDatos()
                 self?.showAlert(title: "Compras", message: "Compra registrada.")
             }
         } catch {
-            context.rollback()
+            contexto.rollback()
             showAlert(title: "Error", message: "No se pudo registrar la compra.")
         }
     }
@@ -866,7 +859,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     private func presentProductoSelection(for proveedor: ProveedorEntity) {
         let alert = UIAlertController(title: "Producto", message: "Selecciona el producto", preferredStyle: .actionSheet)
         productos.forEach { producto in
-            let title = "\(producto.nombre ?? "Producto") · \(formatCurrency(producto.precioPorLitro)) / L"
+            let title = "\(producto.nombre ?? "Producto") · \(formatearMoneda(producto.precioPorLitro)) / L"
             alert.addAction(UIAlertAction(title: title, style: .default) { [weak self] _ in
                 self?.presentWarehouseSelection(for: proveedor, producto: producto)
             })
@@ -912,7 +905,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     private func createPurchaseOrder(proveedor: ProveedorEntity, producto: ProductoEntity, almacen: AlmacenEntity, cantidadLitros: Double) {
         ensureIdentifiers(proveedor: proveedor, producto: producto, almacen: almacen)
 
-        let orden = OrdenCompraEntity(context: context)
+        let orden = OrdenCompraEntity(context: contexto)
         orden.id = UUID()
         orden.proveedor = proveedor
         orden.producto = producto
@@ -920,21 +913,21 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         orden.cantidadLitros = cantidadLitros
         orden.total = cantidadLitros * producto.precioPorLitro
         orden.fecha = Date()
-        orden.estado = PurchaseOrderStatus.registrada.rawValue
+        orden.estado = EstadoOrdenCompra.registrada.rawValue
 
         do {
-            try context.save()
+            try contexto.save()
             syncPurchaseOrderToRemote(orden, event: .registrada)
-            loadData()
+            cargarDatos()
             showAlert(title: "Compras", message: "Compra registrada.")
         } catch {
-            context.rollback()
+            contexto.rollback()
             showAlert(title: "Error", message: "No se pudo registrar la compra.")
         }
     }
 
     private func presentOrderActions(for orden: OrdenCompraEntity) {
-        let status = PurchaseOrderStatus(value: orden.estado)
+        let status = EstadoOrdenCompra(value: orden.estado)
         let alert = UIAlertController(
             title: orden.proveedor?.nombre ?? "Orden de compra",
             message: "Estado actual: \(status.title)",
@@ -968,14 +961,14 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         present(alert, animated: true)
     }
 
-    private func updateOrderStatus(_ orden: OrdenCompraEntity, to newStatus: PurchaseOrderStatus) {
+    private func updateOrderStatus(_ orden: OrdenCompraEntity, to newStatus: EstadoOrdenCompra) {
         orden.estado = newStatus.rawValue
         do {
-            try context.save()
+            try contexto.save()
             syncPurchaseOrderToRemote(orden, event: newStatus)
-            loadData()
+            cargarDatos()
         } catch {
-            context.rollback()
+            contexto.rollback()
             showAlert(title: "Error", message: "No se pudo actualizar la orden.")
         }
     }
@@ -998,7 +991,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         stock.capacidadTotal = producto.capacidadTotal
         stock.unidadMedida = producto.unidadMedida ?? "L"
 
-        let movimiento = MovimientoInventarioEntity(context: context)
+        let movimiento = MovimientoInventarioEntity(context: contexto)
         movimiento.id = UUID()
         movimiento.fecha = Date()
         movimiento.tipo = "entrada"
@@ -1010,16 +1003,16 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         movimiento.nota = "Ingreso por orden \(orden.id?.uuidString ?? "")"
 
         producto.stockLitros = totalStock(for: producto)
-        orden.estado = PurchaseOrderStatus.recibida.rawValue
+        orden.estado = EstadoOrdenCompra.recibida.rawValue
 
         do {
-            try context.save()
+            try contexto.save()
             syncPurchaseOrderToRemote(orden, event: .recibida)
             syncInboundMovementToRemote(orden: orden, movimiento: movimiento, stock: stock)
-            loadData()
+            cargarDatos()
             showAlert(title: "Compras", message: "Stock ingresado al almacén.")
         } catch {
-            context.rollback()
+            contexto.rollback()
             showAlert(title: "Error", message: "No se pudo ingresar la compra al almacén.")
         }
     }
@@ -1041,14 +1034,14 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
 
-        if let existing = try? context.fetch(request).first {
+        if let existing = try? contexto.fetch(request).first {
             if existing.id == nil {
                 existing.id = UUID()
             }
             return existing
         }
 
-        let stock = StockAlmacenEntity(context: context)
+        let stock = StockAlmacenEntity(context: contexto)
         stock.id = UUID()
         stock.producto = producto
         stock.almacen = almacen
@@ -1062,7 +1055,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     private func totalStock(for producto: ProductoEntity) -> Double {
         let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
         request.predicate = NSPredicate(format: "producto == %@", producto)
-        return ((try? context.fetch(request)) ?? []).reduce(0) { $0 + $1.stockActual }
+        return ((try? contexto.fetch(request)) ?? []).reduce(0) { $0 + $1.stockActual }
     }
 
     private func showAlert(title: String, message: String) {
@@ -1073,7 +1066,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
 
     private func syncPurchaseOrderToRemote(
         _ orden: OrdenCompraEntity,
-        event: PurchaseOrderStatus,
+        event: EstadoOrdenCompra,
         note: String? = nil,
         unitPrice: Double? = nil
     ) {
@@ -1098,7 +1091,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             "warehouseId": almacenId,
             "cantidadLitros": orden.cantidadLitros,
             "total": orden.total,
-            "estado": orden.estado ?? PurchaseOrderStatus.registrada.rawValue,
+            "estado": orden.estado ?? EstadoOrdenCompra.registrada.rawValue,
             "fecha": Timestamp(date: orden.fecha ?? Date()),
             "updatedAt": Timestamp(date: Date())
         ]
@@ -1144,6 +1137,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                     self?.showAlert(title: "Firebase", message: "La orden quedó local, pero no se sincronizó: \(error.localizedDescription)")
                     return
                 }
+                TreasuryRemoteSync.syncPurchaseExpenseIfNeeded(orden: orden, status: event.rawValue)
                 AppSession.shared.lastRemoteSyncAt = Date()
             }
         }
@@ -1245,15 +1239,15 @@ private final class CompraCardCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        configureUI()
+        configurarUI()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        configureUI()
+        configurarUI()
     }
 
-    private func configureUI() {
+    private func configurarUI() {
         backgroundColor = .clear
         contentView.backgroundColor = .clear
         selectionStyle = .none

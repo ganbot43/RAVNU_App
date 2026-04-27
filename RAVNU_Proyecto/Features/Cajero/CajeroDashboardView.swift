@@ -1,35 +1,35 @@
 import SwiftUI
 import Charts
 
-struct CajeroDashboardViewData {
-    struct Metric: Identifiable {
+struct DatosDashboardCajero {
+    struct Metrica: Identifiable {
         let id = UUID()
-        let title: String
-        let value: String
-        let icon: String
+        let titulo: String
+        let valor: String
+        let icono: String
         let color: Color
     }
 
-    struct WeekSale: Identifiable {
+    struct VentaSemanal: Identifiable {
         let id = UUID()
-        let day: String
-        let value: Double
-        let isHighlighted: Bool
+        let dia: String
+        let monto: Double
+        let destacado: Bool
     }
 
-    let notificationCount: Int
-    let metrics: [Metric]
-    let weekSales: [WeekSale]
-    let lowStockTitle: String
-    let lowStockDetail: String
-    let lowStockBadge: String
-    let debtorName: String
-    let debtorAmount: String
-    let debtorStatus: String
+    let cantidadNotificaciones: Int
+    let metricas: [Metrica]
+    let ventasSemanales: [VentaSemanal]
+    let tituloStockBajo: String
+    let detalleStockBajo: String
+    let badgeStockBajo: String
+    let nombreDeudor: String
+    let deudaDeudor: String
+    let estadoDeudor: String
 }
 
 struct CajeroDashboardView: View {
-    let data: CajeroDashboardViewData
+    let datos: DatosDashboardCajero
 
     var body: some View {
         VStack(spacing: 0) {
@@ -60,7 +60,7 @@ struct CajeroDashboardView: View {
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(RavnuColor.blue)
 
-                Text("\(data.notificationCount)")
+                Text("\(datos.cantidadNotificaciones)")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.white)
                     .frame(width: 16, height: 16)
@@ -76,19 +76,19 @@ struct CajeroDashboardView: View {
     private var metricsSection: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                ForEach(data.metrics) { metric in
+                ForEach(datos.metricas) { metrica in
                     VStack(alignment: .leading, spacing: 6) {
-                        Image(systemName: metric.icon)
+                        Image(systemName: metrica.icono)
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(metric.color)
+                            .foregroundStyle(metrica.color)
 
-                        Text(metric.title)
+                        Text(metrica.titulo)
                             .font(.system(size: 13, weight: .regular, design: .rounded))
                             .foregroundStyle(RavnuColor.gray)
 
-                        Text(metric.value)
+                        Text(metrica.valor)
                             .font(.system(size: 20, weight: .bold, design: .rounded))
-                            .foregroundStyle(metric.color)
+                            .foregroundStyle(metrica.color)
                     }
                     .frame(width: 140, height: 90, alignment: .topLeading)
                     .padding(14)
@@ -109,12 +109,12 @@ struct CajeroDashboardView: View {
                     .font(.system(size: 16, weight: .semibold, design: .rounded))
                     .foregroundStyle(RavnuColor.text)
 
-                Chart(data.weekSales) { item in
+                Chart(datos.ventasSemanales) { item in
                     BarMark(
-                        x: .value("Día", item.day),
-                        y: .value("Monto", item.value)
+                        x: .value("Día", item.dia),
+                        y: .value("Monto", item.monto)
                     )
-                    .foregroundStyle(item.isHighlighted ? RavnuColor.blue : RavnuColor.blue.opacity(0.5))
+                    .foregroundStyle(item.destacado ? RavnuColor.blue : RavnuColor.blue.opacity(0.5))
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
                 .frame(height: 120)
@@ -150,11 +150,11 @@ struct CajeroDashboardView: View {
                             .foregroundStyle(RavnuColor.orange)
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(data.lowStockTitle)
+                            Text(datos.tituloStockBajo)
                                 .font(.system(size: 15, weight: .semibold, design: .rounded))
                                 .foregroundStyle(RavnuColor.text)
 
-                            Text(data.lowStockDetail)
+                            Text(datos.detalleStockBajo)
                                 .font(.system(size: 13, weight: .regular, design: .rounded))
                                 .foregroundStyle(RavnuColor.gray)
                         }
@@ -162,7 +162,7 @@ struct CajeroDashboardView: View {
 
                     Spacer()
 
-                    Text(data.lowStockBadge)
+                    Text(datos.badgeStockBajo)
                         .font(.system(size: 11, weight: .semibold, design: .rounded))
                         .foregroundStyle(RavnuColor.red)
                         .padding(.horizontal, 8)
@@ -188,13 +188,13 @@ struct CajeroDashboardView: View {
 
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Text(data.debtorName)
+                        Text(datos.nombreDeudor)
                             .font(.system(size: 16, weight: .bold, design: .rounded))
                             .foregroundStyle(RavnuColor.text)
 
                         Spacer()
 
-                        Text(data.debtorStatus)
+                        Text(datos.estadoDeudor)
                             .font(.system(size: 11, weight: .semibold, design: .rounded))
                             .foregroundStyle(RavnuColor.red)
                             .padding(.horizontal, 8)
@@ -208,7 +208,7 @@ struct CajeroDashboardView: View {
                                 .font(.system(size: 12, weight: .regular, design: .rounded))
                                 .foregroundStyle(RavnuColor.gray)
 
-                            Text(data.debtorAmount)
+                            Text(datos.deudaDeudor)
                                 .font(.system(size: 24, weight: .bold, design: .rounded))
                                 .foregroundStyle(RavnuColor.red)
                         }

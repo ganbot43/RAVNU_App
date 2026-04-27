@@ -21,11 +21,15 @@ final class ModalAlmacenViewController: UIViewController {
     #endif
 
     private let context = AppCoreData.viewContext
+    private var responsablesDisponibles: [String] = []
+    private let selectorResponsable = UIPickerView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         btnGuardar?.layer.cornerRadius = 16
         btnGuardar?.clipsToBounds = true
+        configurarSelectorResponsable()
+        cargarResponsables()
     }
 
     private func validateInputs() -> String? {
@@ -123,6 +127,54 @@ final class ModalAlmacenViewController: UIViewController {
         present(alert, animated: true)
     }
 
+    private func configurarSelectorResponsable() {
+        selectorResponsable.dataSource = self
+        selectorResponsable.delegate = self
+        txtResponsable?.inputView = selectorResponsable
+
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        toolbar.items = [
+            UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
+            UIBarButtonItem(title: "Listo", style: .done, target: self, action: #selector(confirmarResponsable))
+        ]
+        txtResponsable?.inputAccessoryView = toolbar
+    }
+
+    private func cargarResponsables() {
+        #if canImport(FirebaseFirestore)
+        guard FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled else { return }
+        firestore.collection("users").getDocuments { [weak self] snapshot, _ in
+            guard let self else { return }
+            let trabajadores = (snapshot?.documents ?? []).compactMap { document -> String? in
+                let data = document.data()
+                let roleId = ((data["roleId"] as? String) ?? (data["role"] as? String) ?? "").lowercased()
+                let activo = (data["active"] as? Bool) ?? (data["status"] as? Bool) ?? true
+                guard activo, roleId == "almacenero" || roleId == "almacen" else { return nil }
+                return (data["fullName"] as? String) ?? (data["username"] as? String)
+            }
+            .sorted()
+
+            DispatchQueue.main.async {
+                self.responsablesDisponibles = trabajadores
+                self.selectorResponsable.reloadAllComponents()
+                if self.txtResponsable?.text?.isEmpty != false, let primero = trabajadores.first {
+                    self.txtResponsable?.text = primero
+                }
+            }
+        }
+        #endif
+    }
+
+    @objc
+    private func confirmarResponsable() {
+        let indice = selectorResponsable.selectedRow(inComponent: 0)
+        if responsablesDisponibles.indices.contains(indice) {
+            txtResponsable?.text = responsablesDisponibles[indice]
+        }
+        txtResponsable?.resignFirstResponder()
+    }
+
     @IBAction private func btnCancelarTapped(_ sender: UIButton) {
         dismiss(animated: true)
     }
@@ -140,5 +192,22 @@ final class ModalAlmacenViewController: UIViewController {
         } catch {
             showAlert(title: "Error", message: "No se pudo guardar el almacén.")
         }
+    }
+}
+
+extension ModalAlmacenViewController: UIPickerViewDataSource, UIPickerViewDelegate {
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        1
+    }
+
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        max(responsablesDisponibles.count, 1)
+    }
+
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        if responsablesDisponibles.isEmpty {
+            return "No hay almaceneros"
+        }
+        return responsablesDisponibles[row]
     }
 }

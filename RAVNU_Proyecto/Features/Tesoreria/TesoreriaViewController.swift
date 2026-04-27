@@ -17,7 +17,7 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
     @IBOutlet private weak var lblIngresosGastos: UILabel?
     @IBOutlet private weak var lblDesglose: UILabel?
 
-    private enum TransactionKind {
+    private enum TipoTransaccion {
         case ingreso
         case gasto
 
@@ -36,32 +36,32 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
         }
     }
 
-    private struct TreasuryTransaction {
+    private struct TransaccionTesoreria {
         let id: String
-        let title: String
-        let subtitle: String
-        let amount: Double
+        let titulo: String
+        let subtitulo: String
+        let monto: Double
         let date: Date
-        let kind: TransactionKind
+        let tipo: TipoTransaccion
     }
 
-    private struct TreasuryMonthSummary {
-        let monthLabel: String
-        let income: Double
-        let expense: Double
+    private struct ResumenMensualTesoreria {
+        let etiquetaMes: String
+        let ingresos: Double
+        let gastos: Double
 
-        var net: Double { income - expense }
+        var saldoNeto: Double { ingresos - gastos }
     }
 
     private var hostingController: UIHostingController<TreasuryDashboardView>?
-    private var transactions: [TreasuryTransaction] = []
-    private var monthlySummaries: [TreasuryMonthSummary] = []
-    private var totalIncome: Double = 0
-    private var totalExpense: Double = 0
+    private var transacciones: [TransaccionTesoreria] = []
+    private var resumenesMensuales: [ResumenMensualTesoreria] = []
+    private var totalIngresos: Double = 0
+    private var totalGastos: Double = 0
 
-    private let context = AppCoreData.viewContext
+    private let contexto = AppCoreData.viewContext
 
-    private let currencyFormatter: NumberFormatter = {
+    private let formateadorMoneda: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "PEN"
@@ -73,17 +73,17 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureRoleAccess()
-        configureHybridView()
-        loadTreasuryData()
+        configurarAccesoPorRol()
+        configurarVistaHibrida()
+        cargarDatosTesoreria()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadTreasuryData()
+        cargarDatosTesoreria()
     }
 
-    private func configureRoleAccess() {
+    private func configurarAccesoPorRol() {
         let shouldHideCreateActions = RoleAccessControl.canAddTreasuryAdjustments == false
         RoleAccessControl.configureButtons(
             in: view,
@@ -93,9 +93,9 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
         )
     }
 
-    private func configureHybridView() {
-        hideLegacyUI()
-        let host = UIHostingController(rootView: makeRootView())
+    private func configurarVistaHibrida() {
+        ocultarVistaLegacy()
+        let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
         host.view.backgroundColor = .clear
@@ -110,7 +110,7 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
         hostingController = host
     }
 
-    private func hideLegacyUI() {
+    private func ocultarVistaLegacy() {
         [
             btnResumen,
             btnTransacciones,
@@ -129,146 +129,149 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
         tableView?.delegate = self
     }
 
-    private func refreshHybridView() {
-        hostingController?.rootView = makeRootView()
+    private func actualizarVistaHibrida() {
+        hostingController?.rootView = crearVistaRaiz()
     }
 
-    private func makeRootView() -> TreasuryDashboardView {
+    private func crearVistaRaiz() -> TreasuryDashboardView {
         TreasuryDashboardView(
-            data: makeDashboardData(),
+            data: crearDatosDashboard(),
             onBack: { [weak self] in self?.dismiss(animated: true) },
-            onAdd: { [weak self] in self?.presentTreasuryInfoAlert() }
+            onAdd: { [weak self] in self?.mostrarAlertaInfoTesoreria() }
         )
     }
 
-    private func loadTreasuryData() {
+    private func cargarDatosTesoreria() {
         do {
-            let ventas = try fetchVentas()
-            let cuotas = try fetchCuotasPagadas()
-            let ordenes = try fetchOrdenesCompra()
+            let ventas = try obtenerVentas()
+            let cuotas = try obtenerCuotasPagadas()
+            let ordenes = try obtenerOrdenesCompra()
 
-            transactions = buildTransactions(ventas: ventas, cuotas: cuotas, ordenes: ordenes)
-            totalIncome = transactions.filter { $0.kind == .ingreso }.reduce(0) { $0 + $1.amount }
-            totalExpense = transactions.filter { $0.kind == .gasto }.reduce(0) { $0 + $1.amount }
-            monthlySummaries = buildMonthlySummaries(from: transactions)
-            refreshHybridView()
+            transacciones = construirTransacciones(ventas: ventas, cuotas: cuotas, ordenes: ordenes)
+            totalIngresos = transacciones.filter { $0.tipo == .ingreso }.reduce(0) { $0 + $1.monto }
+            totalGastos = transacciones.filter { $0.tipo == .gasto }.reduce(0) { $0 + $1.monto }
+            resumenesMensuales = construirResumenesMensuales(desde: transacciones)
+            actualizarVistaHibrida()
         } catch {
-            transactions = []
-            totalIncome = 0
-            totalExpense = 0
-            monthlySummaries = []
-            refreshHybridView()
+            transacciones = []
+            totalIngresos = 0
+            totalGastos = 0
+            resumenesMensuales = []
+            actualizarVistaHibrida()
         }
     }
 
-    private func makeDashboardData() -> TreasuryDashboardData {
-        let balance = totalIncome - totalExpense
-        let margin = totalIncome == 0 ? 0 : Int(((balance / totalIncome) * 100).rounded())
+    private func crearDatosDashboard() -> TreasuryDashboardData {
+        let saldo = totalIngresos - totalGastos
+        let margen = totalIngresos == 0 ? 0 : Int(((saldo / totalIngresos) * 100).rounded())
 
-        let trendValues = monthlySummaries.map(\.net)
-        let bars = monthlySummaries.map {
+        let tendenciaSaldo = resumenesMensuales.map(\.saldoNeto)
+        let barrasMensuales = resumenesMensuales.map {
             TreasuryDashboardData.MonthBar(
-                monthLabel: $0.monthLabel,
-                incomeValue: $0.income,
-                expenseValue: $0.expense
+                monthLabel: $0.etiquetaMes,
+                incomeValue: $0.ingresos,
+                expenseValue: $0.gastos
             )
         }
 
-        let expenseRows = expenseBreakdownRows()
-        let transactionRows = transactions.map {
+        let filasGastos = crearFilasDesgloseGastos()
+        let filasTransacciones = transacciones.map {
             TreasuryDashboardData.TransactionRow(
                 id: $0.id,
-                title: $0.title,
-                subtitle: $0.subtitle,
-                amountText: "\($0.kind.sign)\(formatCurrency($0.amount))",
-                dateText: relativeDateText(from: $0.date),
+                title: $0.titulo,
+                subtitle: $0.subtitulo,
+                amountText: "\($0.tipo.sign)\(formatearMoneda($0.monto))",
+                dateText: textoFechaRelativa(desde: $0.date),
                 date: $0.date,
-                accentHex: $0.kind.accentHex,
-                isIncome: $0.kind == .ingreso
+                accentHex: $0.tipo.accentHex,
+                isIncome: $0.tipo == .ingreso
             )
         }
 
         return TreasuryDashboardData(
-            balanceText: formatCurrency(balance),
-            marginText: totalIncome == 0 ? "Sin movimientos este mes" : "\(margin)% margen neto este mes",
-            incomeText: formatCurrency(totalIncome),
-            expenseText: formatCurrency(totalExpense),
-            trendValues: trendValues,
-            monthBars: bars,
-            expenseBreakdown: expenseRows,
-            transactions: transactionRows,
+            balanceText: formatearMoneda(saldo),
+            marginText: totalIngresos == 0 ? "Sin movimientos este mes" : "\(margen)% margen neto este mes",
+            incomeText: formatearMoneda(totalIngresos),
+            expenseText: formatearMoneda(totalGastos),
+            trendValues: tendenciaSaldo,
+            monthBars: barrasMensuales,
+            expenseBreakdown: filasGastos,
+            transactions: filasTransacciones,
             canAdd: RoleAccessControl.canAddTreasuryAdjustments
         )
     }
 
-    private func fetchVentas() throws -> [VentaEntity] {
+    private func obtenerVentas() throws -> [VentaEntity] {
         let request: NSFetchRequest<VentaEntity> = VentaEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "fechaVenta", ascending: false)]
-        return try context.fetch(request)
+        return try contexto.fetch(request)
     }
 
-    private func fetchCuotasPagadas() throws -> [CuotaEntity] {
+    private func obtenerCuotasPagadas() throws -> [CuotaEntity] {
         let request: NSFetchRequest<CuotaEntity> = CuotaEntity.fetchRequest()
         request.predicate = NSPredicate(format: "pagada == YES")
         request.sortDescriptors = [NSSortDescriptor(key: "fechaPago", ascending: false)]
-        return try context.fetch(request)
+        return try contexto.fetch(request)
     }
 
-    private func fetchOrdenesCompra() throws -> [OrdenCompraEntity] {
+    private func obtenerOrdenesCompra() throws -> [OrdenCompraEntity] {
         let request: NSFetchRequest<OrdenCompraEntity> = OrdenCompraEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "fecha", ascending: false)]
-        return try context.fetch(request)
+        return try contexto.fetch(request)
     }
 
-    private func buildTransactions(
+    private func construirTransacciones(
         ventas: [VentaEntity],
         cuotas: [CuotaEntity],
         ordenes: [OrdenCompraEntity]
-    ) -> [TreasuryTransaction] {
-        let sales = ventas.compactMap { venta -> TreasuryTransaction? in
+    ) -> [TransaccionTesoreria] {
+        let ventasContado = ventas.compactMap { venta -> TransaccionTesoreria? in
             guard let date = venta.fechaVenta else { return nil }
-            return TreasuryTransaction(
+            let paymentMethod = (venta.metodoPago ?? "").lowercased()
+            guard paymentMethod == "efectivo" else { return nil }
+            return TransaccionTesoreria(
                 id: venta.id?.uuidString ?? UUID().uuidString,
-                title: "\(venta.producto?.nombre ?? "Venta") sale",
-                subtitle: venta.cliente?.nombre ?? "Cliente",
-                amount: venta.total,
+                titulo: "Venta de \(venta.producto?.nombre ?? "producto")",
+                subtitulo: venta.cliente?.nombre ?? "Cliente",
+                monto: venta.total,
                 date: date,
-                kind: .ingreso
+                tipo: .ingreso
             )
         }
 
-        let installments = cuotas.compactMap { cuota -> TreasuryTransaction? in
+        let cobrosCuotas = cuotas.compactMap { cuota -> TransaccionTesoreria? in
             guard let date = cuota.fechaPago else { return nil }
             let clientName = cuota.venta?.cliente?.nombre ?? "Cliente"
-            return TreasuryTransaction(
+            return TransaccionTesoreria(
                 id: cuota.id?.uuidString ?? UUID().uuidString,
-                title: "Installment - \(clientName)",
-                subtitle: cuota.venta?.producto?.nombre ?? "Cobro de cuota",
-                amount: cuota.monto,
+                titulo: "Cobro de cuota - \(clientName)",
+                subtitulo: cuota.venta?.producto?.nombre ?? "Cobro de cuota",
+                monto: cuota.monto,
                 date: date,
-                kind: .ingreso
+                tipo: .ingreso
             )
         }
 
-        let purchases = ordenes.compactMap { orden -> TreasuryTransaction? in
-            guard let date = orden.fecha, orden.total > 0 else { return nil }
-            return TreasuryTransaction(
+        let comprasPagadas = ordenes.compactMap { orden -> TransaccionTesoreria? in
+            let status = (orden.estado ?? "").lowercased()
+            guard let date = orden.fecha, orden.total > 0, status == "pagada" else { return nil }
+            return TransaccionTesoreria(
                 id: orden.id?.uuidString ?? UUID().uuidString,
-                title: "\(orden.producto?.nombre ?? "Purchase") purchase",
-                subtitle: orden.proveedor?.nombre ?? orden.almacen?.nombre ?? "Proveedor",
-                amount: orden.total,
+                titulo: "Compra de \(orden.producto?.nombre ?? "producto")",
+                subtitulo: orden.proveedor?.nombre ?? orden.almacen?.nombre ?? "Proveedor",
+                monto: orden.total,
                 date: date,
-                kind: .gasto
+                tipo: .gasto
             )
         }
 
-        return (sales + installments + purchases).sorted { $0.date > $1.date }
+        return (ventasContado + cobrosCuotas + comprasPagadas).sorted { $0.date > $1.date }
     }
 
-    private func buildMonthlySummaries(from transactions: [TreasuryTransaction]) -> [TreasuryMonthSummary] {
+    private func construirResumenesMensuales(desde transacciones: [TransaccionTesoreria]) -> [ResumenMensualTesoreria] {
         let calendar = Calendar.current
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.locale = Locale(identifier: "es_PE")
         formatter.dateFormat = "MMM"
 
         let anchors = (0..<7).compactMap { offset -> Date? in
@@ -276,27 +279,30 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
         }
 
         return anchors.map { anchor in
-            let monthTransactions = transactions.filter { transaction in
-                calendar.isDate(transaction.date, equalTo: anchor, toGranularity: .month)
-                    && calendar.isDate(transaction.date, equalTo: anchor, toGranularity: .year)
+            let transaccionesMes = transacciones.filter { transaccion in
+                calendar.isDate(transaccion.date, equalTo: anchor, toGranularity: .month)
+                    && calendar.isDate(transaccion.date, equalTo: anchor, toGranularity: .year)
             }
 
-            let income = monthTransactions.filter { $0.kind == .ingreso }.reduce(0) { $0 + $1.amount }
-            let expense = monthTransactions.filter { $0.kind == .gasto }.reduce(0) { $0 + $1.amount }
+            let ingresos = transaccionesMes.filter { $0.tipo == .ingreso }.reduce(0) { $0 + $1.monto }
+            let gastos = transaccionesMes.filter { $0.tipo == .gasto }.reduce(0) { $0 + $1.monto }
 
-            return TreasuryMonthSummary(
-                monthLabel: formatter.string(from: anchor),
-                income: income,
-                expense: expense
+            return ResumenMensualTesoreria(
+                etiquetaMes: formatter.string(from: anchor),
+                ingresos: ingresos,
+                gastos: gastos
             )
         }
     }
 
-    private func expenseBreakdownRows() -> [TreasuryDashboardData.ExpenseRow] {
+    private func crearFilasDesgloseGastos() -> [TreasuryDashboardData.ExpenseRow] {
         let purchaseRequest: NSFetchRequest<OrdenCompraEntity> = OrdenCompraEntity.fetchRequest()
-        let purchases = (try? context.fetch(purchaseRequest)) ?? []
+        let purchases = ((try? contexto.fetch(purchaseRequest)) ?? []).filter {
+            let status = ($0.estado ?? "").lowercased()
+            return status == "pagada"
+        }
         let grouped = Dictionary(grouping: purchases) { order in
-            order.producto?.nombre ?? "Operating"
+            order.producto?.nombre ?? "Operativo"
         }
 
         let total = purchases.reduce(0.0) { $0 + $1.total }
@@ -308,31 +314,31 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
             TreasuryDashboardData.ExpenseRow(
                 name: item.name,
                 percentText: total > 0 ? "\(Int(((item.total / total) * 100).rounded()))%" : "0%",
-                accentHex: expenseColor(at: index),
+                accentHex: colorGasto(at: index),
                 share: total > 0 ? item.total / total : 0
             )
         }
     }
 
-    private func expenseColor(at index: Int) -> String {
+    private func colorGasto(at index: Int) -> String {
         let palette = ["F5B13A", "8B5CF6", "4F86F7", "52C783"]
         return palette[index % palette.count]
     }
 
-    private func formatCurrency(_ amount: Double) -> String {
-        currencyFormatter.string(from: NSNumber(value: amount)) ?? "S/0"
+    private func formatearMoneda(_ amount: Double) -> String {
+        formateadorMoneda.string(from: NSNumber(value: amount)) ?? "S/0"
     }
 
-    private func relativeDateText(from date: Date) -> String {
-        if Calendar.current.isDateInToday(date) { return "Today" }
-        if Calendar.current.isDateInYesterday(date) { return "Yesterday" }
+    private func textoFechaRelativa(desde date: Date) -> String {
+        if Calendar.current.isDateInToday(date) { return "Hoy" }
+        if Calendar.current.isDateInYesterday(date) { return "Ayer" }
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "MMM d"
+        formatter.locale = Locale(identifier: "es_PE")
+        formatter.dateFormat = "d MMM"
         return formatter.string(from: date)
     }
 
-    private func presentTreasuryInfoAlert() {
+    private func mostrarAlertaInfoTesoreria() {
         let alert = UIAlertController(
             title: "Tesorería",
             message: "Los movimientos de tesorería se generan desde Ventas, Cobros y Compras. No hay alta manual directa en este módulo.",
@@ -351,19 +357,19 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
             presentPermissionDeniedAlert(message: RoleAccessControl.denialMessage(for: .addTreasuryAdjustments))
             return
         }
-        presentTreasuryInfoAlert()
+        mostrarAlertaInfoTesoreria()
     }
 
     @IBAction private func btnResumenTapped(_ sender: UIButton) {
-        refreshHybridView()
+        actualizarVistaHibrida()
     }
 
     @IBAction private func btnTransaccionesTapped(_ sender: UIButton) {
-        refreshHybridView()
+        actualizarVistaHibrida()
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        transactions.count
+        transacciones.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

@@ -1,6 +1,6 @@
 import UIKit
 
-struct ClientOption {
+struct OpcionCliente {
     let id: String
     let name: String
     let status: String
@@ -8,7 +8,7 @@ struct ClientOption {
     let limit: Double
 }
 
-struct ProductOption {
+struct OpcionProductoVenta {
     let id: String
     let name: String
     let pricePerUnit: Double
@@ -17,7 +17,7 @@ struct ProductOption {
     let warehouseName: String
 }
 
-struct NewSaleDraft {
+struct BorradorNuevaVenta {
     let clientIndex: Int
     let productIndex: Int
     let quantity: Int
@@ -28,10 +28,10 @@ struct NewSaleDraft {
 
 final class NewSaleViewController: UIViewController {
 
-    private let clients: [ClientOption]
-    private let products: [ProductOption]
+    private let clients: [OpcionCliente]
+    private let products: [OpcionProductoVenta]
     private let onCancel: () -> Void
-    private let onSave: (NewSaleDraft) -> Void
+    private let onSave: (BorradorNuevaVenta) -> Void
 
     private let scrollView = UIScrollView()
     private let contentView = UIView()
@@ -69,12 +69,12 @@ final class NewSaleViewController: UIViewController {
             recalculateTotal()
         }
     }
-    private var firstDueDate = Calendar.current.date(from: DateComponents(year: 2025, month: 7, day: 25)) ?? Date() {
+    private var firstDueDate = Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date() {
         didSet { updateCreditSection() }
     }
 
-    private var selectedClient: ClientOption { clients[selectedClientIndex] }
-    private var selectedProduct: ProductOption { products[selectedProductIndex] }
+    private var selectedClient: OpcionCliente { clients[selectedClientIndex] }
+    private var selectedProduct: OpcionProductoVenta { products[selectedProductIndex] }
     private var total: Double { Double(quantity) * selectedProduct.pricePerUnit }
     private var perInstallment: Double { total / Double(max(installments, 1)) }
     private var usedPercent: Float {
@@ -83,12 +83,12 @@ final class NewSaleViewController: UIViewController {
     }
 
     init(
-        clients: [ClientOption],
-        products: [ProductOption],
+        clients: [OpcionCliente],
+        products: [OpcionProductoVenta],
         initialClientIndex: Int,
         initialProductIndex: Int,
         onCancel: @escaping () -> Void,
-        onSave: @escaping (NewSaleDraft) -> Void
+        onSave: @escaping (BorradorNuevaVenta) -> Void
     ) {
         self.clients = clients
         self.products = products
@@ -262,7 +262,7 @@ final class NewSaleViewController: UIViewController {
         cancelButton.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         saveButton.addTarget(self, action: #selector(saveSaleTapped), for: .touchUpInside)
 
-        clientDropdown.onTap = { [weak self] in self?.presentClientOptions() }
+        clientDropdown.onTap = { [weak self] in self?.presentOpcionClientes() }
         productDropdown.onTap = { [weak self] in self?.presentProductOptions() }
         quantityField.onValueChanged = { [weak self] value in self?.quantity = value }
         paymentToggle.onToggle = { [weak self] type in self?.paymentType = type }
@@ -360,7 +360,7 @@ final class NewSaleViewController: UIViewController {
         }
     }
 
-    private func presentClientOptions() {
+    private func presentOpcionClientes() {
         let alert = UIAlertController(title: "Cliente", message: "Selecciona un cliente", preferredStyle: .actionSheet)
         for (index, client) in clients.enumerated() {
             alert.addAction(UIAlertAction(title: client.name, style: .default) { [weak self] _ in
@@ -397,7 +397,7 @@ final class NewSaleViewController: UIViewController {
 
     @objc private func saveSaleTapped() {
         guard quantity > 0 else { return }
-        let draft = NewSaleDraft(
+        let draft = BorradorNuevaVenta(
             clientIndex: selectedClientIndex,
             productIndex: selectedProductIndex,
             quantity: quantity,
@@ -449,9 +449,9 @@ final class NewSaleViewController: UIViewController {
 
     private func localizedStatus(_ status: String) -> String {
         switch status {
-        case "active": return "Activo"
-        case "atrisk": return "En riesgo"
-        case "overdue": return "Vencido"
+        case "activo": return "Activo"
+        case "enRiesgo": return "En riesgo"
+        case "vencido": return "Vencido"
         case "blocked": return "Bloqueado"
         default: return status.capitalized
         }
@@ -459,8 +459,8 @@ final class NewSaleViewController: UIViewController {
 
     private lazy var dueDateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "MMM dd, yyyy"
+        formatter.locale = Locale(identifier: "es_PE")
+        formatter.dateFormat = "dd MMM, yyyy"
         return formatter
     }()
 }
@@ -1187,9 +1187,9 @@ private final class NewSaleStatusBadgeView: UIView {
         super.init(frame: .zero)
         let color: UIColor
         switch status {
-        case "active": color = .appGreen
-        case "atrisk": color = .appOrange
-        case "overdue": color = .appRed
+        case "activo": color = .appGreen
+        case "enRiesgo": color = .appOrange
+        case "vencido": color = .appRed
         default: color = .systemGray
         }
         backgroundColor = color

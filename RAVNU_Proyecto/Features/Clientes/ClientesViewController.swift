@@ -4,7 +4,7 @@ import CoreData
 import FirebaseFirestore
 #endif
 
-fileprivate struct ClientRecord {
+fileprivate struct RegistroCliente {
     let id: UUID
     let name: String
     let docType: String
@@ -50,7 +50,7 @@ fileprivate struct ClientRecord {
     }
 }
 
-fileprivate struct AnalyticsSnapshot {
+fileprivate struct ResumenAnalitico {
     struct StatusMetric {
         let title: String
         let count: Int
@@ -105,7 +105,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     @IBOutlet private weak var lblRiesgo: UILabel?
     @IBOutlet private weak var lblBloqueados: UILabel?
 
-    private enum InternalTab {
+    private enum PestanaInterna {
         case analytics
         case clients
     }
@@ -142,13 +142,13 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     private var filterButtons: [ClienteFilter: FilterPillButton] = [:]
     private var clientes: [ClienteEntity] = []
     private var filteredClientes: [ClienteEntity] = []
-    private var activeFilter: ClienteFilter = .todos
-    private var activeInternalTab: InternalTab = .analytics
-    private var currentSearchText = ""
+    private var filtroActivo: ClienteFilter = .todos
+    private var pestanaActiva: PestanaInterna = .analytics
+    private var textoBusquedaActual = ""
     private var navSubtitleLabel: UILabel?
     private var navSubtitleTrailingConstraint: NSLayoutConstraint?
     private var rootTopConstraint: NSLayoutConstraint?
-    private var analyticsSnapshot = AnalyticsSnapshot(
+    private var resumenAnalitico = ResumenAnalitico(
         summaryText: "0 registrados · 0 vencidos",
         totalClients: "0",
         activeClients: "0",
@@ -164,18 +164,18 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     private let firestore = Firestore.firestore()
     #endif
 
-    private let context = AppCoreData.viewContext
+    private let contexto = AppCoreData.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureNavigationBar()
-        hideLegacyStoryboardUI()
-        buildHybridLayout()
-        configureRoleAccess()
-        configureSearchController()
-        configureTableView()
-        loadClientes()
-        updateTabVisibility(animated: false)
+        configurarBarraNavegacion()
+        ocultarVistaLegacyStoryboard()
+        construirLayoutHibrido()
+        configurarAccesoPorRol()
+        configurarBuscador()
+        configurarTabla()
+        cargarClientes()
+        actualizarVisibilidadPestanas(animated: false)
     }
 
     override func viewDidLayoutSubviews() {
@@ -186,10 +186,10 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadClientes()
+        cargarClientes()
     }
 
-    private func configureNavigationBar() {
+    private func configurarBarraNavegacion() {
         title = "Clientes"
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.largeTitleDisplayMode = .always
@@ -225,7 +225,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: button)
     }
 
-    private func hideLegacyStoryboardUI() {
+    private func ocultarVistaLegacyStoryboard() {
         [
             btnAnalitica,
             btnClientes,
@@ -248,7 +248,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         view.backgroundColor = .appBackground
     }
 
-    private func buildHybridLayout() {
+    private func construirLayoutHibrido() {
         rootContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(rootContainer)
 
@@ -281,12 +281,12 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         analyticsStackView.spacing = 18
         analyticsContentView.addSubview(analyticsStackView)
 
-        configureAnalyticsSection()
+        configurarSeccionAnalitica()
 
         clientsContainer.translatesAutoresizingMaskIntoConstraints = false
         clientsContainer.backgroundColor = .clear
         rootContainer.addSubview(clientsContainer)
-        configureClientsSection()
+        configurarSeccionClientes()
 
         let topConstraint = rootContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 54)
         rootTopConstraint = topConstraint
@@ -325,7 +325,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         ])
     }
 
-    private func configureAnalyticsSection() {
+    private func configurarSeccionAnalitica() {
         let kpiTitleStack = UIStackView()
         kpiTitleStack.axis = .vertical
         kpiTitleStack.spacing = 2
@@ -445,7 +445,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         ])
     }
 
-    private func configureClientsSection() {
+    private func configurarSeccionClientes() {
         filterScrollView.translatesAutoresizingMaskIntoConstraints = false
         filterScrollView.showsHorizontalScrollIndicator = false
         clientsContainer.addSubview(filterScrollView)
@@ -494,11 +494,11 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         ])
     }
 
-    private func configureRoleAccess() {
+    private func configurarAccesoPorRol() {
         navigationItem.rightBarButtonItem?.customView?.isHidden = RoleAccessControl.canManageCustomers == false
     }
 
-    private func configureSearchController() {
+    private func configurarBuscador() {
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = "Buscar clientes..."
@@ -506,7 +506,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         definesPresentationContext = true
     }
 
-    private func configureTableView() {
+    private func configurarTabla() {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = UITableView.automaticDimension
@@ -517,58 +517,59 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         tableView.register(ClientCell.self, forCellReuseIdentifier: clienteCellIdentifier)
     }
 
-    private func loadClientes() {
+    private func cargarClientes() {
         #if canImport(FirebaseFirestore)
         if FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled {
-            loadClientesFromFirestore()
+            cargarClientesDesdeFirestore()
             return
         }
         #endif
 
-        loadClientesFromLocalCache()
+        cargarClientesDesdeCacheLocal()
     }
 
-    private func loadClientesFromLocalCache() {
+    private func cargarClientesDesdeCacheLocal() {
         do {
             let request = ClienteEntity.fetchRequest()
             request.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-            clientes = try context.fetch(request)
-            applyFilters()
-            refreshAnalytics()
+            clientes = try contexto.fetch(request)
+            aplicarFiltros()
+            actualizarAnalitica()
         } catch {
-            showAlert(title: "Error", message: "No se pudieron cargar los clientes.")
+            mostrarAlerta(title: "Error", message: "No se pudieron cargar los clientes.")
         }
     }
 
     #if canImport(FirebaseFirestore)
-    private func loadClientesFromFirestore() {
+    private func cargarClientesDesdeFirestore() {
         firestore.collection("customers")
             .order(by: "nombre")
             .getDocuments { [weak self] snapshot, error in
                 guard let self else { return }
 
                 if let error {
-                    self.loadClientesFromLocalCache()
-                    self.showAlert(title: "Clientes", message: "No se pudo cargar desde Firebase. Se mostrará el caché local.\n\(error.localizedDescription)")
+                    self.cargarClientesDesdeCacheLocal()
+                    self.mostrarAlerta(title: "Clientes", message: "No se pudo cargar desde Firebase. Se mostrará el caché local.\n\(error.localizedDescription)")
                     return
                 }
 
                 do {
-                    try self.syncFirestoreClientsToLocal(snapshot?.documents ?? [])
-                    self.loadClientesFromLocalCache()
+                    try self.sincronizarClientesFirestoreEnLocal(snapshot?.documents ?? [])
+                    self.cargarClientesDesdeCacheLocal()
                 } catch {
-                    self.loadClientesFromLocalCache()
-                    self.showAlert(title: "Clientes", message: "No se pudo actualizar el caché local de clientes.")
+                    self.cargarClientesDesdeCacheLocal()
+                    self.mostrarAlerta(title: "Clientes", message: "No se pudo actualizar el caché local de clientes.")
                 }
             }
     }
 
-    private func syncFirestoreClientsToLocal(_ documents: [QueryDocumentSnapshot]) throws {
+    /// Mantiene Core Data alineado con la colección remota de clientes.
+    private func sincronizarClientesFirestoreEnLocal(_ documents: [QueryDocumentSnapshot]) throws {
         let remoteIDs = Set(documents.map { stableUUID(from: $0.documentID) })
 
         for document in documents {
             let data = document.data()
-            let cliente = try fetchOrCreateCliente(documentId: document.documentID)
+            let cliente = try buscarOCrearCliente(documentId: document.documentID)
             cliente.id = UUID(uuidString: stringValue(data, keys: ["id", "uuid", "coreDataId"]) ?? "") ?? stableUUID(from: document.documentID)
             cliente.nombre = stringValue(data, keys: ["nombre", "name", "fullName"])
             cliente.documento = stringValue(data, keys: ["documento", "documentNumber"])
@@ -580,13 +581,13 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         }
 
         let localRequest: NSFetchRequest<ClienteEntity> = ClienteEntity.fetchRequest()
-        let localClientes = try context.fetch(localRequest)
+        let localClientes = try contexto.fetch(localRequest)
         for localCliente in localClientes where shouldDeleteLocalCliente(localCliente, keeping: remoteIDs) {
-            context.delete(localCliente)
+            contexto.delete(localCliente)
         }
 
-        if context.hasChanges {
-            try context.save()
+        if contexto.hasChanges {
+            try contexto.save()
         }
     }
 
@@ -597,16 +598,16 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         return remoteIDs.contains(localID) == false
     }
 
-    private func fetchOrCreateCliente(documentId: String) throws -> ClienteEntity {
+    private func buscarOCrearCliente(documentId: String) throws -> ClienteEntity {
         let request: NSFetchRequest<ClienteEntity> = ClienteEntity.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "id == %@", stableUUID(from: documentId) as CVarArg)
 
-        if let existing = try context.fetch(request).first {
+        if let existing = try contexto.fetch(request).first {
             return existing
         }
 
-        let cliente = ClienteEntity(context: context)
+        let cliente = ClienteEntity(context: contexto)
         cliente.id = stableUUID(from: documentId)
         return cliente
     }
@@ -666,19 +667,19 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
     #endif
 
-    private func applyFilters() {
+    private func aplicarFiltros() {
         filteredClientes = clientes.filter { cliente in
             matchesFilter(cliente) && matchesSearch(cliente)
         }
         tableHeaderLabel.text = "\(filteredClientes.count) CLIENTES"
         tableView.reloadData()
-        refreshAnalytics()
+        actualizarAnalitica()
         updateFilterButtons()
         updateNavSubtitle()
     }
 
     private func matchesFilter(_ cliente: ClienteEntity) -> Bool {
-        switch activeFilter {
+        switch filtroActivo {
         case .todos:
             return true
         case .activos:
@@ -691,15 +692,15 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     private func matchesSearch(_ cliente: ClienteEntity) -> Bool {
-        guard !currentSearchText.isEmpty else { return true }
-        let query = currentSearchText.lowercased()
+        guard !textoBusquedaActual.isEmpty else { return true }
+        let query = textoBusquedaActual.lowercased()
         return (cliente.nombre ?? "").lowercased().contains(query)
             || sanitizedDocument(from: cliente.documento ?? "").lowercased().contains(query)
             || (cliente.telefono ?? "").lowercased().contains(query)
     }
 
-    private func refreshAnalytics() {
-        let records = clientes.map(makeRecord(from:))
+    private func actualizarAnalitica() {
+        let records = clientes.map(crearRegistro(from:))
         let totalDebt = records.reduce(0) { $0 + $1.debt }
         let overdueRecords = records.filter { $0.status == "overdue" }
         let overdueDebt = overdueRecords.reduce(0) { $0 + $1.debt }
@@ -721,16 +722,16 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
             .sorted { $0.debt > $1.debt }
             .prefix(4)
             .map { record in
-                AnalyticsSnapshot.DebtorMetric(
+                ResumenAnalitico.DebtorMetric(
                     name: record.shortName,
                     amount: record.debt,
-                    ratio: CGFloat(record.debt / max(topDebtorsMax(records), 1))
+                    ratio: CGFloat(record.debt / max(maximoMayoresDeudores(records), 1))
                 )
             }
 
         let creditMetrics = records
             .filter { $0.limit > 0 }
-            .map { record -> AnalyticsSnapshot.CreditMetric in
+            .map { record -> ResumenAnalitico.CreditMetric in
                 let ratio = min(max(record.debt / record.limit, 0), 1)
                 let color: UIColor
                 switch ratio {
@@ -741,7 +742,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
                 default:
                     color = .appGreen
                 }
-                return AnalyticsSnapshot.CreditMetric(
+                return ResumenAnalitico.CreditMetric(
                     name: record.name,
                     amountText: "S/\(Int(record.debt)) / S/\(Int(record.limit))",
                     percentageText: "\(Int(ratio * 100))%",
@@ -750,7 +751,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
                 )
             }
 
-        analyticsSnapshot = AnalyticsSnapshot(
+        resumenAnalitico = ResumenAnalitico(
             summaryText: "\(records.count) registrados · \(overdueStatusCount) vencidos",
             totalClients: "\(records.count)",
             activeClients: "\(activeCount)",
@@ -771,14 +772,14 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     private func updateAnalyticsViews() {
-        (analyticsStackView.viewWithTag(9001) as? UILabel)?.text = analyticsSnapshot.summaryText
+        (analyticsStackView.viewWithTag(9001) as? UILabel)?.text = resumenAnalitico.summaryText
 
-        updateKPICard(tag: 100, value: analyticsSnapshot.totalClients, subtitle: "\(analyticsSnapshot.statusMetrics.first?.count ?? 0) activos", color: .appBlue)
-        updateKPICard(tag: 101, value: analyticsSnapshot.totalDebt, subtitle: "\(analyticsSnapshot.statusMetrics[1].count) vencidos", color: .appRed)
-        updateKPICard(tag: 102, value: analyticsSnapshot.overdueDebt, subtitle: "pendiente de cobro", color: .appOrange)
-        updateKPICard(tag: 103, value: analyticsSnapshot.usedCredit, subtitle: "utilización prom.", color: UIColor(hex: "#8B5CF6"))
+        updateKPICard(tag: 100, value: resumenAnalitico.totalClients, subtitle: "\(resumenAnalitico.statusMetrics.first?.count ?? 0) activos", color: .appBlue)
+        updateKPICard(tag: 101, value: resumenAnalitico.totalDebt, subtitle: "\(resumenAnalitico.statusMetrics[1].count) vencidos", color: .appRed)
+        updateKPICard(tag: 102, value: resumenAnalitico.overdueDebt, subtitle: "pendiente de cobro", color: .appOrange)
+        updateKPICard(tag: 103, value: resumenAnalitico.usedCredit, subtitle: "utilización prom.", color: UIColor(hex: "#8B5CF6"))
 
-        distributionChartView.update(metrics: analyticsSnapshot.statusMetrics)
+        distributionChartView.update(metrics: resumenAnalitico.statusMetrics)
         rebuildDistributionLegend()
         rebuildDebtorsChart()
         rebuildCreditRows()
@@ -799,7 +800,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
             row.removeFromSuperview()
         }
 
-        for metric in analyticsSnapshot.statusMetrics {
+        for metric in resumenAnalitico.statusMetrics {
             distributionLegendStack.addArrangedSubview(StatusLegendRow(metric: metric))
         }
     }
@@ -810,12 +811,12 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
             row.removeFromSuperview()
         }
 
-        if analyticsSnapshot.debtorMetrics.isEmpty {
+        if resumenAnalitico.debtorMetrics.isEmpty {
             debtorsStack.addArrangedSubview(emptyAnalyticsLabel("Sin deudores registrados"))
             return
         }
 
-        analyticsSnapshot.debtorMetrics.forEach { debtor in
+        resumenAnalitico.debtorMetrics.forEach { debtor in
             debtorsStack.addArrangedSubview(DebtorBarRow(metric: debtor))
         }
     }
@@ -826,26 +827,26 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
             row.removeFromSuperview()
         }
 
-        if analyticsSnapshot.creditMetrics.isEmpty {
+        if resumenAnalitico.creditMetrics.isEmpty {
             creditStack.addArrangedSubview(emptyAnalyticsLabel("Sin líneas de crédito registradas"))
             return
         }
 
-        analyticsSnapshot.creditMetrics.forEach { metric in
+        resumenAnalitico.creditMetrics.forEach { metric in
             creditStack.addArrangedSubview(CreditUsageRow(metric: metric))
         }
     }
 
     private func updateFilterButtons() {
         for (filter, button) in filterButtons {
-            button.setSelected(filter == activeFilter)
+            button.setSelected(filter == filtroActivo)
         }
     }
 
-    private func updateTabVisibility(animated: Bool) {
+    private func actualizarVisibilidadPestanas(animated: Bool) {
         let updates = {
-            self.analyticsScrollViewV2.alpha = self.activeInternalTab == .analytics ? 1 : 0
-            self.clientsContainer.alpha = self.activeInternalTab == .clients ? 1 : 0
+            self.analyticsScrollViewV2.alpha = self.pestanaActiva == .analytics ? 1 : 0
+            self.clientsContainer.alpha = self.pestanaActiva == .clients ? 1 : 0
         }
 
         if animated {
@@ -854,9 +855,9 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
             updates()
         }
 
-        analyticsScrollViewV2.isHidden = activeInternalTab != .analytics
-        clientsContainer.isHidden = activeInternalTab != .clients
-        navigationItem.searchController = activeInternalTab == .clients ? searchController : nil
+        analyticsScrollViewV2.isHidden = pestanaActiva != .analytics
+        clientsContainer.isHidden = pestanaActiva != .clients
+        navigationItem.searchController = pestanaActiva == .clients ? searchController : nil
     }
 
     private func updateNavSubtitle() {
@@ -893,13 +894,13 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         rootTopConstraint?.constant = inset
     }
 
-    private func makeRecord(from cliente: ClienteEntity) -> ClientRecord {
+    private func crearRegistro(from cliente: ClienteEntity) -> RegistroCliente {
         let rawDocument = sanitizedDocument(from: cliente.documento ?? "")
         let components = rawDocument.components(separatedBy: " ")
         let docType = components.first ?? "DNI"
         let docNumber = components.dropFirst().joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
 
-        return ClientRecord(
+        return RegistroCliente(
             id: cliente.id ?? UUID(),
             name: cliente.nombre ?? "Cliente sin nombre",
             docType: docType,
@@ -917,7 +918,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     private func status(for cliente: ClienteEntity) -> String {
-        makeRecord(from: cliente).status
+        crearRegistro(from: cliente).status
     }
 
     private func sectionTitleLabel(_ text: String) -> UILabel {
@@ -1010,7 +1011,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         return card
     }
 
-    private func topDebtorsMax(_ records: [ClientRecord]) -> Double {
+    private func maximoMayoresDeudores(_ records: [RegistroCliente]) -> Double {
         records.filter { $0.debt > 0 }.map(\.debt).max() ?? 1
     }
 
@@ -1018,7 +1019,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         "S/\(Int(amount.rounded()))"
     }
 
-    private func showAlert(title: String, message: String) {
+    private func mostrarAlerta(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Aceptar", style: .default))
         present(alert, animated: true)
@@ -1081,14 +1082,14 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     @objc private func internalTabChanged(_ sender: UISegmentedControl) {
-        activeInternalTab = sender.selectedSegmentIndex == 0 ? .analytics : .clients
-        updateTabVisibility(animated: true)
+        pestanaActiva = sender.selectedSegmentIndex == 0 ? .analytics : .clients
+        actualizarVisibilidadPestanas(animated: true)
     }
 
     @objc private func filterTapped(_ sender: FilterPillButton) {
         guard let filter = ClienteFilter(rawValue: sender.currentTitle ?? "") else { return }
-        activeFilter = filter
-        applyFilters()
+        filtroActivo = filter
+        aplicarFiltros()
     }
 
     @IBAction private func btnAnaliticaTapped(_ sender: UIButton) {
@@ -1110,28 +1111,28 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     @IBAction private func btnTodosTapped(_ sender: UIButton) {
-        activeFilter = .todos
-        applyFilters()
+        filtroActivo = .todos
+        aplicarFiltros()
     }
 
     @IBAction private func btnActivosTapped(_ sender: UIButton) {
-        activeFilter = .activos
-        applyFilters()
+        filtroActivo = .activos
+        aplicarFiltros()
     }
 
     @IBAction private func btnVencidosTapped(_ sender: UIButton) {
-        activeFilter = .vencidos
-        applyFilters()
+        filtroActivo = .vencidos
+        aplicarFiltros()
     }
 
     @IBAction private func btnBloqueadosTapped(_ sender: UIButton) {
-        activeFilter = .bloqueados
-        applyFilters()
+        filtroActivo = .bloqueados
+        aplicarFiltros()
     }
 
     func updateSearchResults(for searchController: UISearchController) {
-        currentSearchText = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        applyFilters()
+        textoBusquedaActual = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        aplicarFiltros()
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -1140,7 +1141,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: clienteCellIdentifier, for: indexPath) as! ClientCell
-        let record = makeRecord(from: filteredClientes[indexPath.row])
+        let record = crearRegistro(from: filteredClientes[indexPath.row])
         cell.configure(with: record)
         return cell
     }
@@ -1160,10 +1161,10 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
 
 extension ClientesViewController: ModalClienteViewControllerDelegate {
     func modalClienteViewControllerDidSave(_ controller: ModalClienteViewController) {
-        loadClientes()
-        activeInternalTab = .clients
+        cargarClientes()
+        pestanaActiva = .clients
         segmentedControl.selectedSegmentIndex = 1
-        updateTabVisibility(animated: false)
+        actualizarVisibilidadPestanas(animated: false)
         showToast("Cliente guardado correctamente")
     }
 }
@@ -1309,7 +1310,7 @@ private final class ClientCell: UITableViewCell {
         ])
     }
 
-    func configure(with client: ClientRecord) {
+    func configure(with client: RegistroCliente) {
         nameLabel.text = client.name
         docLabel.text = "\(client.docType) \(client.docNumber)"
         phoneLabel.text = "☎︎  \(client.phone)"
@@ -1390,7 +1391,7 @@ private final class FilterPillButton: UIButton {
 }
 
 private final class DonutChartView: UIView {
-    private var metrics: [AnalyticsSnapshot.StatusMetric] = []
+    private var metrics: [ResumenAnalitico.StatusMetric] = []
     private let lineWidth: CGFloat = 20
 
     override init(frame: CGRect) {
@@ -1403,7 +1404,7 @@ private final class DonutChartView: UIView {
         backgroundColor = .clear
     }
 
-    func update(metrics: [AnalyticsSnapshot.StatusMetric]) {
+    func update(metrics: [ResumenAnalitico.StatusMetric]) {
         self.metrics = metrics
         layer.sublayers?.removeAll(where: { $0.name == "segment" || $0.name == "centerLabel" })
         setNeedsLayout()
@@ -1467,7 +1468,7 @@ private final class DonutChartView: UIView {
 }
 
 private final class StatusLegendRow: UIView {
-    init(metric: AnalyticsSnapshot.StatusMetric) {
+    init(metric: ResumenAnalitico.StatusMetric) {
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
 
@@ -1541,7 +1542,7 @@ private final class DebtorBarRow: UIView {
     private let fillView = UIView()
     private var fillConstraint: NSLayoutConstraint?
 
-    init(metric: AnalyticsSnapshot.DebtorMetric) {
+    init(metric: ResumenAnalitico.DebtorMetric) {
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
 
@@ -1611,7 +1612,7 @@ private final class CreditUsageRow: UIView {
     private let fillView = UIView()
     private var fillConstraint: NSLayoutConstraint?
 
-    init(metric: AnalyticsSnapshot.CreditMetric) {
+    init(metric: ResumenAnalitico.CreditMetric) {
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
 

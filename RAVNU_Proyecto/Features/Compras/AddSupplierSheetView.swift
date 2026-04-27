@@ -117,9 +117,9 @@ struct AddSupplierSheetView: View {
 
     private var header: some View {
         HStack {
-            Button("Cancel", action: onCancel)
+            Button("Cancelar", action: onCancel)
                 .font(.system(size: 18, weight: .regular, design: .rounded))
-                .foregroundStyle(Color(hex: "7A8699"))
+                .foregroundStyle(Color(hex: "3B82F6"))
             Spacer()
             Text("Agregar Proveedor")
                 .font(.system(size: 20, weight: .black, design: .rounded))

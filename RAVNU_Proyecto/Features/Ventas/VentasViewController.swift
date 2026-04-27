@@ -31,7 +31,7 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
     @IBOutlet private weak var lblVentaRecienteMetodo3: UILabel?
     @IBOutlet private weak var ventaRecienteCard3: UIView?
 
-    private let context = AppCoreData.viewContext
+    private let contexto = AppCoreData.viewContext
     private var ventas: [VentaEntity] = []
     private var clientes: [ClienteEntity] = []
     private var productos: [ProductoEntity] = []
@@ -39,31 +39,31 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureRoleAccess()
-        configureHybridView()
-        loadCatalogData()
-        loadVentas()
+        configurarAccesoPorRol()
+        configurarVistaHibrida()
+        cargarDatosCatalogo()
+        cargarVentas()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        loadCatalogData()
-        loadVentas()
+        cargarDatosCatalogo()
+        cargarVentas()
     }
 
     @IBAction private func btnResumenTapped(_ sender: UIButton) {
-        refreshSwiftUIView()
+        actualizarVistaSwiftUI()
     }
 
     @IBAction private func btnListaVentasTapped(_ sender: UIButton) {
-        refreshSwiftUIView()
+        actualizarVistaSwiftUI()
     }
 
     @IBAction private func btnNuevaVentaTapped(_ sender: UIButton) {
         presentNewSaleFlow()
     }
 
-    private func configureRoleAccess() {
+    private func configurarAccesoPorRol() {
         let shouldHideCreateActions = RoleAccessControl.canCreateSales == false
         RoleAccessControl.configureButtons(
             in: view,
@@ -73,9 +73,9 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
         )
     }
 
-    private func configureHybridView() {
-        hideLegacyUI()
-        let host = UIHostingController(rootView: makeRootView())
+    private func configurarVistaHibrida() {
+        ocultarVistaLegacy()
+        let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
         host.view.backgroundColor = UIColor.clear
@@ -90,7 +90,7 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
         hostingController = host
     }
 
-    private func hideLegacyUI() {
+    private func ocultarVistaLegacy() {
         [
             scrollViewResumen,
             tblListaVentas,
@@ -123,47 +123,47 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
         tblListaVentas?.delegate = self
     }
 
-    private func loadCatalogData() {
+    private func cargarDatosCatalogo() {
         do {
             let clienteRequest = ClienteEntity.fetchRequest()
             clienteRequest.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-            clientes = try context.fetch(clienteRequest)
+            clientes = try contexto.fetch(clienteRequest)
 
             let productoRequest = ProductoEntity.fetchRequest()
             productoRequest.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-            productos = try context.fetch(productoRequest)
+            productos = try contexto.fetch(productoRequest)
         } catch {
             showErrorAlert(message: "No se pudieron cargar clientes y productos.")
         }
     }
 
-    private func loadVentas() {
+    private func cargarVentas() {
         do {
             let request = VentaEntity.fetchRequest()
             request.sortDescriptors = [NSSortDescriptor(key: "fechaVenta", ascending: false)]
-            ventas = try context.fetch(request)
-            refreshSwiftUIView()
+            ventas = try contexto.fetch(request)
+            actualizarVistaSwiftUI()
         } catch {
             ventas = []
-            refreshSwiftUIView()
+            actualizarVistaSwiftUI()
             showErrorAlert(message: "No se pudieron cargar las ventas.")
         }
     }
 
-    private func refreshSwiftUIView() {
-        hostingController?.rootView = makeRootView()
+    private func actualizarVistaSwiftUI() {
+        hostingController?.rootView = crearVistaRaiz()
     }
 
-    private func makeRootView() -> SalesDashboardView {
+    private func crearVistaRaiz() -> SalesDashboardView {
         SalesDashboardView(
-            data: makeDashboardData(),
+            data: crearDatosDashboard(),
             onNewSale: { [weak self] in
                 self?.presentNewSaleFlow()
             }
         )
     }
 
-    private func makeDashboardData() -> SalesDashboardViewData {
+    private func crearDatosDashboard() -> DatosDashboardVentas {
         let totalIngresos = ventas.reduce(0) { $0 + $1.total }
         let efectivoVentas = ventas.filter { ($0.metodoPago ?? "").lowercased() == MetodoPagoVenta.efectivo.rawValue }
         let creditoVentas = ventas.filter { ($0.metodoPago ?? "").lowercased() == MetodoPagoVenta.credito.rawValue }
@@ -171,50 +171,50 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
         let creditoTotal = creditoVentas.reduce(0) { $0 + $1.total }
 
         let metrics = [
-            SalesDashboardViewData.Metric(icon: "dollarsign.circle.fill", label: "INGRESOS", value: formatCurrency(totalIngresos), sub: ventas.isEmpty ? "Sin ventas" : "Este período", colorHex: "3B82F6"),
-            SalesDashboardViewData.Metric(icon: "banknote.fill", label: "EFECTIVO", value: formatCurrency(efectivoTotal), sub: salesShareText(amount: efectivoTotal, total: totalIngresos), colorHex: "22C55E"),
-            SalesDashboardViewData.Metric(icon: "creditcard.fill", label: "CRÉDITO", value: formatCurrency(creditoTotal), sub: salesShareText(amount: creditoTotal, total: totalIngresos), colorHex: "8B5CF6")
+            DatosDashboardVentas.Metrica(icon: "dollarsign.circle.fill", label: "INGRESOS", value: formatearMoneda(totalIngresos), sub: ventas.isEmpty ? "Sin ventas" : "Este período", colorHex: "3B82F6"),
+            DatosDashboardVentas.Metrica(icon: "banknote.fill", label: "EFECTIVO", value: formatearMoneda(efectivoTotal), sub: textoParticipacionVentas(amount: efectivoTotal, total: totalIngresos), colorHex: "22C55E"),
+            DatosDashboardVentas.Metrica(icon: "creditcard.fill", label: "CRÉDITO", value: formatearMoneda(creditoTotal), sub: textoParticipacionVentas(amount: creditoTotal, total: totalIngresos), colorHex: "8B5CF6")
         ]
 
-        let weekBars = weekSalesData()
-        let trendBars = monthlyTrendData()
-        let productRows = productSalesRows()
+        let weekBars = crearBarrasSemanales()
+        let trendBars = crearBarrasTendencia()
+        let productRows = crearFilasProducto()
         let distributionRows = [
-            SalesDashboardViewData.DistributionRow(colorHex: "22C55E", label: "Efectivo", value: formatCurrency(efectivoTotal)),
-            SalesDashboardViewData.DistributionRow(colorHex: "3B82F6", label: "Crédito", value: formatCurrency(creditoTotal))
+            DatosDashboardVentas.FilaDistribucion(colorHex: "22C55E", label: "Efectivo", value: formatearMoneda(efectivoTotal)),
+            DatosDashboardVentas.FilaDistribucion(colorHex: "3B82F6", label: "Crédito", value: formatearMoneda(creditoTotal))
         ]
         let salesRows = ventas.prefix(20).map { sale in
-            SalesDashboardViewData.SaleRow(
+            DatosDashboardVentas.FilaVenta(
                 clientName: sale.cliente?.nombre ?? "Cliente sin nombre",
                 productInfo: "\(sale.producto?.nombre ?? "Producto") · \(formatLiters(sale.cantidadLitros))",
-                total: formatCurrency(sale.total),
+                total: formatearMoneda(sale.total),
                 paymentType: (sale.metodoPago ?? "-").capitalized,
                 colorHex: ((sale.metodoPago ?? "").lowercased() == MetodoPagoVenta.efectivo.rawValue) ? "22C55E" : "3B82F6",
                 date: relativeDateText(from: sale.fechaVenta)
             )
         }
 
-        return SalesDashboardViewData(
+        return DatosDashboardVentas(
             title: "Ventas",
             subtitle: "\(ventas.count) transacciones este período",
             canCreateSale: RoleAccessControl.canCreateSales,
-            metrics: metrics,
-            weekBars: weekBars,
-            trendBars: trendBars,
-            productRows: productRows,
-            distributionRows: distributionRows,
+            metricas: metrics,
+            barrasSemanales: weekBars,
+            barrasTendencia: trendBars,
+            filasProducto: productRows,
+            filasDistribucion: distributionRows,
             totalSalesCountText: "\(ventas.count) ventas en total",
             cashPercent: totalIngresos > 0 ? max(0, min(1, efectivoTotal / totalIngresos)) : 0,
-            salesRows: salesRows
+            filasVenta: salesRows
         )
     }
 
-    private func salesShareText(amount: Double, total: Double) -> String {
+    private func textoParticipacionVentas(amount: Double, total: Double) -> String {
         guard total > 0 else { return "0%" }
         return "\(Int(((amount / total) * 100).rounded()))%"
     }
 
-    private func weekSalesData() -> [SalesDashboardViewData.WeekBar] {
+    private func crearBarrasSemanales() -> [DatosDashboardVentas.BarraSemanal] {
         let calendar = Calendar.current
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "es_PE")
@@ -226,17 +226,17 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
             calendar.startOfDay(for: sale.fechaVenta ?? today)
         }
 
-        let values = days.map { day -> SalesDashboardViewData.WeekBar in
+        let values = days.map { day -> DatosDashboardVentas.BarraSemanal in
             let amount = (grouped[day] ?? []).reduce(0) { $0 + $1.total }
             let label = formatter.string(from: day).prefix(1).uppercased() + formatter.string(from: day).dropFirst().prefix(2)
-            return SalesDashboardViewData.WeekBar(label: String(label), value: amount)
+            return DatosDashboardVentas.BarraSemanal(label: String(label), value: amount)
         }
 
         let maxValue = values.map(\.value).max() ?? 0
-        return values.map { SalesDashboardViewData.WeekBar(label: $0.label, value: $0.value, isHighlighted: $0.value == maxValue && maxValue > 0) }
+        return values.map { DatosDashboardVentas.BarraSemanal(label: $0.label, value: $0.value, isHighlighted: $0.value == maxValue && maxValue > 0) }
     }
 
-    private func monthlyTrendData() -> [SalesDashboardViewData.TrendBar] {
+    private func crearBarrasTendencia() -> [DatosDashboardVentas.BarraTendencia] {
         let calendar = Calendar.current
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "es_PE")
@@ -254,22 +254,22 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
             let credit = monthSales.filter { ($0.metodoPago ?? "").lowercased() == MetodoPagoVenta.credito.rawValue }.reduce(0) { $0 + $1.total }
             let monthLabel = formatter.string(from: monthDate).capitalized
             let compactLabel = String(monthLabel.prefix(1).uppercased())
-            return SalesDashboardViewData.TrendBar(label: compactLabel, cash: cash, credit: credit)
+            return DatosDashboardVentas.BarraTendencia(label: compactLabel, cash: cash, credit: credit)
         }
     }
 
-    private func productSalesRows() -> [SalesDashboardViewData.ProductRow] {
+    private func crearFilasProducto() -> [DatosDashboardVentas.FilaProducto] {
         let groupedSales = Dictionary(grouping: ventas) { $0.producto?.nombre ?? "Producto" }
-        let grouped: [SalesDashboardViewData.ProductRow] = groupedSales.map { key, values in
+        let grouped: [DatosDashboardVentas.FilaProducto] = groupedSales.map { key, values in
             let revenue = values.reduce(0) { $0 + $1.total }
-            return SalesDashboardViewData.ProductRow(name: key, revenue: revenue, colorHex: colorHexForProductName(key))
+            return DatosDashboardVentas.FilaProducto(name: key, revenue: revenue, colorHex: colorHexForProductName(key))
         }
         .sorted { $0.revenue > $1.revenue }
 
         let totalRevenue = grouped.reduce(0) { $0 + $1.revenue }
         return grouped.prefix(4).map { row in
             let percent = totalRevenue > 0 ? Int(((row.revenue / totalRevenue) * 100).rounded()) : 0
-            return SalesDashboardViewData.ProductRow(name: row.name, revenue: row.revenue, percent: percent, colorHex: row.colorHex)
+            return DatosDashboardVentas.FilaProducto(name: row.name, revenue: row.revenue, percent: percent, colorHex: row.colorHex)
         }
     }
 
@@ -279,7 +279,7 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
         return palette[index]
     }
 
-    private func formatCurrency(_ amount: Double) -> String {
+    private func formatearMoneda(_ amount: Double) -> String {
         String(format: "S/%.0f", amount)
     }
 
@@ -336,7 +336,7 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
 
 extension VentasViewController: ModalVentaViewControllerDelegate {
     func modalVentaViewControllerDidSaveVenta(_ controller: ModalVentaViewController) {
-        loadCatalogData()
-        loadVentas()
+        cargarDatosCatalogo()
+        cargarVentas()
     }
 }

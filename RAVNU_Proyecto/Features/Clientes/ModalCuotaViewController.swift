@@ -33,19 +33,19 @@ final class ModalCuotaViewController: UIViewController, UITextFieldDelegate, UIP
 
     private let cuotaPicker = UIPickerView()
     private var cuotasPendientes: [CuotaEntity] = []
-    private var selectedCuotaIndex: Int? {
-        didSet { refreshHybridView() }
+    private var indiceCuotaSeleccionada: Int? {
+        didSet { actualizarVistaHibrida() }
     }
     private var hostingController: UIHostingController<PaymentInstallmentSheetView>?
 
-    private let context = AppCoreData.viewContext
+    private let contexto = AppCoreData.viewContext
 
-    private var selectedCuota: CuotaEntity? {
-        guard let selectedCuotaIndex, cuotasPendientes.indices.contains(selectedCuotaIndex) else { return nil }
-        return cuotasPendientes[selectedCuotaIndex]
+    private var cuotaSeleccionada: CuotaEntity? {
+        guard let indiceCuotaSeleccionada, cuotasPendientes.indices.contains(indiceCuotaSeleccionada) else { return nil }
+        return cuotasPendientes[indiceCuotaSeleccionada]
     }
 
-    private let currencyFormatter: NumberFormatter = {
+    private let formateadorMoneda: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.currencyCode = "PEN"
@@ -57,12 +57,12 @@ final class ModalCuotaViewController: UIViewController, UITextFieldDelegate, UIP
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        hideLegacyUI()
-        loadCuotasPendientes()
-        configureHybridView()
+        ocultarVistaLegacy()
+        cargarCuotasPendientes()
+        configurarVistaHibrida()
     }
 
-    private func hideLegacyUI() {
+    private func ocultarVistaLegacy() {
         [
             txtCliente,
             txtMonto,
@@ -79,8 +79,8 @@ final class ModalCuotaViewController: UIViewController, UITextFieldDelegate, UIP
         ].forEach { $0?.isHidden = true }
     }
 
-    private func configureHybridView() {
-        let host = UIHostingController(rootView: makeRootView())
+    private func configurarVistaHibrida() {
+        let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
         host.view.backgroundColor = .clear
@@ -95,64 +95,64 @@ final class ModalCuotaViewController: UIViewController, UITextFieldDelegate, UIP
         hostingController = host
     }
 
-    private func refreshHybridView() {
-        hostingController?.rootView = makeRootView()
+    private func actualizarVistaHibrida() {
+        hostingController?.rootView = crearVistaRaiz()
     }
 
-    private func makeRootView() -> PaymentInstallmentSheetView {
+    private func crearVistaRaiz() -> PaymentInstallmentSheetView {
         PaymentInstallmentSheetView(
-            data: makeViewData(),
+            data: crearDatosVista(),
             onCancel: { [weak self] in self?.dismiss(animated: true) },
-            onSelectCuota: { [weak self] id in self?.selectCuota(id: id) },
-            onConfirm: { [weak self] amount in self?.handleConfirm(amount: amount) }
+            onSelectCuota: { [weak self] id in self?.seleccionarCuota(id: id) },
+            onConfirm: { [weak self] amount in self?.manejarConfirmacion(monto: amount) }
         )
     }
 
-    private func loadCuotasPendientes() {
+    private func cargarCuotasPendientes() {
         let request: NSFetchRequest<CuotaEntity> = CuotaEntity.fetchRequest()
         request.predicate = NSPredicate(format: "pagada == NO")
         request.sortDescriptors = [NSSortDescriptor(key: "fechaVencimiento", ascending: true)]
 
         do {
-            cuotasPendientes = try context.fetch(request)
+            cuotasPendientes = try contexto.fetch(request)
             if let preferredCuotaID,
                let index = cuotasPendientes.firstIndex(where: { $0.id == preferredCuotaID }) {
-                selectedCuotaIndex = index
+                indiceCuotaSeleccionada = index
             } else {
-                selectedCuotaIndex = cuotasPendientes.isEmpty ? nil : 0
+                indiceCuotaSeleccionada = cuotasPendientes.isEmpty ? nil : 0
             }
         } catch {
             cuotasPendientes = []
-            selectedCuotaIndex = nil
+            indiceCuotaSeleccionada = nil
         }
     }
 
-    private func selectCuota(id: UUID?) {
+    private func seleccionarCuota(id: UUID?) {
         guard let id, let index = cuotasPendientes.firstIndex(where: { $0.id == id }) else { return }
-        selectedCuotaIndex = index
+        indiceCuotaSeleccionada = index
     }
 
-    private func makeViewData() -> PaymentInstallmentSheetData {
+    private func crearDatosVista() -> PaymentInstallmentSheetData {
         let options = cuotasPendientes.map { cuota in
             PaymentInstallmentSheetData.Option(
                 id: cuota.id ?? UUID(),
                 title: cuota.venta?.cliente?.nombre ?? "Cliente",
-                subtitle: "Cuota \(cuota.numero) - \(formatCurrency(cuota.monto))"
+                subtitle: "Cuota \(cuota.numero) - \(formatearMoneda(cuota.monto))"
             )
         }
 
-        guard let cuota = selectedCuota else {
+        guard let cuota = cuotaSeleccionada else {
             return PaymentInstallmentSheetData(
                 options: options,
                 selectedID: nil,
                 titleText: "Sin cuotas pendientes",
-                amountText: formatCurrency(0),
+                amountText: formatearMoneda(0),
                 dueText: "No hay cuotas por cobrar",
                 statusText: "Pendiente",
                 statusAccentHex: "94A3B8",
                 amountValueText: "0.00",
-                remainingText: formatCurrency(0),
-                debtAfterText: formatCurrency(0),
+                remainingText: formatearMoneda(0),
+                debtAfterText: formatearMoneda(0),
                 isConfirmEnabled: false
             )
         }
@@ -166,92 +166,92 @@ final class ModalCuotaViewController: UIViewController, UITextFieldDelegate, UIP
             options: options,
             selectedID: cuota.id,
             titleText: "Cuota \(cuota.numero) de \(max(totalCuotas, Int(cuota.numero)))",
-            amountText: formatCurrency(cuota.monto),
-            dueText: "Vence \(formatDate(cuota.fechaVencimiento))",
-            statusText: isVencida(cuota) ? "Vencido" : "Pendiente",
-            statusAccentHex: isVencida(cuota) ? "EF4444" : "F59E0B",
+            amountText: formatearMoneda(cuota.monto),
+            dueText: "Vence \(formatearFecha(cuota.fechaVencimiento))",
+            statusText: estaVencida(cuota) ? "Vencido" : "Pendiente",
+            statusAccentHex: estaVencida(cuota) ? "EF4444" : "F59E0B",
             amountValueText: String(format: "%.2f", cuota.monto),
-            remainingText: formatCurrency(0),
-            debtAfterText: formatCurrency(remaining),
+            remainingText: formatearMoneda(0),
+            debtAfterText: formatearMoneda(remaining),
             isConfirmEnabled: true
         )
     }
 
-    private func handleConfirm(amount: Double) {
-        if let validationMessage = validatePayment(amount: amount) {
-            showAlert(title: "Validación", message: validationMessage)
+    private func manejarConfirmacion(monto: Double) {
+        if let validationMessage = validarPago(monto: monto) {
+            mostrarAlerta(title: "Validación", message: validationMessage)
             return
         }
 
         do {
-            try registerPayment(amount: amount)
+            try registrarPago(monto: monto)
             delegate?.modalCuotaViewControllerDidSavePago(self)
             dismiss(animated: true)
         } catch {
-            showAlert(title: "Error", message: "No se pudo registrar el pago.")
+            mostrarAlerta(title: "Error", message: "No se pudo registrar el pago.")
         }
     }
 
-    private func validatePayment(amount: Double) -> String? {
-        guard let cuota = selectedCuota else {
+    private func validarPago(monto: Double) -> String? {
+        guard let cuota = cuotaSeleccionada else {
             return "No hay una cuota seleccionada."
         }
-        if amount <= 0 {
+        if monto <= 0 {
             return "Ingresa un monto válido."
         }
-        if amount + 0.01 < cuota.monto {
+        if monto + 0.01 < cuota.monto {
             return "El pago debe cubrir la cuota completa."
         }
         return nil
     }
 
-    private func registerPayment(amount: Double) throws {
-        guard let cuota = selectedCuota else { return }
+    private func registrarPago(monto: Double) throws {
+        guard let cuota = cuotaSeleccionada else { return }
 
         let cliente = cuota.venta?.cliente
-        let monto = min(amount, cuota.monto)
+        let montoAplicado = min(monto, cuota.monto)
 
         cuota.pagada = true
         cuota.fechaPago = Date()
-        cliente?.creditoUsado = max((cliente?.creditoUsado ?? 0) - monto, 0)
+        cliente?.creditoUsado = max((cliente?.creditoUsado ?? 0) - montoAplicado, 0)
 
-        if let venta = cuota.venta, allCuotasPagadas(in: venta) {
+        if let venta = cuota.venta, todasLasCuotasPagadas(en: venta) {
             venta.estado = "pagada"
         }
 
-        try context.save()
-        syncPaymentToRemote(cuota: cuota, cliente: cliente, montoAplicado: monto)
+        try contexto.save()
+        sincronizarPagoRemoto(cuota: cuota, cliente: cliente, montoAplicado: montoAplicado)
     }
 
-    private func allCuotasPagadas(in venta: VentaEntity) -> Bool {
+    private func todasLasCuotasPagadas(en venta: VentaEntity) -> Bool {
         guard let cuotas = venta.cuotas?.allObjects as? [CuotaEntity], !cuotas.isEmpty else { return false }
         return cuotas.allSatisfy(\.pagada)
     }
 
-    private func isVencida(_ cuota: CuotaEntity) -> Bool {
+    private func estaVencida(_ cuota: CuotaEntity) -> Bool {
         guard let fecha = cuota.fechaVencimiento else { return false }
         return !cuota.pagada && Calendar.current.startOfDay(for: fecha) < Calendar.current.startOfDay(for: Date())
     }
 
-    private func formatCurrency(_ amount: Double) -> String {
-        currencyFormatter.string(from: NSNumber(value: amount)) ?? "S/0.00"
+    private func formatearMoneda(_ amount: Double) -> String {
+        formateadorMoneda.string(from: NSNumber(value: amount)) ?? "S/0.00"
     }
 
-    private func formatDate(_ date: Date?) -> String {
+    private func formatearFecha(_ date: Date?) -> String {
         guard let date else { return "sin fecha" }
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "MMM d, yyyy"
+        formatter.locale = Locale(identifier: "es_PE")
+        formatter.dateFormat = "d MMM, yyyy"
         return formatter.string(from: date)
     }
 
-    private func showAlert(title: String, message: String) {
+    private func mostrarAlerta(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Aceptar", style: .default))
         present(alert, animated: true)
     }
 
-    private func syncPaymentToRemote(cuota: CuotaEntity, cliente: ClienteEntity?, montoAplicado: Double) {
+    private func sincronizarPagoRemoto(cuota: CuotaEntity, cliente: ClienteEntity?, montoAplicado: Double) {
         #if canImport(FirebaseFirestore)
         guard FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled else { return }
         guard let cuotaId = cuota.id?.uuidString else { return }
@@ -290,6 +290,7 @@ final class ModalCuotaViewController: UIViewController, UITextFieldDelegate, UIP
             ], merge: true)
         }
 
+        TreasuryRemoteSync.syncInstallmentPayment(cuota: cuota, cliente: cliente, amount: montoAplicado)
         AppSession.shared.lastRemoteSyncAt = Date()
         #endif
     }
@@ -358,9 +359,9 @@ private struct PaymentInstallmentSheetView: View {
 
     private var header: some View {
         HStack {
-            Button("Cancel", action: onCancel)
+            Button("Cancelar", action: onCancel)
                 .font(.system(size: 16, weight: .regular, design: .rounded))
-                .foregroundStyle(Color(hex: "94A3B8"))
+                .foregroundStyle(Color(hex: "3B82F6"))
             Spacer()
             Text("Registrar Pago")
                 .font(.system(size: 18, weight: .bold, design: .rounded))

@@ -110,7 +110,7 @@ final class ModalVentaViewController: UIViewController {
         hideLegacyForm()
 
         let clientOptions = clientesDisponibles.enumerated().map { index, client in
-            ClientOption(
+            OpcionCliente(
                 id: client.id?.uuidString ?? "\(index)",
                 name: client.nombre ?? "Cliente",
                 status: statusForClient(client),
@@ -120,7 +120,7 @@ final class ModalVentaViewController: UIViewController {
         }
         let productOptions = productosDisponibles.enumerated().map { index, product in
             let inventoryInfo = inventoryInfo(for: product)
-            return ProductOption(
+            return OpcionProductoVenta(
                 id: product.id?.uuidString ?? "\(index)",
                 name: product.nombre ?? "Producto",
                 pricePerUnit: product.precioPorLitro,
@@ -132,13 +132,13 @@ final class ModalVentaViewController: UIViewController {
 
         guard clientOptions.isEmpty == false, productOptions.isEmpty == false else { return }
 
-        let suggestedClientIndex = clientOptions.firstIndex(where: { $0.status == "atrisk" }) ?? 0
+        let suggestedClientIndex = 0
         let suggestedProductIndex = 0
         selectedClienteIndex = suggestedClientIndex
         selectedProductoIndex = suggestedProductIndex
         metodoPago = .credito
         cuotas = 3
-        firstDueDateOverride = Calendar.current.date(from: DateComponents(year: 2025, month: 7, day: 25))
+        firstDueDateOverride = siguienteFechaMensual()
 
         let child = NewSaleViewController(
             clients: clientOptions,
@@ -168,7 +168,7 @@ final class ModalVentaViewController: UIViewController {
         }
     }
 
-    private func handleEmbeddedDraft(_ draft: NewSaleDraft) {
+    private func handleEmbeddedDraft(_ draft: BorradorNuevaVenta) {
         selectedClienteIndex = draft.clientIndex
         selectedProductoIndex = draft.productIndex
         txtCantidad.text = "\(draft.quantity)"
@@ -191,11 +191,11 @@ final class ModalVentaViewController: UIViewController {
     }
 
     private func statusForClient(_ client: ClienteEntity) -> String {
-        guard client.limiteCredito > 0 else { return client.creditoUsado > 0 ? "overdue" : "active" }
+        guard client.limiteCredito > 0 else { return client.creditoUsado > 0 ? "vencido" : "activo" }
         let usage = client.creditoUsado / client.limiteCredito
-        if usage >= 0.75 { return "overdue" }
-        if usage >= 0.3 { return "atrisk" }
-        return "active"
+        if usage >= 0.75 { return "vencido" }
+        if usage >= 0.3 { return "enRiesgo" }
+        return "activo"
     }
 
     private func inventoryInfo(for product: ProductoEntity) -> (availableStock: Double, warehouseName: String) {
@@ -205,14 +205,14 @@ final class ModalVentaViewController: UIViewController {
 
         let stockRows = (try? context.fetch(stockRequest)) ?? []
         if let primaryStock = stockRows.first {
-            let warehouseName = primaryStock.almacen?.nombre ?? defaultWarehouse()?.nombre ?? "Almacén"
+            let warehouseName = primaryStock.almacen?.nombre ?? "Almacén"
             let totalAvailable = stockRows.reduce(0) { $0 + max($1.stockActual, 0) }
             return (availableStock: max(totalAvailable, product.stockLitros), warehouseName: warehouseName)
         }
 
         return (
             availableStock: max(product.stockLitros, 0),
-            warehouseName: defaultWarehouse()?.nombre ?? "Main"
+            warehouseName: "Sin almacén"
         )
     }
 
@@ -331,6 +331,9 @@ final class ModalVentaViewController: UIViewController {
                 return "El cliente supera su límite de crédito."
             }
         }
+        if defaultWarehouse() == nil {
+            return "Registra al menos un almacén antes de vender."
+        }
         return nil
     }
 
@@ -373,7 +376,7 @@ final class ModalVentaViewController: UIViewController {
     private func createCuotas(for venta: VentaEntity, total: Double) -> [CuotaEntity] {
         let montoPorCuota = total / Double(cuotas)
         var cuotasGeneradas: [CuotaEntity] = []
-        let baseDate = firstDueDateOverride ?? Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()
+        let fechaBase = firstDueDateOverride ?? siguienteFechaMensual(desde: venta.fechaVenta ?? Date())
         for numero in 1...cuotas {
             let cuota = CuotaEntity(context: context)
             cuota.id = UUID()
@@ -381,10 +384,14 @@ final class ModalVentaViewController: UIViewController {
             cuota.monto = montoPorCuota
             cuota.pagada = false
             cuota.venta = venta
-            cuota.fechaVencimiento = Calendar.current.date(byAdding: .month, value: numero - 1, to: baseDate)
+            cuota.fechaVencimiento = Calendar.current.date(byAdding: .month, value: numero - 1, to: fechaBase)
             cuotasGeneradas.append(cuota)
         }
         return cuotasGeneradas
+    }
+
+    private func siguienteFechaMensual(desde fecha: Date = Date()) -> Date {
+        Calendar.current.date(byAdding: .month, value: 1, to: fecha) ?? fecha
     }
 
     private func registerInventorySalida(for producto: ProductoEntity, cantidad: Double, cliente: ClienteEntity) -> InventorySyncSnapshot {
@@ -447,17 +454,7 @@ final class ModalVentaViewController: UIViewController {
         let request: NSFetchRequest<AlmacenEntity> = AlmacenEntity.fetchRequest()
         request.fetchLimit = 1
         request.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
-
-        if let almacen = try? context.fetch(request).first {
-            return almacen
-        }
-
-        let almacen = AlmacenEntity(context: context)
-        almacen.id = UUID()
-        almacen.nombre = "Main Station"
-        almacen.direccion = "Av. La Marina 245, Lima"
-        almacen.activo = true
-        return almacen
+        return try? context.fetch(request).first
     }
 
     private func showAlert(title: String, message: String) {
@@ -591,6 +588,12 @@ final class ModalVentaViewController: UIViewController {
                     self?.showAlert(title: "Firebase", message: "La venta se guardó localmente, pero no se pudo sincronizar: \(error.localizedDescription)")
                     return
                 }
+                TreasuryRemoteSync.syncSaleIfNeeded(
+                    venta: venta,
+                    cliente: cliente,
+                    productName: producto.nombre ?? "Producto",
+                    paymentMethod: venta.metodoPago ?? self?.metodoPago.rawValue ?? "efectivo"
+                )
                 AppSession.shared.lastRemoteSyncAt = Date()
             }
         }
