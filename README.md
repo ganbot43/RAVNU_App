@@ -1,800 +1,851 @@
-# ⛽ RAVNU — Sistema de Gestión de Estaciones de Combustible
+# RAVNU
 
-Aplicación móvil nativa iOS para la administración integral de estaciones de servicio. Centraliza operaciones, inventario, finanzas, crédito de clientes y gestión de personal en una sola plataforma, con acceso diferenciado por rol y sincronización en tiempo real con Firebase.
+Sistema de gestion para estaciones de combustible en iOS.
 
----
+Este README fusiona dos cosas:
 
-## Tabla de Contenidos
+1. la vision funcional y de negocio del producto
+2. el estado real del codigo que hoy existe en este repositorio
 
-1. [¿Qué es RAVNU?](#qué-es-ravnu)
-2. [Stack Tecnológico](#stack-tecnológico)
-3. [Roles de Usuario](#roles-de-usuario)
-4. [Matriz de Permisos](#matriz-de-permisos)
-5. [Módulos del Sistema](#módulos-del-sistema)
-   - [Inicio — Dashboard](#-inicio--dashboard)
-   - [Ventas](#-ventas)
-   - [Clientes](#-clientes)
-   - [Almacén](#-almacén)
-   - [Tesorería](#-tesorería)
-   - [Cobros](#-cobros)
-   - [Compras](#-compras)
-   - [RRHH](#-rrhh)
-6. [Automatizaciones — Efectos en Cascada](#automatizaciones--efectos-en-cascada)
-7. [Entidades del Sistema](#entidades-del-sistema)
-8. [Proveedores](#proveedores)
-9. [Almacenes](#almacenes)
-10. [Productos de Combustible](#productos-de-combustible)
-11. [Estados del Sistema](#estados-del-sistema)
-12. [Base de Datos — Firebase Firestore](#base-de-datos--firebase-firestore)
-13. [Autenticación y Sesión](#autenticación-y-sesión)
-14. [Diseño Visual](#diseño-visual)
-15. [Prototipo Web de Referencia](#prototipo-web-de-referencia)
-16. [Estado del Proyecto](#estado-del-proyecto)
+La idea es que sirva tanto para negocio como para developers.
 
 ---
 
-## ¿Qué es RAVNU?
+## Tabla de contenidos
 
-RAVNU es una herramienta de gestión operativa diseñada para estaciones de servicio/combustible. Permite que diferentes perfiles del personal — administrador, supervisor, cajero y almacenero — trabajen sobre la misma información actualizada en tiempo real, con acceso restringido únicamente a los módulos correspondientes a su función.
-
-El sistema resuelve tres necesidades clave de una estación:
-
-- **Control financiero:** seguimiento de ingresos, egresos, crédito a clientes y cobro de cuotas.
-- **Control de inventario:** stock de combustible por almacén, alertas de mínimos y trazabilidad de movimientos.
-- **Control operativo:** registro de ventas, órdenes de compra a proveedores y gestión del personal.
-
-Toda acción relevante genera efectos automáticos en los módulos relacionados, evitando que el usuario tenga que registrar la misma información dos veces.
+1. [Que es RAVNU](#que-es-ravnu)
+2. [Vision del sistema](#vision-del-sistema)
+3. [Stack tecnologico real](#stack-tecnologico-real)
+4. [Arquitectura actual del repositorio](#arquitectura-actual-del-repositorio)
+5. [Roles de usuario](#roles-de-usuario)
+6. [Matriz de permisos objetivo](#matriz-de-permisos-objetivo)
+7. [Matriz operativa real implementada](#matriz-operativa-real-implementada)
+8. [Modulos del sistema](#modulos-del-sistema)
+9. [Automatizaciones y efectos en cascada](#automatizaciones-y-efectos-en-cascada)
+10. [Entidades del sistema](#entidades-del-sistema)
+11. [Base de datos y colecciones reales](#base-de-datos-y-colecciones-reales)
+12. [Autenticacion y sesion](#autenticacion-y-sesion)
+13. [Solicitudes administrativas por API](#solicitudes-administrativas-por-api)
+14. [Navegacion por rol](#navegacion-por-rol)
+15. [Estado real por modulo](#estado-real-por-modulo)
+16. [Setup de desarrollo](#setup-de-desarrollo)
+17. [Deudas tecnicas y limitaciones conocidas](#deudas-tecnicas-y-limitaciones-conocidas)
+18. [Roadmap recomendado](#roadmap-recomendado)
 
 ---
 
-## Stack Tecnológico
+## Que es RAVNU
 
-| Capa | Tecnología |
+RAVNU es una aplicacion movil para la administracion integral de estaciones de servicio y combustible.
+
+Centraliza:
+
+- ventas
+- clientes y credito
+- cobros
+- almacen e inventario
+- compras
+- tesoreria
+- RRHH
+- control de accesos por rol
+
+El objetivo del sistema es que una misma operacion actualice automaticamente todas las areas relacionadas, evitando duplicidad manual y reduciendo errores operativos.
+
+---
+
+## Vision del sistema
+
+RAVNU fue planteado como una plataforma para resolver tres necesidades centrales de una estacion:
+
+- control financiero
+- control de inventario
+- control operativo
+
+### Necesidades que cubre
+
+- seguimiento de ingresos y egresos
+- manejo de clientes a credito y cuotas
+- control de stock por almacen
+- historial de movimientos
+- registro de ventas
+- ordenes de compra a proveedores
+- gestion de personal y permisos
+
+### Principio funcional
+
+Cada accion importante debe tener efecto automatico en otros modulos.
+
+Ejemplos:
+
+- una venta contado debe impactar stock y tesoreria
+- una venta credito debe impactar stock, cliente y cuotas
+- una compra recibida debe impactar almacen, historial y tesoreria
+- un cobro de cuota debe impactar cliente y tesoreria
+
+---
+
+## Stack tecnologico real
+
+Esto es lo que el repositorio usa hoy:
+
+| Capa | Implementacion actual |
 |---|---|
-| Plataforma | iOS 16+ — iPhone |
+| Plataforma | iOS |
 | Lenguaje | Swift |
-| Interfaz de usuario | UIKit + Storyboard (Interface Builder) |
-| Arquitectura | MVC con capa de servicios |
-| Base de datos | Firebase Firestore (NoSQL en tiempo real) |
-| Autenticación | Firebase Authentication (email + contraseña) |
-| Almacenamiento de archivos | Firebase Storage (fotos de trabajadores) |
-| Lógica de servidor | Firebase Cloud Functions |
-| Gráficas | DGCharts |
-| Carga de imágenes remotas | Kingfisher |
+| UI legacy | UIKit + Storyboards |
+| UI nueva | SwiftUI embebido via `UIHostingController` |
+| Persistencia local | Core Data |
+| Auth | Firebase Authentication |
+| Base remota | Firebase Firestore |
+| Sincronizacion | Firestore + coordinadores locales |
+| API administrativa | HTTP propia |
+| Graficas | `Charts` / Swift Charts |
+
+Notas:
+
+- la aplicacion no es SwiftUI pura
+- tampoco es Firestore puro: Core Data sigue siendo central
+- la API administrativa no reemplaza Firestore; se usa para workflows de aprobacion
 
 ---
 
-## Roles de Usuario
+## Arquitectura actual del repositorio
 
-El sistema tiene exactamente **4 roles**. Cada persona que inicia sesión en la app pertenece a uno de ellos. El rol determina qué módulos puede ver y qué operaciones puede realizar.
+### App
 
----
+- [AppDelegate.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/App/AppDelegate.swift)
+- [SceneDelegate.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/App/SceneDelegate.swift)
+- [RoleTabBarController.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/App/RoleTabBarController.swift)
 
-### 🛡️ Administrador
+### Infraestructura
 
-Control total del sistema. Es el único rol que puede:
-- Ver y modificar la **matriz de permisos** de todos los roles
-- Dar de alta, editar y eliminar trabajadores
-- Acceder a todos los módulos sin restricción: ventas, clientes, almacén, tesorería, cobros, compras y RRHH
-- Configurar la estación y sus datos generales
+- [AppSession.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Infrastructure/AppSession.swift)
+- [FirebaseBootstrap.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Infrastructure/FirebaseBootstrap.swift)
+- [RemoteSyncCoordinator.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Infrastructure/RemoteSyncCoordinator.swift)
+- [TreasuryRemoteSync.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Infrastructure/TreasuryRemoteSync.swift)
+- [AdminRequestService.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Infrastructure/AdminRequestService.swift)
 
-Es el perfil del dueño o gerente de la estación.
+### Modulos
 
----
+- Auth
+- Inicio/Cajero
+- Ventas
+- Clientes/Cobros
+- Almacen
+- Compras
+- Tesoreria
+- RRHH
+- Mas
 
-### 👁️ Supervisor
+### Observacion importante
 
-Perfil de supervisión operativa y financiera. Puede:
-- Registrar y revisar ventas
-- Gestionar clientes y sus líneas de crédito
-- Controlar el inventario del almacén
-- Ver el estado de la tesorería
-- Registrar cobros de cuotas
+El proyecto tiene duplicidad historica de infraestructura:
 
-No puede acceder a compras ni a RRHH.
+- hay clases en `Infrastructure/`
+- y tambien versiones equivalentes dentro de [AppDelegate.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/App/AppDelegate.swift)
 
----
+Esto afecta especialmente:
 
-### 💳 Cajero
+- `AppSession`
+- `BackendMode`
+- `RoleAccessControl`
 
-Perfil enfocado en el punto de venta y atención al cliente. Puede:
-- Registrar ventas al contado y a crédito
-- Consultar y agregar clientes
-- Registrar cobros de cuotas pendientes
-
-No accede a almacén, tesorería, compras ni RRHH.
-
----
-
-### 📦 Almacenero
-
-Perfil enfocado en el control de inventario y abastecimiento. Puede:
-- Ver el stock de todos los almacenes
-- Registrar movimientos de inventario (entradas, salidas, transferencias)
-- Crear y gestionar órdenes de compra a proveedores
-- Confirmar la recepción de mercadería
-
-No accede a ventas, clientes, tesorería, cobros ni RRHH.
+Cualquier developer que toque sesion, permisos o bootstrap debe revisar ambas zonas y validar cual esta tomando el target al compilar.
 
 ---
 
-## Matriz de Permisos
+## Roles de usuario
 
-La siguiente tabla muestra el acceso por defecto de cada rol. El **Administrador puede modificar esta matriz** desde el módulo de RRHH → pestaña Roles & Permisos.
+El sistema trabaja con 4 roles:
 
-| Módulo | Administrador | Supervisor | Cajero | Almacenero |
+- Administrador
+- Supervisor
+- Cajero
+- Almacenero
+
+Normalizacion interna actual:
+
+| Valor crudo | Valor interno |
+|---|---|
+| `Admin`, `admin`, `Administrador` | `admin` |
+| `Super`, `supervisor` | `supervisor` |
+| `Cajero` | `cajero` |
+| `Almacen`, `almacenero` | `almacen` |
+
+### Administrador
+
+- acceso total
+- crea y edita trabajadores
+- configura roles y permisos
+- ejecuta acciones directas sensibles
+
+### Supervisor
+
+- supervisa operacion
+- puede vender
+- puede trabajar con clientes
+- puede ver tesoreria
+- en varios casos debe solicitar aprobacion al admin
+
+### Cajero
+
+- crea ventas
+- registra cobros
+- trabaja con clientes existentes
+- no debe ejecutar acciones sensibles directas
+
+### Almacenero
+
+- opera almacen
+- registra movimientos
+- trabaja con compras
+- las altas sensibles se derivan como solicitud administrativa
+
+---
+
+## Matriz de permisos objetivo
+
+Esta es la matriz de negocio que se busca mantener como referencia de producto.
+
+| Modulo | Administrador | Supervisor | Cajero | Almacenero |
 |---|:---:|:---:|:---:|:---:|
-| 🏠 Inicio | ✅ | ✅ | ✅ | ✅ |
-| 🛒 Ventas | ✅ | ✅ | ✅ | ❌ |
-| 👥 Clientes | ✅ | ✅ | ✅ | ❌ |
-| 📦 Almacén | ✅ | ✅ | ❌ | ✅ |
-| 💰 Tesorería | ✅ | ✅ | ❌ | ❌ |
-| 💳 Cobros | ✅ | ✅ | ✅ | ❌ |
-| 🚚 Compras | ✅ | ❌ | ❌ | ✅ |
-| 👤 RRHH | ✅ | ❌ | ❌ | ❌ |
+| Inicio | ✅ | ✅ | ✅ | ✅ |
+| Ventas | ✅ | ✅ | ✅ | ❌ |
+| Clientes | ✅ | ✅ | ✅ | ❌ |
+| Almacen | ✅ | ✅ | ❌ | ✅ |
+| Tesoreria | ✅ | ✅ | ❌ | ❌ |
+| Cobros | ✅ | ✅ | ✅ | ❌ |
+| Compras | ✅ | ❌ | ❌ | ✅ |
+| RRHH | ✅ | ❌ | ❌ | ❌ |
 
-La barra de navegación inferior muestra únicamente los tabs a los que el usuario tiene acceso. El tab **Más** siempre es visible porque agrupa módulos secundarios como tesorería, cobros, compras y RRHH — pero dentro de Más, cada tarjeta de módulo también se oculta si el rol no tiene permiso.
+Importante:
 
----
-
-## Módulos del Sistema
-
----
-
-### 🏠 Inicio — Dashboard
-
-Pantalla principal que el usuario ve al abrir la app. Resume el estado más crítico de la estación en ese momento.
-
-**Métricas del día (scroll horizontal):**
-- **Vendido Hoy** — suma de todas las ventas del día en curso.
-- **Cobrado Hoy** — suma de cuotas cobradas en el día.
-- **Por Cobrar** — monto total pendiente en cuotas de todos los clientes.
-
-**Gráfica de ventas de la semana:**
-Barras con las ventas de los últimos 7 días (Lun–Dom), con la barra del día más alto destacada. Permite identificar de un vistazo los días de mayor actividad.
-
-**Alertas de stock bajo:**
-Se muestra automáticamente cuando algún combustible está por debajo de su nivel mínimo configurado. La alerta incluye el nombre del producto y el stock restante.
-
-**Cliente con mayor deuda:**
-Muestra el cliente con la deuda activa más alta, su estado (Vencido, En Riesgo) y un botón de acceso directo a su detalle.
-
-**Feed de actividad reciente:**
-Registro de las últimas acciones realizadas en el sistema (ventas registradas, pagos cobrados, stock recibido, etc.) con el módulo afectado y el impacto de cada acción.
+- esta tabla es la vision de negocio
+- no todas las operaciones internas equivalen a acceso directo
+- varias de ellas hoy funcionan como "solicitud al admin"
 
 ---
 
-### 🛒 Ventas
+## Matriz operativa real implementada
 
-Módulo para registrar y consultar todas las ventas de combustible.
+Esto refleja lo que el codigo hace hoy.
 
-**Lista de ventas:**
-Muestra todas las ventas registradas con nombre del cliente, producto, cantidad en litros/balones, total en soles, tipo de pago (contado o crédito) y fecha. Incluye búsqueda por nombre de cliente o producto.
-
-**Resumen estadístico:**
-Encima de la lista se muestran indicadores rápidos: total vendido, cantidad de ventas al contado vs crédito, y gráficas de tendencia por producto y por período.
-
-**Registrar una nueva venta:**
-Se abre desde el botón flotante (+). El formulario solicita:
-
-| Campo | Descripción |
-|---|---|
-| Cliente | Selección de la lista de clientes registrados |
-| Producto | Selección del catálogo de combustibles |
-| Cantidad | Litros o balones a despachar |
-| Total | Se calcula automáticamente (cantidad × precio del producto) |
-| Tipo de pago | Contado o Crédito |
-
-Si se selecciona **Crédito**, se habilita una sección adicional:
-
-| Campo | Descripción |
-|---|---|
-| Número de cuotas | Cantidad de pagos en los que se dividirá la deuda |
-| Monto por cuota | Se calcula automáticamente (total ÷ cuotas) |
-| Fecha del primer vencimiento | Fecha desde la que se genera el calendario de cuotas |
-| Disponibilidad del cliente | Muestra el crédito disponible y el estado actual del cliente |
-
-Al guardar la venta, el sistema ejecuta automáticamente:
-1. Descuenta el stock del almacén correspondiente.
-2. Registra un movimiento de salida en el historial del almacén.
-3. Si es **contado**: registra un ingreso en Tesorería.
-4. Si es **crédito**: genera las cuotas en Cobros y actualiza la deuda del cliente.
+| Accion | Admin | Supervisor | Cajero | Almacenero |
+|---|:---:|:---:|:---:|:---:|
+| Crear venta | Directo | Directo | Directo | No |
+| Solicitar edicion/anulacion de venta | No aplica | Si | Si | No |
+| Ver clientes | Si | Si | Si | No |
+| Crear cliente | Directo | Solicitud | No | No |
+| Cobrar cuotas | Si | Si | Si | No |
+| Ver almacen | Si | Si | No | Si |
+| Crear producto | Directo | No | No | Solicitud |
+| Crear almacen | Directo | No | No | Solicitud |
+| Registrar movimientos | Si | Si | No | Si |
+| Crear proveedor | Directo | No | No | Solicitud |
+| Crear orden de compra | Directo | No | No | Solicitud |
+| Cambiar estado de orden de compra | Directo | No | No | Solicitud |
+| Tesoreria | Si | Si | No | No |
+| RRHH | Directo | No | No | No |
 
 ---
 
-### 👥 Clientes
+## Modulos del sistema
 
-Directorio completo de clientes con control de crédito y seguimiento de deuda.
+### Inicio
 
-**Lista de clientes:**
-Muestra nombre, tipo de documento (DNI o RUC), número de documento, teléfono, estado y deuda actual. Tiene filtros por estado: Todos / Activo / En Riesgo / Vencido / Bloqueado.
+Conceptualmente debe mostrar:
 
-**Estados de un cliente:**
+- vendido hoy
+- cobrado hoy
+- por cobrar
+- ventas semanales
+- alertas de stock
+- actividad reciente
 
-| Estado | Condición | Color |
-|---|---|---|
-| ✅ Activo | Sin deuda o deuda dentro del límite sin cuotas vencidas | Verde |
-| ⚠️ En Riesgo | La deuda supera el 50% del límite de crédito | Naranja |
-| 🔴 Vencido | Tiene al menos una cuota vencida sin pagar | Rojo |
-| 🚫 Bloqueado | Límite de crédito superado | Gris |
+En el codigo actual, gran parte de esa experiencia esta implementada desde el dashboard del cajero y vistas derivadas.
 
-**Agregar un nuevo cliente:**
-Formulario con: nombre o razón social, tipo de documento (DNI/RUC), número de documento, teléfono, email, dirección y límite de crédito asignado.
+### Ventas
 
-**Detalle del cliente:**
-Al tocar un cliente se accede a su ficha completa:
+Permite:
 
-- **3 indicadores**: Deuda actual / Crédito disponible / Límite asignado.
-- **Barra de uso de crédito**: muestra visualmente el porcentaje utilizado del límite.
-- **Historial de compras a crédito**: lista de todas las ventas en modalidad crédito del cliente.
-- **Cuotas**: lista de todas las cuotas generadas para ese cliente con su estado (pendiente, vencida, pagada).
+- ver ventas
+- crear venta
+- manejar contado y credito
+- generar cuotas
 
----
+El flujo ya actualiza inventario y, segun el caso, tesoreria y cobros.
 
-### 📦 Almacén
+### Clientes
 
-Control del inventario de combustible distribuido en múltiples almacenes físicos.
+Permite:
 
-**El sistema maneja 3 almacenes:**
+- ver clientes
+- analizar deuda
+- ver cuotas
+- cobrar cuotas
 
-| Almacén | Dirección | Responsable |
-|---|---|---|
-| Main Station | Av. La Marina 245, Lima | Luis Torres |
-| North Depot | Av. Túpac Amaru 890, Lima | Ana Flores |
-| South Point | Carretera Central Km 12, Lima | Jorge Salinas |
+La creacion esta restringida por rol y, en el caso del supervisor, se envia como solicitud.
 
-**Vista de inventario:**
-Grid con una tarjeta por producto en cada almacén. Cada tarjeta muestra:
-- Nombre del combustible y ícono de tipo
-- Stock actual en litros o balones
-- Barra de progreso proporcional a la capacidad total del tanque
-- Badge de estado: **OK** (verde) o **Stock Bajo** (rojo)
+### Almacen
 
-El estado **Stock Bajo** se activa automáticamente cuando el nivel cae por debajo del mínimo configurado para ese producto.
+Permite:
 
-**Vista de Productos:**
-Lista completa del catálogo de combustibles con precio por unidad, unidad de medida, stock total consolidado y estado de cada producto.
+- ver stock por almacen
+- ver productos
+- ver movimientos
+- registrar entradas, salidas y transferencias
 
-**Registrar un movimiento:**
-El formulario de movimiento solicita:
+Tambien tiene alertas de stock bajo y consolidacion de stocks para evitar falsas alertas.
 
-| Campo | Descripción |
-|---|---|
-| Tipo | Entrada / Salida / Transferencia |
-| Almacén origen | Desde dónde sale el combustible |
-| Almacén destino | Solo para Transferencia — a dónde va el combustible |
-| Producto | Qué combustible se mueve |
-| Cantidad | Litros o balones |
-| Nota | Descripción opcional del movimiento |
+### Tesoreria
 
-Los tres tipos de movimiento:
-- **Entrada** — combustible que ingresa (compra recibida, ajuste de inventario).
-- **Salida** — combustible que sale (despacho manual, merma).
-- **Transferencia** — movimiento de stock entre dos almacenes de la misma estación. El stock baja en el origen y sube en el destino simultáneamente.
+Permite:
 
-Todos los movimientos quedan registrados en el historial con fecha, responsable y nota.
+- ver saldo
+- ingresos y egresos
+- transacciones
+- tendencias
 
----
+Ya se corrigio la logica para que compras recibidas no cuenten como salida de caja hasta que realmente esten pagadas.
 
-### 💰 Tesorería
+### Cobros
 
-Centro financiero de la estación. Registra todos los movimientos de dinero: entradas y salidas.
+Permite:
 
-**Balance general:**
-Banner prominente con el **saldo actual** (ingresos totales − egresos totales), el margen neto del mes en porcentaje, y los montos de ingresos y egresos separados.
+- ver cuotas pendientes, vencidas y pagadas
+- registrar pagos
+- actualizar la deuda del cliente
 
-**Gráficas:**
-- Evolución mensual de ingresos vs egresos (últimos 7 meses).
-- Distribución de gastos por categoría: Compras de combustible, Salarios, Mantenimiento, Suministros.
+### Compras
 
-**Filtros de período:** Hoy / Semana / Mes — para ver solo las transacciones del período seleccionado.
+Permite:
 
-**Lista de transacciones:**
-Cada transacción muestra: tipo (ingreso ↓ verde / egreso ↑ rojo), descripción, trabajador responsable, monto y fecha.
+- ver proveedores
+- ver ordenes
+- crear ordenes
+- recibir ordenes
+- actualizar estados
 
-La mayoría de las transacciones se generan **automáticamente** desde otros módulos:
-- Venta al contado → ingreso automático
-- Pago de cuota → ingreso automático
-- Compra recibida → egreso automático
+Hoy, para almacenero, varias de esas acciones ya salen como solicitud al admin.
 
-También se pueden registrar transacciones **manuales** (gastos de mantenimiento, sueldos, ingresos varios) usando el botón flotante (+).
+### RRHH
 
-**Formulario de nueva transacción manual:**
-Tipo (Ingreso/Egreso), descripción, monto, trabajador responsable y fecha.
+Permite:
 
----
+- listar trabajadores
+- crear trabajador
+- editar trabajador
+- activar/inactivar
+- ver roles y permisos
 
-### 💳 Cobros
+Quedo reservado a admin.
 
-Módulo dedicado a la gestión y seguimiento de cuotas de ventas a crédito.
+### Mas
 
-**Resumen de cobros:**
+Agrupa:
 
-| Indicador | Descripción |
-|---|---|
-| Vencido | Monto total de cuotas con fecha de vencimiento pasada |
-| Pendiente | Monto total de cuotas próximas a vencer |
-| Cobrado Hoy | Suma de cuotas cobradas en el día en curso |
+- Tesoreria
+- Cobros
+- Compras
+- RRHH
+- Logout
 
-**Gráfica de distribución:**
-Pastel con la proporción de montos vencidos, pendientes y cobrados hoy.
-
-**Lista de cuotas:**
-Filtrable por: Todas / Pendientes / Vencidas / Pagadas. Cada cuota muestra:
-- Nombre del cliente
-- Número de cuota y total de cuotas de esa venta (ej: "Cuota 2 de 3")
-- Monto a cobrar
-- Fecha de vencimiento (en rojo si ya venció)
-- Estado con badge de color
-
-**Registrar un pago:**
-El formulario de cobro permite:
-1. Seleccionar al cliente — se muestran automáticamente sus cuotas pendientes y vencidas.
-2. Ver el detalle de la cuota seleccionada (monto, fecha de vencimiento, estado).
-3. Ingresar el **monto a pagar** — puede ser parcial o total.
-4. El sistema calcula en tiempo real: saldo restante de esa cuota y deuda total del cliente después del pago.
-
-Al confirmar el pago:
-- La cuota se marca como **Pagada** (o se actualiza su monto restante si es pago parcial).
-- La deuda del cliente se reduce automáticamente.
-- Se genera un ingreso automático en Tesorería.
-- Si la deuda queda en cero, el estado del cliente vuelve a **Activo**.
+La visibilidad interna tambien depende del rol.
 
 ---
 
-### 🚚 Compras
-
-Gestión de órdenes de compra de combustible a proveedores externos.
-
-**Lista de órdenes:**
-Muestra todas las compras con proveedor, producto, cantidad, total, trabajador responsable, fecha y estado actual.
-
-**Estados de una orden de compra:**
-
-| Estado | Descripción | Impacto en stock |
-|---|---|---|
-| ⏳ Pendiente | La orden fue creada pero el combustible aún no llegó | Sin impacto |
-| ✅ Recibida | El combustible ingresó físicamente al almacén | Stock aumenta |
-| ❌ Cancelada | La orden fue anulada | Sin impacto |
-
-**Gestión de proveedores:**
-Directorio de proveedores con información de contacto, categoría, calificación (1–5 estrellas), total histórico de gasto y última compra. Los proveedores no tienen acceso a la app — son entidades gestionadas internamente.
-
-Los proveedores registrados en el sistema son:
-
-| Proveedor | Categoría | Calificación |
-|---|---|---|
-| PetroPerú | Estatal | ⭐ 4.5 |
-| Repsol | Internacional | ⭐ 4.8 |
-| PRIMAX | Cadena nacional | ⭐ 4.2 |
-| Pecsa | Nacional | ⭐ 3.9 |
-
-**Registrar una nueva compra:**
-Formulario con: producto a comprar, cantidad (litros o balones), precio de compra por unidad (diferente al precio de venta), total auto-calculado, proveedor, almacén de destino y trabajador responsable.
-
-**Flujo completo de una compra:**
-1. El almacenero **crea la orden** → queda en estado Pendiente. El stock no cambia.
-2. Cuando llega el combustible, el almacenero **confirma la recepción** → el stock del almacén aumenta, se registra un egreso en Tesorería y se actualizan las estadísticas del proveedor.
-3. Si la entrega no se realiza, se **cancela la orden** → sin ningún impacto en inventario ni finanzas.
-
----
-
-### 👤 RRHH
-
-Módulo de gestión del personal de la estación. Organizado en tres pestañas.
-
----
-
-#### Pestaña Trabajadores
-
-Lista completa del personal con avatar de iniciales, nombre, badge de rol (Cajero / Almacenero / Supervisor), turno y teléfono de contacto.
-
-**Turnos disponibles:**
-
-| Turno | Descripción |
-|---|---|
-| Turno mañana | Primera parte del día |
-| Turno tarde | Segunda parte del día |
-| Día completo | Jornada completa |
-
-**Acciones disponibles:**
-- **Agregar trabajador** — nombre, teléfono, email, rol y turno.
-- **Editar trabajador** — modificar cualquier dato del perfil.
-- **Eliminar trabajador** — con confirmación previa. Solo el Administrador puede hacerlo.
-
-El personal actual de la estación en el sistema demo:
-
-| Nombre | Rol | Turno |
-|---|---|---|
-| Luis Torres | Cajero | Turno mañana |
-| Ana Flores | Almacenero | Turno tarde |
-| Jorge Salinas | Supervisor | Día completo |
-
----
-
-#### Pestaña Actividad
-
-Vista del rendimiento del equipo en el período. Muestra para cada trabajador:
-- Número de ventas registradas
-- Número de cobros realizados
-- Estado actual (activo / inactivo)
-
-Incluye un gráfico de barras comparativo entre los trabajadores.
-
----
-
-#### Pestaña Roles & Permisos
-
-Matriz visual interactiva con los permisos de cada rol sobre cada módulo del sistema.
-
-Funcionamiento:
-- Se selecciona el rol a visualizar (Administrador / Supervisor / Cajero / Almacenero).
-- Se muestra una lista de los 8 módulos con un toggle ON/OFF para cada uno.
-- Si el usuario actual es **Administrador**, puede modificar los toggles y guardar los cambios. Los cambios se aplican en tiempo real.
-- Si el usuario es cualquier otro rol, ve la matriz en modo **solo lectura** con un mensaje indicando que solo el Administrador puede modificar permisos.
-
----
-
-## Automatizaciones — Efectos en Cascada
-
-El principio central de RAVNU es que **registrar algo en un módulo actualiza automáticamente todos los módulos relacionados**. El usuario no necesita ir a varios lugares para reflejar una misma operación.
-
----
+## Automatizaciones y efectos en cascada
 
 ### Al registrar una venta
 
-| Módulo afectado | Qué ocurre |
+| Modulo afectado | Efecto |
 |---|---|
-| Almacén | Se descuenta la cantidad vendida del almacén con más stock de ese producto |
-| Historial de almacén | Se crea un movimiento de tipo **Salida** vinculado a esa venta |
-| Tesorería (solo contado) | Se registra un ingreso por el monto total de la venta |
-| Clientes (solo crédito) | La deuda del cliente aumenta por el total de la venta |
-| Cobros (solo crédito) | Se generan automáticamente las cuotas según la cantidad indicada en el formulario |
+| Almacen | descuento de stock |
+| Movimientos | salida de inventario |
+| Tesoreria | ingreso si es contado |
+| Cliente | aumenta deuda si es credito |
+| Cobros | se generan cuotas si es credito |
 
----
+### Al registrar un cobro
 
-### Al confirmar la recepción de una compra
-
-| Módulo afectado | Qué ocurre |
+| Modulo afectado | Efecto |
 |---|---|
-| Almacén | El stock del almacén de destino aumenta con la cantidad recibida |
-| Historial de almacén | Se crea un movimiento de tipo **Entrada** vinculado a esa compra |
-| Tesorería | Se registra un egreso por el monto total de la compra |
-| Proveedores | Se suma 1 transacción al contador y se actualiza el gasto total del proveedor |
-| Feed de actividad | Se registra el evento en el dashboard |
+| Cuotas | cambia estado o saldo restante |
+| Cliente | reduce deuda |
+| Tesoreria | registra ingreso |
 
----
+### Al recibir una compra
 
-### Al registrar un cobro de cuota
-
-| Módulo afectado | Qué ocurre |
+| Modulo afectado | Efecto |
 |---|---|
-| Cobros | La cuota cambia a estado **Pagada** (o se actualiza el monto si fue pago parcial) |
-| Clientes | La deuda del cliente se reduce por el monto cobrado |
-| Clientes | Si la deuda llega a cero, el estado del cliente cambia automáticamente a **Activo** |
-| Tesorería | Se registra un ingreso por el monto cobrado |
+| Almacen | aumenta stock |
+| Movimientos | entrada de inventario |
+| Tesoreria | egreso financiero cuando corresponde |
+| Proveedor | actualiza historico |
 
 ---
 
-## Entidades del Sistema
-
-Las entidades son los objetos de datos que estructuran toda la información de RAVNU.
-
----
+## Entidades del sistema
 
 ### Usuario
-Persona con acceso a la aplicación. Tiene credenciales de Firebase Authentication, un rol que determina su acceso, y está asignado a una estación específica. Sus datos se almacenan sincronizados con su cuenta de autenticación.
 
-**Atributos clave:** nombre, email, rol, estación asignada, color de avatar, iniciales, estado activo/inactivo.
+Perfil autenticado con acceso a la app.
 
----
+Campos relevantes usados hoy:
+
+- nombre visible
+- email
+- rol
+- `authUid`
+- `userDocumentId`
+- estado activo
 
 ### Cliente
-Persona natural (con DNI) o empresa (con RUC) que compra combustible en la estación, con posibilidad de operar a crédito.
 
-**Atributos clave:** nombre, tipo y número de documento, teléfono, email, dirección, límite de crédito, deuda actual, estado.
+Campos funcionales:
 
-La deuda actual se actualiza automáticamente con cada venta a crédito y cada cobro de cuota. El estado se recalcula automáticamente según la relación entre la deuda y el límite, y la existencia de cuotas vencidas.
-
----
+- nombre
+- documento
+- telefono
+- direccion
+- limite de credito
+- credito usado
+- estado
 
 ### Venta
-Registro de un despacho de combustible a un cliente. Es la entidad central del sistema porque genera efectos en almacén, tesorería y cobros.
 
-**Atributos clave:** cliente, producto, cantidad, precio unitario, total, tipo de pago (contado/crédito), número de cuotas si aplica, trabajador responsable, almacén origen, fecha.
+Campos funcionales:
 
----
+- cliente
+- producto
+- cantidad
+- precio unitario
+- total
+- metodo de pago
+- fecha
+- estado
 
 ### Producto
-Combustible disponible en la estación con su precio de venta y límite de stock mínimo para alertas.
 
-**Productos del sistema:**
+Campos funcionales:
 
-| Producto | Unidad | Precio venta | Stock mínimo |
-|---|---|---|---|
-| Gasoline 90 | Litro | S/ 6.20 | 500 L |
-| Gasoline 95 | Litro | S/ 7.10 | 400 L |
-| Diesel B5 | Litro | S/ 5.90 | 400 L |
-| GLP | Balón | S/ 38.00 | 5 bal |
+- nombre
+- precio
+- unidad de medida
+- stock minimo
+- capacidad total
+- stock actual consolidado
 
----
+### Almacen
 
-### Almacén
-Espacio físico de almacenamiento dentro de la estación. Cada almacén tiene capacidades diferentes por producto y un responsable asignado. El stock de cada almacén es independiente y se actualiza en tiempo real.
+Campos funcionales:
 
----
+- nombre
+- direccion
+- responsable
+- activo
 
-### Movimiento de Almacén
-Registro histórico de cada cambio de stock. Todo movimiento — sea generado automáticamente por una venta o compra, o registrado manualmente — queda en el historial con su tipo, cantidad, origen, responsable y fecha.
+### Movimiento de inventario
 
-**Tipos de movimiento:** Entrada (IN) / Salida (OUT) / Transferencia (TRANSFER)
-**Orígenes posibles:** Compra / Venta / Movimiento directo
+Campos funcionales:
 
----
+- tipo
+- producto
+- almacen
+- origen
+- destino
+- nota
+- cantidad
+- fecha
 
-### Cuota (Installment)
-Pago parcial de una venta a crédito. Cuando se registra una venta a crédito con N cuotas, el sistema genera N documentos de cuota automáticamente, con montos iguales y fechas de vencimiento distribuidas desde la fecha del primer vencimiento indicada.
+### Cuota
 
-**Atributos clave:** cliente, venta de origen, número de cuota, total de cuotas, monto, fecha de vencimiento, fecha de pago, estado.
+Campos funcionales:
 
----
+- numero
+- monto
+- pagada
+- fecha de vencimiento
+- fecha de pago
+- venta asociada
 
-### Transacción
-Movimiento financiero en tesorería. Puede ser un ingreso o un egreso. La mayoría se generan automáticamente, pero también se pueden registrar manualmente.
+### Transaccion
 
-**Atributos clave:** tipo (ingreso/egreso), descripción, monto, trabajador responsable, origen (venta / compra / cobro / manual), fecha.
+Representada hoy principalmente desde tesoreria y sync remoto.
 
----
+### Orden de compra
 
-### Compra (Purchase Order)
-Orden de compra de combustible a un proveedor externo. Tiene un ciclo de vida: se crea como pendiente, se confirma al recibir la mercadería, o se cancela si no se concreta.
+Campos funcionales:
 
-**Atributos clave:** producto, cantidad, precio de compra por unidad, total, proveedor, almacén destino, trabajador responsable, estado, fechas de orden y recepción.
-
----
+- proveedor
+- producto
+- almacen
+- cantidad
+- precio unitario de compra
+- total
+- estado
+- fecha
+- nota
 
 ### Trabajador
-Empleado de la estación con rol operativo. Distinto del Usuario: un trabajador puede existir en el sistema sin tener cuenta en la app (por ejemplo, si solo aparece como responsable de movimientos históricos).
 
-**Atributos clave:** nombre, rol operativo (cajero/almacenero/supervisor), turno, teléfono, email, foto de perfil.
-
----
+Se modela en RRHH y en acceso remoto.
 
 ### Proveedor
-Empresa externa que suministra combustible a la estación. **No tiene acceso a la aplicación**. Es una entidad de referencia que se asocia a las órdenes de compra y acumula estadísticas de relación comercial.
 
-**Atributos clave:** nombre, categoría, RUC, teléfono, email, dirección, calificación (1–5 estrellas), gasto total histórico, número de transacciones, última compra.
+Campos funcionales:
 
----
-
-### Matriz de Permisos
-Configuración por estación que define qué módulos puede ver y operar cada rol. Se almacena en Firebase y se carga al iniciar sesión. El Administrador puede modificarla en tiempo real desde la app, y los cambios se aplican inmediatamente para todos los usuarios activos.
-
----
-
-## Proveedores
-
-Los proveedores son empresas externas que suministran los combustibles. Se gestionan dentro del sistema como directorio de contacto y referencia histórica de compras.
-
-**Datos que se registran de cada proveedor:**
-- Razón social y RUC
-- Categoría (estatal, internacional, cadena nacional, nacional)
-- Datos de contacto: teléfono, email, dirección
-- Calificación de 1 a 5 estrellas (asignada por el equipo)
-- Verificación del proveedor (proveedores confiables marcados como verificados)
-- Gasto total histórico acumulado
-- Número de transacciones realizadas
-- Última compra: producto, monto y fecha
-
-**Lo que NO pueden hacer los proveedores:**
-- No tienen usuario en el sistema
-- No inician sesión en la app
-- No reciben notificaciones automáticas desde la app
-- No ven las órdenes de compra generadas
+- nombre
+- categoria
+- telefono
+- email
+- direccion
+- calificacion
+- preferido
+- verificado
 
 ---
 
-## Almacenes
+## Base de datos y colecciones reales
 
-La estación opera con múltiples almacenes físicos. Cada almacén tiene sus propios tanques con capacidades definidas para cada combustible.
+La documentacion conceptual puede hablar de `clients`, `purchases` o `transactions`, pero el codigo hoy usa estas colecciones Firestore:
 
-El sistema calcula automáticamente el porcentaje de ocupación de cada tanque y emite alertas cuando el stock baja del mínimo configurado para cada producto.
-
-**Acciones disponibles sobre almacenes:**
-- Ver el stock actual de cada producto en cada almacén
-- Registrar entradas manuales de combustible
-- Registrar salidas manuales
-- Transferir stock de un almacén a otro
-- Ver el historial completo de movimientos de cada almacén
-
----
-
-## Productos de Combustible
-
-El catálogo de combustibles define los productos que se pueden vender, comprar y almacenar. Cada producto tiene:
-
-- **Nombre** — identificador del combustible
-- **Unidad de medida** — Litros (para Gasoline 90, 95 y Diesel B5) o Balones (para GLP)
-- **Precio de venta** — precio al cliente, usado para calcular el total de cada venta
-- **Stock mínimo** — nivel de alerta. Cuando el stock cae por debajo, se activa la alerta en el Dashboard y en el Almacén
-- **Capacidad máxima** — capacidad total del tanque, usada para calcular el porcentaje de ocupación
-
-El **precio de compra** (a proveedores) es independiente del precio de venta y se registra en cada orden de compra, no en el catálogo de productos.
-
----
-
-## Estados del Sistema
-
-### Estados de Cliente
-
-| Estado | Color | Condición |
-|---|---|---|
-| Activo | 🟢 Verde | Deuda en cero o dentro del límite, sin cuotas vencidas |
-| En Riesgo | 🟠 Naranja | Deuda supera el 50% del límite de crédito asignado |
-| Vencido | 🔴 Rojo | Tiene una o más cuotas con fecha de vencimiento superada |
-| Bloqueado | ⚫ Gris | Deuda supera el límite de crédito |
-
-### Estados de Cuota
-
-| Estado | Color | Significado |
-|---|---|---|
-| Pendiente | 🟠 Naranja | Cuota generada, fecha de vencimiento futura |
-| Vencido | 🔴 Rojo | Cuota no pagada y fecha de vencimiento superada |
-| Pagado | 🟢 Verde | Cuota cobrada completamente |
-
-### Estados de Orden de Compra
-
-| Estado | Color | Significado |
-|---|---|---|
-| Pendiente | 🟠 Naranja | Orden creada, combustible no recibido aún |
-| Recibida | 🟢 Verde | Combustible recibido, stock y tesorería actualizados |
-| Cancelada | 🔴 Rojo | Orden anulada, sin impacto en stock ni finanzas |
-
-### Estados de Stock
-
-| Estado | Color | Condición |
-|---|---|---|
-| OK | 🟢 Verde | Stock por encima del nivel mínimo |
-| Stock Bajo | 🔴 Rojo | Stock igual o por debajo del nivel mínimo configurado |
-
----
-
-## Base de Datos — Firebase Firestore
-
-Firestore es la base de datos principal del sistema. Es una base de datos NoSQL orientada a documentos, con sincronización en tiempo real. Los datos de la app se mantienen actualizados automáticamente en todos los dispositivos sin necesidad de recargar.
-
-### Estructura general
-
-Los datos se organizan en colecciones de primer nivel. Cada documento incluye el campo `stationId` que permite aislar completamente la información de una estación de otra — lo que habilita el soporte multi-estación en el futuro.
-
-| Colección | Contenido |
+| Coleccion | Uso actual |
 |---|---|
-| `stations` | Estaciones registradas, configuración general y matriz de permisos |
-| `users` | Perfiles de usuario vinculados a Firebase Authentication |
-| `clients` | Clientes con datos, límite de crédito, deuda y estado |
-| `sales` | Ventas con todos sus atributos y referencia al almacén origen |
-| `products` | Catálogo de combustibles con precio y stock mínimo |
-| `warehouses` | Almacenes con snapshot del stock actual por producto |
-| `warehouseMovements` | Historial completo de todos los movimientos de inventario |
-| `purchases` | Órdenes de compra con estado y trazabilidad completa |
-| `installments` | Cuotas generadas por ventas a crédito |
-| `transactions` | Todos los movimientos financieros de tesorería |
-| `workers` | Personal de la estación con datos de perfil |
-| `suppliers` | Proveedores con historial de compras y estadísticas |
+| `users` | perfil de usuario |
+| `users_lookup` | lookup por `auth.uid` |
+| `roles` | roles y permisos |
+| `customers` | clientes |
+| `products` | productos |
+| `warehouses` | almacenes |
+| `warehouse_stock` | stock por almacen |
+| `inventory_movements` | movimientos de inventario |
+| `sales` | ventas |
+| `sale_installments` | cuotas |
+| `suppliers` | proveedores |
+| `purchase_orders` | ordenes de compra |
+| `treasury_transactions` | transacciones de tesoreria |
 
-### Escrituras en lote (Batch Writes)
+### Modelo local
 
-Las operaciones que afectan múltiples colecciones (como registrar una venta) se ejecutan en una **escritura atómica**: o se guardan todos los cambios juntos o no se guarda ninguno. Esto garantiza que el stock, la tesorería y el cliente siempre queden en un estado consistente, incluso si hay un error de red.
+Core Data usa:
 
-### Sincronización en tiempo real
-
-Los módulos críticos (Dashboard, Almacén, Cobros) usan **listeners en tiempo real** de Firestore: cuando otro usuario registra una venta o un cobro, todos los demás ven los datos actualizados automáticamente sin necesidad de refrescar.
-
-### Caché offline
-
-Firebase Firestore tiene caché offline habilitada por defecto. Si el dispositivo pierde conexión, la app puede seguir funcionando con los datos en caché y sincronizará los cambios cuando la conexión se restablezca.
-
----
-
-## Autenticación y Sesión
-
-El sistema usa **Firebase Authentication con email y contraseña**.
-
-### Proceso de inicio de sesión
-
-1. El usuario ingresa su email y contraseña en la pantalla de login.
-2. Firebase verifica las credenciales.
-3. Si son correctas, la app carga el perfil del usuario desde Firestore (`users/{uid}`).
-4. Se carga la matriz de permisos de la estación (`stations/{stationId}.permissions`).
-5. La barra de navegación se construye mostrando únicamente los módulos permitidos para ese rol.
-6. El usuario accede al Dashboard.
-
-### Persistencia de sesión
-
-La sesión persiste automáticamente en el dispositivo. Si el usuario cierra y vuelve a abrir la app, sigue autenticado sin necesidad de ingresar sus credenciales nuevamente. El cierre de sesión es explícito desde el botón de logout en el menú **Más**.
-
-### Alta de nuevos usuarios
-
-El Administrador crea primero al trabajador en el módulo de RRHH. Luego se genera la cuenta de Firebase Authentication con el email y una contraseña temporal. El trabajador puede cambiar su contraseña en el primer ingreso.
-
-### Seguridad de datos
-
-Las reglas de seguridad de Firestore validan en el servidor que:
-- Solo usuarios autenticados pueden leer o escribir datos.
-- Cada usuario solo accede a documentos de su propia estación.
-- Las operaciones de escritura están restringidas al rol que corresponde (por ejemplo, solo el Administrador puede modificar los permisos o eliminar trabajadores).
+- `ClienteEntity`
+- `ProductoEntity`
+- `AlmacenEntity`
+- `StockAlmacenEntity`
+- `MovimientoInventarioEntity`
+- `VentaEntity`
+- `CuotaEntity`
+- `ProveedorEntity`
+- `OrdenCompraEntity`
+- `LoginEntity`
 
 ---
 
-## Diseño Visual
+## Autenticacion y sesion
 
-El diseño sigue las guías de Human Interface Guidelines de Apple con una paleta de colores propia que comunica semánticamente el estado de cada elemento.
+Archivo principal:
 
-### Paleta de colores
+- [LoginViewController.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Features/Auth/LoginViewController.swift)
 
-| Color | Hex | Uso en el sistema |
-|---|---|---|
-| Azul | `#3B82F6` | Acción primaria, tab activo, rol Administrador, Gasoline 90 |
-| Verde | `#22C55E` | Pagado, activo, ingreso, stock OK, rol Cajero |
-| Rojo | `#EF4444` | Deuda, vencido, stock bajo, egreso, alerta crítica |
-| Naranja | `#F59E0B` | Alerta, en riesgo, pendiente, rol Almacenero, Diesel B5 |
-| Violeta | `#8B5CF6` | Rol Supervisor, Gasoline 95 |
-| Esmeralda | `#10B981` | GLP |
+Flujo actual:
 
-### Tipografía
+1. login por `Firebase Authentication`
+2. lectura de `users_lookup/{authUid}`
+3. lectura de `users/{userId}`
+4. normalizacion de rol
+5. persistencia en `AppSession`
+6. construccion de tabs segun rol
 
-**SF Pro Rounded** — tipografía del sistema iOS en su variante redondeada. Aporta legibilidad y un tono amigable que facilita la lectura rápida de cifras y estados.
+Campos persistidos en sesion:
 
-### Convenciones de interfaz
+- `usuarioLogueado`
+- `rolLogueado`
+- `userDocumentId`
+- `authUid`
+- `userEmail`
+- `adminAPIAuthToken`
+- `remoteDataEnabled`
+- `lastRemoteSyncAt`
 
-- **Cards** — toda la información se presenta en tarjetas con esquinas redondeadas y sombra suave. Nunca se usan tablas.
-- **Badges** — cápsulas de color con texto blanco para indicar estados (Activo, Vencido, Pendiente, Stock Bajo, etc.).
-- **Bottom Sheets** — todos los formularios de alta o registro se presentan como hojas que suben desde la parte inferior de la pantalla.
-- **Botón flotante (+)** — presente en todos los módulos donde se puede crear un registro nuevo.
-- **Barras de progreso** — usadas en crédito de clientes y nivel de stock de almacenes para comunicar visualmente proporciones.
-- **Gráficas** — barras para ventas temporales, área para tendencias de tesorería, pastel para distribuciones de gasto y ventas por producto.
+Logout:
 
----
-
-## Prototipo Web de Referencia
-
-Antes del desarrollo iOS nativo se construyó un **prototipo web interactivo** con React + TypeScript + Tailwind CSS que sirvió como validación del diseño, los flujos de usuario y las reglas de negocio.
-
-El prototipo implementa las mismas pantallas, la misma lógica de automatizaciones en cascada y el mismo sistema de roles, pero con datos en memoria (sin base de datos real). Funciona como documentación viva del sistema.
-
-**Utilidades del prototipo:**
-- Validación de la experiencia de usuario antes de escribir código iOS
-- Referencia visual del design system y comportamientos de cada módulo
-- Demo rápida para stakeholders sin necesidad de un dispositivo iPhone
-- Documentación ejecutable de todas las reglas de negocio
-
-El prototipo incluye 4 cuentas demo — una por cada rol — y es completamente funcional para explorar todos los flujos del sistema.
+- se limpia `AppSession`
+- se ejecuta cierre de sesion general
 
 ---
 
-## Estado del Proyecto
+## Solicitudes administrativas por API
 
-| Fase | Estado |
+Servicio:
+
+- [AdminRequestService.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Infrastructure/AdminRequestService.swift)
+
+La app ya esta preparada para integrarse con la web administrativa por API.
+
+### Configuracion en Info.plist
+
+[Info.plist](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Info.plist) ahora incluye:
+
+- `AdminRequestsAPIBaseURL`
+- `AdminRequestsAPIRequestsPath`
+- `AdminRequestsAuthMode`
+
+Ejemplo:
+
+```xml
+<key>AdminRequestsAPIBaseURL</key>
+<string>https://tu-backend.example.com</string>
+<key>AdminRequestsAPIRequestsPath</key>
+<string>admin/requests</string>
+<key>AdminRequestsAuthMode</key>
+<string>firebase_id_token</string>
+```
+
+### Modos de autenticacion soportados
+
+- `none`
+- `bearer_token`
+- `firebase_id_token`
+
+### Payload base
+
+Todas las solicitudes siguen esta estructura:
+
+```json
+{
+  "requestId": "uuid",
+  "type": "cancel_sale",
+  "module": "ventas",
+  "status": "pending",
+  "requestedBy": {
+    "userId": "user-id",
+    "authUid": "firebase-auth-uid",
+    "fullName": "Usuario",
+    "roleId": "cajero",
+    "email": "usuario@ravnu.com"
+  },
+  "target": {
+    "entity": "sale",
+    "entityId": "sale-id"
+  },
+  "payload": {},
+  "reason": "Motivo",
+  "createdAt": "2025-01-01T00:00:00Z",
+  "reviewedAt": null,
+  "reviewedBy": null,
+  "rejectionReason": null
+}
+```
+
+### Tipos ya implementados
+
+- `create_customer`
+- `create_product`
+- `create_warehouse`
+- `create_supplier`
+- `create_purchase_order`
+- `update_purchase_order_status`
+- `edit_sale`
+- `cancel_sale`
+
+### Respuesta esperada
+
+```json
+{
+  "success": true,
+  "requestId": "uuid",
+  "status": "pending",
+  "message": "Solicitud registrada"
+}
+```
+
+### Lo que ya hace la app
+
+- envia la solicitud
+- maneja header `Authorization` si corresponde
+- interpreta respuesta tipada
+- guarda cache local de solicitudes
+- expone base para `fetchMyRequests(status:)`
+
+### Lo que aun falta
+
+- pantalla `Mis solicitudes`
+- aprobacion/rechazo desde la web
+- feedback de estado devuelto al usuario en la app
+
+---
+
+## Navegacion por rol
+
+Archivo:
+
+- [RoleTabBarController.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/App/RoleTabBarController.swift)
+
+### Tabs visibles
+
+| Rol | Tabs visibles |
 |---|---|
-| Prototipo web — diseño y validación de UX | ✅ Completo |
-| Definición de entidades y esquema Firestore | ✅ Completo |
-| Documentación del sistema | ✅ Completo |
-| Configuración del proyecto iOS en Xcode | 🔄 En progreso |
-| Configuración Firebase y autenticación | 🔄 En progreso |
-| Login y control de sesión | 🔄 En progreso |
-| Módulo Inicio — Dashboard | ⬜ Pendiente |
-| Módulo Ventas | ⬜ Pendiente |
-| Módulo Clientes | ⬜ Pendiente |
-| Módulo Almacén | ⬜ Pendiente |
-| Módulo Tesorería | ⬜ Pendiente |
-| Módulo Cobros | ⬜ Pendiente |
-| Módulo Compras | ⬜ Pendiente |
-| Módulo RRHH y Permisos | ⬜ Pendiente |
-| Notificaciones locales (alertas de stock y cuotas vencidas) | ⬜ Pendiente |
-| Exportación de reportes PDF | ⬜ Pendiente |
-| Soporte multi-estación | ⬜ Pendiente |
+| Admin | Inicio, Ventas, Clientes, Almacen, Mas |
+| Supervisor | Inicio, Ventas, Clientes, Almacen, Mas |
+| Cajero | Inicio, Ventas, Clientes, Mas |
+| Almacenero | Inicio, Almacen, Mas |
+
+### Tarjetas visibles dentro de Mas
+
+Controladas desde:
+
+- [MasViewController.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Features/Mas/MasViewController.swift)
+- [MoreDashboardView.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Features/Mas/MoreDashboardView.swift)
+
+Visibilidad:
+
+- Tesoreria: `canViewTreasury`
+- Cobros: `canManageCollections`
+- Compras: `canManagePurchases`
+- RRHH: `isAdmin`
 
 ---
 
-*RAVNU · App nativa iOS · UIKit + Storyboard + SwiftUI + Firebase*
+## Estado real por modulo
+
+### Auth
+
+Estado:
+
+- funcional con Firebase
+- depende de `users_lookup` y `users`
+- ya persiste sesion y rol
+
+### Inicio / Cajero
+
+Archivo clave:
+
+- [CajeroViewController.swift](/Users/ginobarrena/Documents/RAVNU_Proyecto/RAVNU_Proyecto/Features/Cajero/CajeroViewController.swift)
+
+Estado:
+
+- dashboard implementado
+- ventas del dia
+- cobrado del dia
+- pendientes
+- ventas ultimos 7 dias
+- alertas de stock bajo consolidadas
+
+### Ventas
+
+Estado:
+
+- nueva venta directa
+- contado / credito
+- cuotas
+- impacto en inventario
+- solicitud de edicion/anulacion
+
+### Clientes
+
+Estado:
+
+- lista y analitica
+- creacion directa por admin
+- solicitud para supervisor
+- cajero no puede agregar
+- cobros funcionales
+
+### Almacen
+
+Estado:
+
+- dashboard
+- productos
+- movimientos
+- creacion de producto y almacen por solicitud para almacenero
+- responsable de almacen ligado a usuarios reales
+
+### Compras
+
+Estado:
+
+- dashboard
+- proveedores
+- ordenes
+- solicitudes para almacenero
+- acciones directas para admin
+
+### Tesoreria
+
+Estado:
+
+- dashboard y transacciones funcionales
+- corregida logica de compras pagadas vs recibidas
+
+### RRHH
+
+Estado:
+
+- solo admin
+- alta
+- edicion
+- activar/inactivar
+- consolidacion de duplicados
+
+---
+
+## Setup de desarrollo
+
+### Requisitos
+
+- Xcode
+- proyecto iOS compilando con target actual
+- `GoogleService-Info.plist` valido
+- Firebase Authentication
+- Firestore configurado
+
+### Requisitos para login remoto
+
+Debe existir:
+
+1. usuario en Firebase Authentication
+2. documento en `users`
+3. documento en `users_lookup`
+4. roles remotos coherentes
+
+### Requisitos para solicitudes administrativas
+
+1. `AdminRequestsAPIBaseURL` configurado
+2. backend escuchando `POST /admin/requests`
+3. modo de auth definido
+4. si se usa `bearer_token`, setear `adminAPIAuthToken`
+5. si se usa `firebase_id_token`, usuario autenticado con Firebase
+
+---
+
+## Deudas tecnicas y limitaciones conocidas
+
+- duplicidad de infraestructura entre `AppDelegate.swift` e `Infrastructure/`
+- falta pantalla de seguimiento de solicitudes
+- faltan tests automatizados
+- backend administrativo aun no implementado en este repo
+- seguridad final no puede depender solo de la UI
+- no todos los flujos sensibles estan modelados todavia como solicitud
+- existe al menos un warning viejo en `ModalAlmacenViewController` por API deprecated de `UIBarButtonItem`
+
+---
+
+## Roadmap recomendado
+
+Orden sugerido para seguir:
+
+1. backend/web administrativa real
+2. bandeja `Mis solicitudes` en la app
+3. aprobacion/rechazo con refresco de estado
+4. endurecimiento de permisos en backend y Firestore Rules
+5. terminar ediciones sensibles:
+   - cliente
+   - producto
+   - proveedor
+   - orden de compra
+6. limpieza de duplicidad de infraestructura
+7. tests end-to-end de negocio
 
