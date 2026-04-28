@@ -1811,7 +1811,6 @@
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                         <state key="normal" title="  Efectivo"/>
                                                         <connections>
-                                                            <action selector="btnEfectivoTapped:" destination="yJ3-D0-g5O" eventType="touchUpInside" id="pay-ef-001"/>
                                                         </connections>
                                                     </button>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="X6A-lv-j8x">
@@ -1819,7 +1818,6 @@
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                                         <state key="normal" title="  Crédito"/>
                                                         <connections>
-                                                            <action selector="btnCreditoTapped:" destination="yJ3-D0-g5O" eventType="touchUpInside" id="pay-cr-001"/>
                                                         </connections>
                                                     </button>
                                                 </subviews>
@@ -1836,7 +1834,6 @@
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="22"/>
                                                         <state key="normal" title="−"/>
                                                         <connections>
-                                                            <action selector="btnRestarCuotaTapped:" destination="yJ3-D0-g5O" eventType="touchUpInside" id="cred-mn-001"/>
                                                         </connections>
                                                     </button>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="3" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nOa-hQ-zr5">
@@ -1849,7 +1846,6 @@
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="20"/>
                                                         <state key="normal" title="+"/>
                                                         <connections>
-                                                            <action selector="btnSumarCuotaTapped:" destination="yJ3-D0-g5O" eventType="touchUpInside" id="cred-pl-001"/>
                                                         </connections>
                                                     </button>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Por cuota" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="N9s-aE-zwK">
@@ -1977,7 +1973,6 @@
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                 </state>
                                                 <connections>
-                                                    <action selector="btnGuardarTapped:" destination="yJ3-D0-g5O" eventType="touchUpInside" id="sv-ac-001"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -2040,7 +2035,6 @@
                                     <color key="titleColor" systemColor="systemGrayColor"/>
                                 </state>
                                 <connections>
-                                    <action selector="btnCancelarTapped:" destination="yJ3-D0-g5O" eventType="touchUpInside" id="can-001"/>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" text="Nueva Venta" textAlignment="center" lineBreakMode="tailTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ug1-Y8-VfM">
@@ -2065,17 +2059,6 @@
                     </view>
                     <navigationItem key="navigationItem" id="J5j-sQ-PVD"/>
                     <connections>
-                        <outlet property="btnCredito" destination="X6A-lv-j8x" id="out-1"/>
-                        <outlet property="btnEfectivo" destination="n7x-QW-X7m" id="out-2"/>
-                        <outlet property="btnGuardarVenta" destination="E4P-Zv-P8h" id="out-3"/>
-                        <outlet property="creditContainerView" destination="gJw-zg-J83" id="out-4"/>
-                        <outlet property="lblCuotas" destination="nOa-hQ-zr5" id="out-5"/>
-                        <outlet property="lblFechaVencimiento" destination="Vw5-zh-z10" id="out-6"/>
-                        <outlet property="lblPorCuota" destination="jQ3-rV-fn6" id="out-7"/>
-                        <outlet property="lblTotal" destination="f4J-xL-9O6" id="out-8"/>
-                        <outlet property="txtCantidad" destination="N0h-aL-mD2" id="out-9"/>
-                        <outlet property="txtCliente" destination="Sox-Ke-GlT" id="out-10"/>
-                        <outlet property="txtProducto" destination="zZS-jV-vTk" id="out-11"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KOg-Fn-J96" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>

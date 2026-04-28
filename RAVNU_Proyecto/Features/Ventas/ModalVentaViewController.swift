@@ -16,39 +16,16 @@ final class ModalNuevaVentaViewController: UIViewController {
         let movimiento: MovimientoInventarioEntity
     }
 
-    @IBOutlet private weak var txtCliente: UITextField!
-    @IBOutlet private weak var txtProducto: UITextField!
-    @IBOutlet private weak var txtCantidad: UITextField!
-    @IBOutlet private weak var lblTotal: UILabel!
-    @IBOutlet private weak var btnEfectivo: UIButton!
-    @IBOutlet private weak var btnCredito: UIButton!
-    @IBOutlet private weak var creditContainerView: UIView!
-    @IBOutlet private weak var lblCuotas: UILabel!
-    @IBOutlet private weak var lblPorCuota: UILabel!
-    @IBOutlet private weak var lblFechaVencimiento: UILabel!
-    @IBOutlet private weak var btnGuardarVenta: UIButton!
-
     weak var delegate: ModalNuevaVentaViewControllerDelegate?
     var clientesDisponibles: [ClienteEntity] = []
     var productosDisponibles: [ProductoEntity] = []
 
-    private let clientePicker = UIPickerView()
-    private let productoPicker = UIPickerView()
-    private var cuotas = 3 {
-        didSet {
-            cuotas = min(max(cuotas, 1), 12)
-            updateCreditSummary()
-        }
-    }
-    private var metodoPago: MetodoPagoVenta = .efectivo {
-        didSet {
-            updatePaymentSelection()
-        }
-    }
+    private var cuotas = 3
+    private var metodoPago: MetodoPagoVenta = .efectivo
+    private var cantidadSeleccionada: Double = 0
     private var selectedClienteIndex: Int?
     private var selectedProductoIndex: Int?
     private var firstDueDateOverride: Date?
-    private var embeddedController: NuevaVentaViewController?
     #if canImport(FirebaseFirestore)
     private let firestore = Firestore.firestore()
     #endif
@@ -71,15 +48,15 @@ final class ModalNuevaVentaViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureEmbeddedForm()
+        configurarFormularioEmbebido()
     }
 
-    private func configureEmbeddedForm() {
+    private func configurarFormularioEmbebido() {
         let clientOptions = clientesDisponibles.enumerated().map { index, client in
             OpcionCliente(
                 id: client.id?.uuidString ?? "\(index)",
                 name: client.nombre ?? "Cliente",
-                status: statusForClient(client),
+                status: estadoParaCliente(client),
                 debt: client.creditoUsado,
                 limit: max(client.limiteCredito, 1)
             )
@@ -112,7 +89,7 @@ final class ModalNuevaVentaViewController: UIViewController {
             initialClientIndex: suggestedClientIndex,
             initialProductIndex: suggestedProductIndex,
             onCancel: { [weak self] in self?.dismiss(animated: true) },
-            onSave: { [weak self] draft in self?.handleEmbeddedDraft(draft) }
+            onSave: { [weak self] draft in self?.manejarBorradorEmbebido(draft) }
         )
 
         addChild(child)
@@ -125,15 +102,14 @@ final class ModalNuevaVentaViewController: UIViewController {
             child.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         child.didMove(toParent: self)
-        embeddedController = child
     }
 
-    private func handleEmbeddedDraft(_ draft: BorradorNuevaVenta) {
+    private func manejarBorradorEmbebido(_ draft: BorradorNuevaVenta) {
         selectedClienteIndex = draft.clientIndex
         selectedProductoIndex = draft.productIndex
-        txtCantidad.text = "\(draft.quantity)"
+        cantidadSeleccionada = Double(draft.quantity)
         metodoPago = draft.paymentType == "cash" ? .efectivo : .credito
-        cuotas = draft.installments
+        cuotas = min(max(draft.installments, 1), 12)
         firstDueDateOverride = draft.firstDueDate
 
         if let validationMessage = validateInputs() {
@@ -150,7 +126,7 @@ final class ModalNuevaVentaViewController: UIViewController {
         }
     }
 
-    private func statusForClient(_ client: ClienteEntity) -> String {
+    private func estadoParaCliente(_ client: ClienteEntity) -> String {
         guard client.limiteCredito > 0 else { return client.creditoUsado > 0 ? "vencido" : "activo" }
         let usage = client.creditoUsado / client.limiteCredito
         if usage >= 0.75 { return "vencido" }
@@ -176,102 +152,6 @@ final class ModalNuevaVentaViewController: UIViewController {
         )
     }
 
-    private func updateSelectionFields() {
-        txtCliente.text = selectedCliente?.nombre
-
-        if let producto = selectedProducto {
-            txtProducto.text = String(format: "%@ - S/ %.2f/L",
-                                      producto.nombre ?? "Producto",
-                                      producto.precioPorLitro)
-        } else {
-            txtProducto.text = nil
-        }
-    }
-
-    @objc
-    private func quantityDidChange() {
-        updateTotal()
-    }
-
-    private func updateTotal() {
-        let cantidad = parseCantidad()
-        let precio = selectedProducto?.precioPorLitro ?? 0
-        let total = cantidad * precio
-        lblTotal.text = String(format: "Total: S/ %.2f", total)
-        updateCreditSummary()
-    }
-
-    private func updateCreditSummary() {
-        let total = parseCantidad() * (selectedProducto?.precioPorLitro ?? 0)
-        let porCuota = cuotas > 0 ? total / Double(cuotas) : 0
-        lblCuotas.text = "\(cuotas)"
-        lblPorCuota.text = String(format: "S/ %.2f", porCuota)
-
-        if total > 0 {
-            let dueDate = firstDueDateOverride ?? Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "es_PE")
-            formatter.dateFormat = "dd MMM, yyyy"
-            lblFechaVencimiento.text = formatter.string(from: dueDate)
-        } else {
-            lblFechaVencimiento.text = "-"
-        }
-    }
-
-    private func updatePaymentSelection() {
-        let selectedColor = UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1)
-        let unselectedColor = UIColor(white: 0.94, alpha: 1)
-        let selectedTitleColor = UIColor.white
-        let unselectedTitleColor = UIColor(red: 0.45, green: 0.47, blue: 0.55, alpha: 1)
-
-        stylePaymentButton(btnEfectivo,
-                           backgroundColor: metodoPago == .efectivo ? selectedColor : unselectedColor,
-                           titleColor: metodoPago == .efectivo ? selectedTitleColor : unselectedTitleColor)
-        stylePaymentButton(btnCredito,
-                           backgroundColor: metodoPago == .credito ? selectedColor : unselectedColor,
-                           titleColor: metodoPago == .credito ? selectedTitleColor : unselectedTitleColor)
-        creditContainerView.isHidden = metodoPago != .credito
-    }
-
-    private func stylePaymentButton(_ button: UIButton, backgroundColor: UIColor, titleColor: UIColor) {
-        button.backgroundColor = backgroundColor
-        button.setTitleColor(titleColor, for: .normal)
-        button.layer.cornerRadius = 14
-        button.clipsToBounds = true
-    }
-
-    private func pickerToolbar(selector: Selector) -> UIToolbar {
-        let toolbar = UIToolbar()
-        toolbar.sizeToFit()
-        toolbar.items = [
-            UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-            UIBarButtonItem(title: "Listo", style: .plain, target: self, action: selector)
-        ]
-        return toolbar
-    }
-
-    private func parseCantidad() -> Double {
-        let rawValue = txtCantidad.text?.replacingOccurrences(of: ",", with: ".") ?? ""
-        return Double(rawValue) ?? 0
-    }
-
-    @objc
-    private func donePickingCliente() {
-        guard !clientesDisponibles.isEmpty else { return }
-        selectedClienteIndex = clientePicker.selectedRow(inComponent: 0)
-        updateSelectionFields()
-        txtCliente.resignFirstResponder()
-    }
-
-    @objc
-    private func donePickingProducto() {
-        guard !productosDisponibles.isEmpty else { return }
-        selectedProductoIndex = productoPicker.selectedRow(inComponent: 0)
-        updateSelectionFields()
-        updateTotal()
-        txtProducto.resignFirstResponder()
-    }
-
     private func validateInputs() -> String? {
         if selectedCliente == nil {
             return "Selecciona un cliente."
@@ -279,14 +159,14 @@ final class ModalNuevaVentaViewController: UIViewController {
         if selectedProducto == nil {
             return "Selecciona un producto."
         }
-        if parseCantidad() <= 0 {
+        if cantidadSeleccionada <= 0 {
             return "Ingresa una cantidad válida en litros."
         }
-        if let producto = selectedProducto, producto.stockLitros < parseCantidad() {
+        if let producto = selectedProducto, producto.stockLitros < cantidadSeleccionada {
             return "No hay suficiente stock disponible para esta venta."
         }
         if metodoPago == .credito, let cliente = selectedCliente {
-            let total = parseCantidad() * (selectedProducto?.precioPorLitro ?? 0)
+            let total = cantidadSeleccionada * (selectedProducto?.precioPorLitro ?? 0)
             if cliente.creditoUsado + total > cliente.limiteCredito {
                 return "El cliente supera su límite de crédito."
             }
@@ -301,7 +181,7 @@ final class ModalNuevaVentaViewController: UIViewController {
         guard let cliente = selectedCliente, let producto = selectedProducto else { return }
         ensurePersistentIdentifiers(cliente: cliente, producto: producto)
 
-        let cantidad = parseCantidad()
+        let cantidad = cantidadSeleccionada
         let total = cantidad * producto.precioPorLitro
 
         let venta = VentaEntity(context: context)
@@ -570,123 +450,6 @@ final class ModalNuevaVentaViewController: UIViewController {
         #endif
     }
 
-    @IBAction private func btnCancelarTapped(_ sender: UIButton) {
-        dismiss(animated: true)
-    }
-
-    @IBAction private func btnEfectivoTapped(_ sender: UIButton) {
-        metodoPago = .efectivo
-    }
-
-    @IBAction private func btnCreditoTapped(_ sender: UIButton) {
-        metodoPago = .credito
-    }
-
-    @IBAction private func btnRestarCuotaTapped(_ sender: UIButton) {
-        cuotas -= 1
-    }
-
-    @IBAction private func btnSumarCuotaTapped(_ sender: UIButton) {
-        cuotas += 1
-    }
-
-    @IBAction private func btnGuardarTapped(_ sender: UIButton) {
-        if let validationMessage = validateInputs() {
-            showAlert(title: "Validación", message: validationMessage)
-            return
-        }
-
-        do {
-            try saveVenta()
-            delegate?.modalNuevaVentaViewControllerDidSaveVenta(self)
-            dismiss(animated: true)
-        } catch {
-            showAlert(title: "Error", message: "No se pudo guardar la venta.")
-        }
-    }
-}
-
-extension ModalNuevaVentaViewController: UITextFieldDelegate {
-
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        if textField == txtCliente, clientesDisponibles.isEmpty {
-            showAlert(title: "Sin datos", message: "No hay clientes registrados.")
-            return false
-        }
-
-        if textField == txtProducto, productosDisponibles.isEmpty {
-            showAlert(title: "Sin datos", message: "No hay productos registrados.")
-            return false
-        }
-
-        if textField == txtCliente, let selectedClienteIndex {
-            clientePicker.selectRow(selectedClienteIndex, inComponent: 0, animated: false)
-        }
-
-        if textField == txtProducto, let selectedProductoIndex {
-            productoPicker.selectRow(selectedProductoIndex, inComponent: 0, animated: false)
-        }
-
-        return true
-    }
-
-    func textField(_ textField: UITextField,
-                   shouldChangeCharactersIn range: NSRange,
-                   replacementString string: String) -> Bool {
-        guard textField == txtCantidad else {
-            return false
-        }
-
-        if string.isEmpty {
-            return true
-        }
-
-        let allowedCharacters = CharacterSet(charactersIn: "0123456789.,")
-        guard string.rangeOfCharacter(from: allowedCharacters.inverted) == nil else {
-            return false
-        }
-
-        let currentText = textField.text ?? ""
-        guard let textRange = Range(range, in: currentText) else {
-            return false
-        }
-
-        let updatedText = currentText.replacingCharacters(in: textRange, with: string)
-        let separatorCount = updatedText.filter { $0 == "." || $0 == "," }.count
-        return separatorCount <= 1
-    }
-}
-
-extension ModalNuevaVentaViewController: UIPickerViewDataSource, UIPickerViewDelegate {
-
-    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        1
-    }
-
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        pickerView == clientePicker ? clientesDisponibles.count : productosDisponibles.count
-    }
-
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        if pickerView == clientePicker {
-            return clientesDisponibles[row].nombre
-        }
-
-        let producto = productosDisponibles[row]
-        return String(format: "%@ - S/ %.2f/L", producto.nombre ?? "Producto", producto.precioPorLitro)
-    }
-
-    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        if pickerView == clientePicker {
-            selectedClienteIndex = row
-            updateSelectionFields()
-            return
-        }
-
-        selectedProductoIndex = row
-        updateSelectionFields()
-        updateTotal()
-    }
 }
 
 enum MetodoPagoVenta: String {
