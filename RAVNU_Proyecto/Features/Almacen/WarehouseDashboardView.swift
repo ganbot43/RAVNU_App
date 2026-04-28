@@ -125,6 +125,7 @@ struct WarehouseDashboardView: View {
     @State private var pestanaActual: Tab = .general
     @State private var filtroAlmacenMovimiento = "all"
     @State private var filtroTipoMovimiento: DatosDashboardAlmacen.TipoMovimiento?
+    @State private var productosExpandidos: Set<String> = []
 
     private var movimientosFiltrados: [DatosDashboardAlmacen.TarjetaMovimiento] {
         data.movementCards.filter { item in
@@ -172,7 +173,7 @@ struct WarehouseDashboardView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(data.title)
                     .font(.system(size: 24, weight: .black))
-                    .foregroundStyle(Color.black)
+                    .foregroundStyle(Color(.label))
                 Text(data.subtitle)
                     .font(.system(size: 11, weight: .regular))
                     .foregroundStyle(Color(uiColor: .systemGray))
@@ -223,7 +224,7 @@ struct WarehouseDashboardView: View {
                 Text(title)
                     .font(.system(size: 13, weight: .bold))
             }
-            .foregroundStyle(pestanaActual == tab ? Color.black : Color(uiColor: .systemGray))
+            .foregroundStyle(pestanaActual == tab ? Color(.label) : Color(uiColor: .systemGray))
             .frame(maxWidth: .infinity)
             .frame(height: 36)
             .background(pestanaActual == tab ? Color.white : Color.clear)
@@ -241,8 +242,16 @@ struct WarehouseDashboardView: View {
                     lowStockBanner(text: lowStockBannerText)
                 }
                 sectionLabel("ALMACENES")
-                ForEach(data.warehouseCards) { warehouse in
-                    warehouseCard(warehouse)
+                if data.warehouseCards.isEmpty {
+                    emptyStateCard(
+                        title: "No hay almacenes registrados",
+                        subtitle: "Agrega un almacén para empezar a distribuir y controlar stock.",
+                        actionTitle: data.canRegister ? "Registrar almacén" : nil
+                    )
+                } else {
+                    ForEach(data.warehouseCards) { warehouse in
+                        warehouseCard(warehouse)
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -253,8 +262,16 @@ struct WarehouseDashboardView: View {
     private var productsContent: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 12) {
-                ForEach(data.productCards) { product in
-                    productCard(product)
+                if data.productCards.isEmpty {
+                    emptyStateCard(
+                        title: "No hay productos cargados",
+                        subtitle: "Registra productos para ver stock, mínimos y capacidad por almacén.",
+                        actionTitle: data.canRegister ? "Registrar producto" : nil
+                    )
+                } else {
+                    ForEach(data.productCards) { product in
+                        productCard(product)
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -272,10 +289,11 @@ struct WarehouseDashboardView: View {
                     movementCard(movement)
                 }
                 if movimientosFiltrados.isEmpty {
-                    Text("Sin movimientos registrados")
-                        .font(.system(size: 13, weight: .regular))
-                        .foregroundStyle(Color(uiColor: .systemGray))
-                        .frame(maxWidth: .infinity, minHeight: 220)
+                    emptyStateCard(
+                        title: "Sin movimientos registrados",
+                        subtitle: "Usa Registrar para crear entradas, salidas o transferencias de stock.",
+                        actionTitle: data.canRegister ? "Registrar movimiento" : nil
+                    )
                 }
             }
             .padding(.horizontal, 16)
@@ -376,7 +394,7 @@ struct WarehouseDashboardView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(warehouse.name)
                             .font(.system(size: 15, weight: .black))
-                            .foregroundStyle(Color.black)
+                            .foregroundStyle(Color(.label))
                         Text(warehouse.address)
                             .font(.system(size: 10, weight: .regular))
                             .foregroundStyle(Color(uiColor: .systemGray))
@@ -384,9 +402,9 @@ struct WarehouseDashboardView: View {
 
                     Spacer()
 
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: .tertiaryLabel))
+                    Text("Ver detalle")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(Color(hex: warehouse.colorHex))
                 }
 
                 HStack {
@@ -396,7 +414,7 @@ struct WarehouseDashboardView: View {
                     Spacer()
                     Text("\(warehouse.totalStockText) / \(warehouse.totalCapacityText)")
                         .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(Color.black)
+                        .foregroundStyle(Color(.label))
                 }
 
                 GeometryReader { geometry in
@@ -418,7 +436,7 @@ struct WarehouseDashboardView: View {
                     Spacer()
                     Text(warehouse.valueText)
                         .font(.system(size: 14, weight: .black))
-                        .foregroundStyle(Color.black)
+                        .foregroundStyle(Color(.label))
                 }
             }
             .padding(16)
@@ -447,7 +465,7 @@ struct WarehouseDashboardView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(product.name)
                         .font(.system(size: 14, weight: .black))
-                        .foregroundStyle(Color.black)
+                        .foregroundStyle(Color(.label))
                     Text("\(product.priceText) · Min: \(product.minimumText) · Cap: \(product.capacityText)")
                         .font(.system(size: 10, weight: .regular))
                         .foregroundStyle(Color(uiColor: .systemGray))
@@ -457,22 +475,21 @@ struct WarehouseDashboardView: View {
 
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(product.totalStockText)
-                        .font(.system(size: 14, weight: .black))
-                        .foregroundStyle(product.isLow ? PaletaAlmacen.red : Color.black)
+                        .font(.system(size: 18, weight: .black))
+                        .foregroundStyle(product.isLow ? PaletaAlmacen.red : Color(.label))
                     Text(product.healthText.uppercased())
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(product.isLow ? PaletaAlmacen.red : PaletaAlmacen.green)
                 }
             }
 
-            HStack {
-                Text("Llenado en red — \(Int((product.fillRatio * 100).rounded()))%")
-                    .font(.system(size: 10, weight: .regular))
-                    .foregroundStyle(Color(uiColor: .systemGray))
+            HStack(spacing: 8) {
+                chip(text: "Min \(product.minimumText)", bgHex: "F9FAFB", fgHex: "6B7280", icon: "arrow.down.to.line")
+                chip(text: "Cap \(product.capacityText)", bgHex: "F9FAFB", fgHex: "6B7280", icon: "gauge.with.dots.needle.50percent")
                 Spacer()
                 Text(product.totalValueText)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(Color(uiColor: .systemGray))
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
             }
 
             GeometryReader { geometry in
@@ -486,44 +503,98 @@ struct WarehouseDashboardView: View {
             }
             .frame(height: 8)
 
-            VStack(spacing: 8) {
-                ForEach(product.stocks) { stock in
-                    HStack(spacing: 8) {
-                        HStack(spacing: 4) {
-                            Circle()
-                                .fill(Color(hex: stock.colorHex))
-                                .frame(width: 8, height: 8)
-                            Text(stock.warehouseName)
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(Color(uiColor: .systemGray))
-                        }
-                        .frame(width: 78, alignment: .leading)
-
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                Capsule()
-                                    .fill(Color(hex: "F3F4F6"))
-                                Capsule()
-                                    .fill(stock.isLow ? PaletaAlmacen.red : Color(hex: stock.colorHex))
-                                    .frame(width: geometry.size.width * max(0, min(1, stock.fillRatio)))
-                            }
-                        }
-                        .frame(height: 6)
-
-                        Text(stock.stockText)
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(stock.isLow ? PaletaAlmacen.red : Color.black)
-                            .frame(width: 64, alignment: .trailing)
+            HStack {
+                Text("Ocupación global \(Int((product.fillRatio * 100).rounded()))%")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                Spacer()
+                Button {
+                    if productosExpandidos.contains(product.id) {
+                        productosExpandidos.remove(product.id)
+                    } else {
+                        productosExpandidos.insert(product.id)
                     }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(productosExpandidos.contains(product.id) ? "Ocultar almacenes" : "Ver almacenes")
+                        Image(systemName: productosExpandidos.contains(product.id) ? "chevron.up" : "chevron.down")
+                    }
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Color(hex: product.colorHex))
+                }
+                .buttonStyle(.plain)
+            }
 
-                    Text(stock.detailText)
-                        .font(.system(size: 9, weight: .regular))
-                        .foregroundStyle(Color(uiColor: .tertiaryLabel))
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            if productosExpandidos.contains(product.id) {
+                VStack(spacing: 8) {
+                    ForEach(product.stocks) { stock in
+                        HStack(spacing: 8) {
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(Color(hex: stock.colorHex))
+                                    .frame(width: 8, height: 8)
+                                Text(stock.warehouseName)
+                                    .font(.system(size: 11, weight: .bold))
+                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            }
+                            .frame(width: 92, alignment: .leading)
+
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    Capsule()
+                                        .fill(Color(hex: "F3F4F6"))
+                                    Capsule()
+                                        .fill(stock.isLow ? PaletaAlmacen.red : Color(hex: stock.colorHex))
+                                        .frame(width: geometry.size.width * max(0, min(1, stock.fillRatio)))
+                                }
+                            }
+                            .frame(height: 6)
+
+                            Text(stock.stockText)
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(stock.isLow ? PaletaAlmacen.red : Color(.label))
+                                .frame(width: 64, alignment: .trailing)
+                        }
+
+                        Text(stock.detailText)
+                            .font(.system(size: 10, weight: .regular))
+                            .foregroundStyle(Color(uiColor: .tertiaryLabel))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
         }
         .padding(16)
+        .warehouseCardStyle()
+    }
+
+    private func emptyStateCard(title: String, subtitle: String, actionTitle: String?) -> some View {
+        VStack(spacing: 10) {
+            Image(systemName: "tray")
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundStyle(Color(uiColor: .tertiaryLabel))
+            Text(title)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(Color(uiColor: .label))
+            Text(subtitle)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundStyle(Color(uiColor: .secondaryLabel))
+                .multilineTextAlignment(.center)
+            if let actionTitle {
+                Button(action: onRegister) {
+                    Text(actionTitle)
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(Color.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(PaletaAlmacen.blue)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: .infinity, minHeight: 220)
+        .padding(20)
         .warehouseCardStyle()
     }
 
@@ -638,7 +709,7 @@ struct WarehouseDashboardView: View {
 
                 Text(movement.productName)
                     .font(.system(size: 14, weight: .black))
-                    .foregroundStyle(Color.black)
+                    .foregroundStyle(Color(.label))
 
                 Text(movement.type.shortTitle)
                     .font(.system(size: 10, weight: .black))

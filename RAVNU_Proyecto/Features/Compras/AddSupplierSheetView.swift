@@ -15,6 +15,7 @@ struct AddSupplierSheetView: View {
     let onCancel: () -> Void
     let onSave: (AddSupplierDraft) -> Void
 
+    @State private var isSaving = false
     @State private var name = ""
     @State private var category = "Nacional"
     @State private var phone = ""
@@ -25,6 +26,10 @@ struct AddSupplierSheetView: View {
     @State private var isVerified = false
 
     private let categories = ["Nacional", "Internacional", "Estatal", "Cadena nacional"]
+
+    private var isSupplierValid: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
 
     var body: some View {
         ZStack {
@@ -84,6 +89,8 @@ struct AddSupplierSheetView: View {
                         }
 
                         Button {
+                            guard !isSaving else { return }
+                            isSaving = true
                             onSave(
                                 AddSupplierDraft(
                                     name: name,
@@ -102,10 +109,11 @@ struct AddSupplierSheetView: View {
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 58)
-                                .background(Color(hex: "F59E0B"))
+                                .background(Color(hex: isSupplierValid && !isSaving ? "F59E0B" : "D4A94E"))
                                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                         }
                         .buttonStyle(.plain)
+                        .disabled(!isSupplierValid || isSaving)
                     }
                     .padding(.horizontal, 18)
                     .padding(.top, 18)

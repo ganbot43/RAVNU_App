@@ -305,7 +305,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
 
             if status != .recibida && status != .cancelada {
                 actions.append(.init(title: "Cancelar orden", accentHex: "EF4444", isDestructive: true, handler: {
-                    ejecutar { [weak self] in self?.updateOrderStatus(orden, to: .cancelada) }
+                    ejecutar { [weak self] in self?.confirmarCancelacionOrden(orden) }
                 }))
             }
         } else if RoleAccessControl.canRequestPurchaseOrders {
@@ -849,12 +849,16 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         formateadorMoneda.string(from: NSNumber(value: value)) ?? "S/0"
     }
 
+    private static let formateadorFecha: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "es_PE")
+        f.dateFormat = "dd MMM yyyy"
+        return f
+    }()
+
     private func formatearFecha(_ date: Date?) -> String {
         guard let date else { return "Sin fecha" }
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "es_PE")
-        formatter.dateFormat = "dd MMM yyyy"
-        return formatter.string(from: date)
+        return Self.formateadorFecha.string(from: date)
     }
 
     @IBAction private func btnVolverTapped(_ sender: UIButton) {
@@ -1236,8 +1240,8 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             }
 
             if status != .recibida && status != .cancelada {
-                alert.addAction(UIAlertAction(title: "Cancelar", style: .destructive) { [weak self] _ in
-                    self?.updateOrderStatus(orden, to: .cancelada)
+                alert.addAction(UIAlertAction(title: "Cancelar orden", style: .destructive) { [weak self] _ in
+                    self?.confirmarCancelacionOrden(orden)
                 })
             }
         } else if RoleAccessControl.canRequestPurchaseOrders {
@@ -1595,6 +1599,20 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             rejectionReason: nil
         )
         try await AdminRequestService.submit(request)
+    }
+
+    private func confirmarCancelacionOrden(_ orden: OrdenCompraEntity) {
+        let confirm = UIAlertController(
+            title: "¿Cancelar orden?",
+            message: "Esta acción no se puede deshacer. La orden de \(orden.proveedor?.nombre ?? "proveedor") por \(formatearMoneda(orden.total)) será cancelada.",
+            preferredStyle: .alert
+        )
+        confirm.addAction(UIAlertAction(title: "No", style: .cancel))
+        confirm.addAction(UIAlertAction(title: "Sí, cancelar", style: .destructive) { [weak self] _ in
+            self?.updateOrderStatus(orden, to: .cancelada)
+        })
+        let presenter = topPresenterForAlerts()
+        presenter.present(confirm, animated: true)
     }
 
     private func updateOrderStatus(_ orden: OrdenCompraEntity, to newStatus: EstadoOrdenCompra) {

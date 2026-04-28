@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>AdminRequestsAPIBaseURL</key>
-	<string></string>
+	<string>TU_URL_AQUI</string>
 	<key>AdminRequestsAPIRequestsPath</key>
 	<string>admin/requests</string>
 	<key>AdminRequestsAuthMode</key>

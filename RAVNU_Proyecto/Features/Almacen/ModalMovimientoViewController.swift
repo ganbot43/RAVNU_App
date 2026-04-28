@@ -264,15 +264,11 @@ final class ModalMovimientoViewController: UIViewController {
                 destino: destino.nombre,
                 note: noteText.isEmpty ? "Transferencia entre almacenes" : noteText
             )
-            saveRemoteStock(producto: producto, almacen: origen, delta: -draft.quantity)
-            saveRemoteStock(producto: producto, almacen: destino, delta: draft.quantity)
-            saveRemoteMovement(
-                type: draft.kind.rawValue,
-                amount: draft.quantity,
+            saveRemoteTransfer(
                 producto: producto,
-                almacen: origen,
-                origen: origen.nombre,
-                destino: destino.nombre,
+                origen: origen,
+                destino: destino,
+                quantity: draft.quantity,
                 note: noteText.isEmpty ? "Transferencia entre almacenes" : noteText
             )
         }
@@ -350,6 +346,93 @@ final class ModalMovimientoViewController: UIViewController {
 
     @IBAction private func btnGuardarTapped(_ sender: UIButton) {
         actualizarVistaHibrida()
+    }
+
+    private func saveRemoteTransfer(
+        producto: ProductoEntity,
+        origen: AlmacenEntity,
+        destino: AlmacenEntity,
+        quantity: Double,
+        note: String
+    ) {
+        #if canImport(FirebaseFirestore)
+        guard FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled else { return }
+        guard let origenId = origen.id?.uuidString,
+              let destinoId = destino.id?.uuidString,
+              let productoId = producto.id?.uuidString else { return }
+
+        let batch = firestore.batch()
+
+        let origenQuery = firestore.collection("warehouse_stock")
+            .whereField("almacenId", isEqualTo: origenId)
+            .whereField("productoId", isEqualTo: productoId)
+        let destinoQuery = firestore.collection("warehouse_stock")
+            .whereField("almacenId", isEqualTo: destinoId)
+            .whereField("productoId", isEqualTo: productoId)
+
+        let group = DispatchGroup()
+        var origenRef: DocumentReference?
+        var origenStock: Double = 0
+        var destinoRef: DocumentReference?
+        var destinoStock: Double = 0
+
+        group.enter()
+        origenQuery.getDocuments { snapshot, _ in
+            if let doc = snapshot?.documents.first {
+                origenRef = doc.reference
+                origenStock = (doc.data()["stockActual"] as? NSNumber)?.doubleValue ?? 0
+            }
+            group.leave()
+        }
+
+        group.enter()
+        destinoQuery.getDocuments { snapshot, _ in
+            if let doc = snapshot?.documents.first {
+                destinoRef = doc.reference
+                destinoStock = (doc.data()["stockActual"] as? NSNumber)?.doubleValue ?? 0
+            }
+            group.leave()
+        }
+
+        group.notify(queue: .main) { [weak self] in
+            guard let self else { return }
+
+            let origenDoc = origenRef ?? self.firestore.collection("warehouse_stock").document(UUID().uuidString)
+            batch.setData([
+                "almacenId": origenId,
+                "productoId": productoId,
+                "stockActual": max(origenStock - quantity, 0),
+                "stockMinimo": producto.stockMinimo,
+                "capacidadTotal": producto.capacidadTotal,
+                "unidadMedida": producto.unidadMedida ?? "L"
+            ], forDocument: origenDoc, merge: true)
+
+            let destinoDoc = destinoRef ?? self.firestore.collection("warehouse_stock").document(UUID().uuidString)
+            batch.setData([
+                "almacenId": destinoId,
+                "productoId": productoId,
+                "stockActual": destinoStock + quantity,
+                "stockMinimo": producto.stockMinimo,
+                "capacidadTotal": producto.capacidadTotal,
+                "unidadMedida": producto.unidadMedida ?? "L"
+            ], forDocument: destinoDoc, merge: true)
+
+            let movementId = UUID().uuidString
+            batch.setData([
+                "id": movementId,
+                "tipo": "transfer",
+                "cantidadLitros": quantity,
+                "productoId": productoId,
+                "almacenId": origenId,
+                "origen": origen.nombre ?? "",
+                "destino": destino.nombre ?? "",
+                "nota": note,
+                "fecha": Timestamp(date: Date())
+            ], forDocument: self.firestore.collection("inventory_movements").document(movementId), merge: true)
+
+            batch.commit()
+        }
+        #endif
     }
 
     private func saveRemoteStock(producto: ProductoEntity, almacen: AlmacenEntity, delta: Double) {
@@ -514,6 +597,7 @@ private struct VistaRaizModalMovimiento: View {
     @State private var quantityText: String
     @State private var note: String
     @State private var activePicker: PickerTarget?
+    @State private var isSaving = false
 
     init(
         data: DatosVistaModalMovimiento,
@@ -935,8 +1019,17 @@ private struct VistaRaizModalMovimiento: View {
         }
     }
 
+    private var isFormValid: Bool {
+        quantityValue > 0
+            && data.warehouses.isEmpty == false
+            && data.products.isEmpty == false
+            && (kind != .transfer || originWarehouseIndex != destinationWarehouseIndex)
+    }
+
     private var saveButton: some View {
         Button {
+            guard !isSaving else { return }
+            isSaving = true
             onSave(
                 BorradorModalMovimiento(
                     kind: kind,
@@ -956,10 +1049,11 @@ private struct VistaRaizModalMovimiento: View {
                 .frame(height: 58)
                 .background(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(Color(uiColor: kind.accentColor))
+                        .fill(Color(uiColor: kind.accentColor).opacity(isFormValid && !isSaving ? 1 : 0.45))
                 )
         }
         .buttonStyle(.plain)
+        .disabled(!isFormValid || isSaving)
         .padding(.top, 6)
     }
 

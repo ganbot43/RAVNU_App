@@ -32,6 +32,7 @@ struct PurchaseOrderSheetView: View {
     @State private var textoPrecioUnitario = "4.20"
     @State private var notas = ""
     @State private var selectorActivo: PickerTarget?
+    @State private var isSaving = false
 
     private enum PickerTarget {
         case provider
@@ -64,6 +65,10 @@ struct PurchaseOrderSheetView: View {
 
     private var stockGeneralProyectado: Double {
         stockGeneralActual + cantidad
+    }
+
+    private var isOrderValid: Bool {
+        cantidad > 0 && precioUnitario > 0 && !providers.isEmpty && !products.isEmpty
     }
 
     var body: some View {
@@ -173,6 +178,8 @@ struct PurchaseOrderSheetView: View {
                         }
 
                         Button {
+                            guard !isSaving else { return }
+                            isSaving = true
                             onSave(
                                 BorradorOrdenCompra(
                                     indiceProveedor: indiceProveedor,
@@ -188,10 +195,11 @@ struct PurchaseOrderSheetView: View {
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 58)
-                                .background(Color(hex: "F59E0B"))
+                                .background(Color(hex: isOrderValid && !isSaving ? "F59E0B" : "D4A94E"))
                                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                         }
                         .buttonStyle(.plain)
+                        .disabled(!isOrderValid || isSaving)
                     }
                     .padding(.horizontal, 18)
                     .padding(.top, 18)
@@ -331,6 +339,7 @@ struct PurchaseOrderAllocationSheetView: View {
     let onSave: (BorradorAsignacionOrdenCompra) -> Void
 
     @State private var filas: [FilaEditable] = [.init(indiceAlmacen: 0, textoCantidad: "")]
+    @State private var isSaving = false
 
     private var totalAsignado: Double {
         filas.reduce(0) { parcial, fila in
@@ -340,6 +349,23 @@ struct PurchaseOrderAllocationSheetView: View {
 
     private var restante: Double {
         cantidadTotalOrden - totalAsignado
+    }
+
+    private var capacityErrors: [UUID: String] {
+        var errors: [UUID: String] = [:]
+        for fila in filas {
+            let qty = Double(fila.textoCantidad.replacingOccurrences(of: ",", with: ".")) ?? 0
+            guard qty > 0, warehouses.indices.contains(fila.indiceAlmacen) else { continue }
+            let w = warehouses[fila.indiceAlmacen]
+            if w.capacidadTotal > 0, qty > w.espacioDisponible {
+                errors[fila.id] = "Excede por \(Int((qty - w.espacioDisponible).rounded()))L"
+            }
+        }
+        return errors
+    }
+
+    private var isAllocationValid: Bool {
+        abs(restante) < 0.01 && totalAsignado > 0 && capacityErrors.isEmpty
     }
 
     var body: some View {
@@ -382,6 +408,8 @@ struct PurchaseOrderAllocationSheetView: View {
                         tarjetaControl
 
                         Button {
+                            guard !isSaving else { return }
+                            isSaving = true
                             let borrador = BorradorAsignacionOrdenCompra(
                                 filas: filas.map {
                                     .init(
@@ -398,10 +426,11 @@ struct PurchaseOrderAllocationSheetView: View {
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 58)
-                                .background(Color(hex: "22C55E"))
+                                .background(Color(hex: isAllocationValid && !isSaving ? "22C55E" : "8BC9A0"))
                                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                         }
                         .buttonStyle(.plain)
+                        .disabled(!isAllocationValid || isSaving)
                     }
                     .padding(.horizontal, 18)
                     .padding(.top, 18)
@@ -497,6 +526,16 @@ struct PurchaseOrderAllocationSheetView: View {
                     filaDetalle(titulo: "Capacidad", valor: "\(Int(opcion.capacidadTotal.rounded()).formatted()) L")
                     filaDetalle(titulo: "Espacio disponible", valor: "\(Int(opcion.espacioDisponible.rounded()).formatted()) L")
                     filaDetalle(titulo: "Mínimo", valor: "\(Int(opcion.stockMinimo.rounded()).formatted()) L")
+
+                    if let error = capacityErrors[fila.wrappedValue.id] {
+                        HStack(spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: 12, weight: .bold))
+                            Text(error)
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                        }
+                        .foregroundStyle(Color(hex: "EF4444"))
+                    }
                 }
             }
         }
