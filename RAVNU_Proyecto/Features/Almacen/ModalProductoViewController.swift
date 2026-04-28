@@ -35,7 +35,16 @@ final class ModalProductoViewController: UIViewController {
         [txtPrecio, txtStockMinimo, txtCapacidad].forEach { $0?.keyboardType = .decimalPad }
         btnGuardar?.layer.cornerRadius = 16
         btnGuardar?.clipsToBounds = true
+        configurarMensajesDeContexto()
         cargarProductoExistenteSiAplica()
+    }
+
+    private func configurarMensajesDeContexto() {
+        txtNombre?.placeholder = "Nombre del producto"
+        txtPrecio?.placeholder = "Precio por litro"
+        txtUnidad?.placeholder = "Unidad de medida"
+        txtStockMinimo?.placeholder = "Mínimo base por almacén"
+        txtCapacidad?.placeholder = "Capacidad base por almacén"
     }
 
     private func parseDouble(_ text: String?) -> Double {
@@ -54,13 +63,13 @@ final class ModalProductoViewController: UIViewController {
             return "Ingresa la unidad de medida."
         }
         if parseDouble(txtStockMinimo?.text) <= 0 {
-            return "Ingresa un stock mínimo mayor a cero."
+            return "Ingresa un mínimo base por almacén mayor a cero."
         }
         if parseDouble(txtCapacidad?.text) <= 0 {
-            return "Ingresa una capacidad total mayor a cero."
+            return "Ingresa una capacidad base por almacén mayor a cero."
         }
         if parseDouble(txtStockMinimo?.text) > parseDouble(txtCapacidad?.text) {
-            return "El stock mínimo no puede ser mayor que la capacidad total."
+            return "El mínimo base por almacén no puede ser mayor que la capacidad base por almacén."
         }
         let request: NSFetchRequest<ProductoEntity> = ProductoEntity.fetchRequest()
         request.fetchLimit = 1
@@ -282,7 +291,8 @@ final class ModalProductoViewController: UIViewController {
                 "detalleSolicitud": .object([
                     "necesidadOperativa": .string(necesidad),
                     "observacion": observacion.isEmpty ? .string("sin_observacion") : .string(observacion),
-                    "requiereCreacionStockInicial": .bool(true)
+                    "requiereCreacionStockInicial": .bool(true),
+                    "stockConfiguracion": .string("Los valores de stock mínimo y capacidad funcionan como referencia base por almacén. El stock real se controla en StockAlmacen.")
                 ])
             ],
             reason: motivo,

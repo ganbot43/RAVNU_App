@@ -265,7 +265,7 @@ struct WarehouseDashboardView: View {
                 if data.productCards.isEmpty {
                     emptyStateCard(
                         title: "No hay productos cargados",
-                        subtitle: "Registra productos para ver stock, mínimos y capacidad por almacén.",
+                        subtitle: "Registra productos para definir referencias base y ver el stock real por almacén.",
                         actionTitle: data.canRegister ? "Registrar producto" : nil
                     )
                 } else {
@@ -466,7 +466,7 @@ struct WarehouseDashboardView: View {
                     Text(product.name)
                         .font(.system(size: 14, weight: .black))
                         .foregroundStyle(Color(.label))
-                    Text("\(product.priceText) · Min: \(product.minimumText) · Cap: \(product.capacityText)")
+                    Text("\(product.priceText) · Min base/alm: \(product.minimumText) · Cap red: \(product.capacityText)")
                         .font(.system(size: 10, weight: .regular))
                         .foregroundStyle(Color(uiColor: .systemGray))
                 }
@@ -484,8 +484,8 @@ struct WarehouseDashboardView: View {
             }
 
             HStack(spacing: 8) {
-                chip(text: "Min \(product.minimumText)", bgHex: "F9FAFB", fgHex: "6B7280", icon: "arrow.down.to.line")
-                chip(text: "Cap \(product.capacityText)", bgHex: "F9FAFB", fgHex: "6B7280", icon: "gauge.with.dots.needle.50percent")
+                chip(text: "Min base \(product.minimumText)", bgHex: "F9FAFB", fgHex: "6B7280", icon: "arrow.down.to.line")
+                chip(text: "Cap red \(product.capacityText)", bgHex: "F9FAFB", fgHex: "6B7280", icon: "gauge.with.dots.needle.50percent")
                 Spacer()
                 Text(product.totalValueText)
                     .font(.system(size: 11, weight: .bold))
@@ -504,7 +504,7 @@ struct WarehouseDashboardView: View {
             .frame(height: 8)
 
             HStack {
-                Text("Ocupación global \(Int((product.fillRatio * 100).rounded()))%")
+                Text("Ocupación consolidada \(Int((product.fillRatio * 100).rounded()))%")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Color(uiColor: .secondaryLabel))
                 Spacer()

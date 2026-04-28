@@ -247,7 +247,7 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                         warehouseName: nombreCortoAlmacen(stock.almacen?.nombre ?? "Almacén"),
                         colorHex: warehouseColorHex(for: stockIndex),
                         stockText: formatearValorLitros(stock.stockActual),
-                        detailText: "Min \(formatearValorLitros(minimo(for: stock))) · Cap \(formatearValorLitros(capacidad(for: stock)))",
+                        detailText: "Mínimo ref. \(formatearValorLitros(minimo(for: stock))) · Cap. almacén \(formatearValorLitros(capacidad(for: stock)))",
                         fillRatio: capacidad(for: stock) > 0 ? min(stock.stockActual / capacidad(for: stock), 1) : 0,
                         isLow: stock.stockActual < minimo(for: stock)
                     )
@@ -363,6 +363,11 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                 .filter { $0.producto == product }
                 .reduce(0) { $0 + $1.stockActual }
         }
+    }
+
+    private func capacidadTotalEnRed(for producto: ProductoEntity) -> Double {
+        let productStocks = stocks.filter { $0.producto == producto }
+        return productStocks.reduce(0) { $0 + capacidad(for: $1) }
     }
 
     private func consolidarStocksRepresentativos(_ lista: [StockAlmacenEntity]) -> [StockAlmacenEntity] {
@@ -629,7 +634,7 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                 accent: isLow ? UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1) : UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1),
                 title: productName,
                 subtitle: warehouseName,
-                detail: "Min \(formatearLitros(minimo(for: stock))) · Cap \(formatearLitros(capacidad(for: stock)))",
+                detail: "Mínimo ref. \(formatearLitros(minimo(for: stock))) · Cap. almacén \(formatearLitros(capacidad(for: stock)))",
                 amount: formatearLitros(stock.stockActual),
                 progress: CGFloat(min(stock.stockActual / capacidad(for: stock), 1)),
                 status: isLow ? "Stock Bajo" : "OK"
@@ -637,13 +642,14 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         case .producto(let producto):
             let minimum = producto.stockMinimo
             let low = producto.stockLitros < minimum
+            let totalCapacity = max(capacidadTotalEnRed(for: producto), 1)
             almacenCell.configure(
                 accent: low ? UIColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1) : UIColor(red: 0.133, green: 0.773, blue: 0.369, alpha: 1),
                 title: producto.nombre ?? "Producto",
                 subtitle: "\(formatearMoneda(producto.precioPorLitro)) / \(producto.unidadMedida ?? "L")",
-                detail: "Stock total consolidado · Min \(formatearLitros(minimum))",
+                detail: "Stock total consolidado · Mínimo base por almacén \(formatearLitros(minimum))",
                 amount: formatearLitros(producto.stockLitros),
-                progress: CGFloat(min(producto.stockLitros / max(producto.capacidadTotal * Double(max(almacenes.count, 1)), 1), 1)),
+                progress: CGFloat(min(producto.stockLitros / totalCapacity, 1)),
                 status: low ? "Bajo" : "OK"
             )
         case .movimiento(let movimiento):
