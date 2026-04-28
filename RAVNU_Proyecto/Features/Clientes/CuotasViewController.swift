@@ -70,7 +70,6 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
     }
 
     private func configurarVistaHibrida() {
-        ocultarVistaLegacy()
         let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -84,30 +83,6 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
         ])
         host.didMove(toParent: self)
         hostingController = host
-    }
-
-    private func ocultarVistaLegacy() {
-        [
-            analyticsScrollView,
-            tblCuotas,
-            btnAnalitica,
-            btnCuotas,
-            btnTodos,
-            btnPendiente,
-            btnVencido,
-            btnPagado,
-            lblVencidoTotal,
-            lblVencidoDetalle,
-            lblPendienteTotal,
-            lblPendienteDetalle,
-            lblHoyTotal,
-            lblHoyDetalle,
-            lblProgreso,
-            lblClientesDeuda,
-            emptyStateView
-        ].forEach { $0?.isHidden = true }
-        tblCuotas?.dataSource = self
-        tblCuotas?.delegate = self
     }
 
     private func cargarCuotas() {
@@ -186,13 +161,9 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
         let pendingAmount = pendientesNoVencidas.reduce(0.0) { $0 + $1.monto }
         let paidTodayAmount = pagadasHoy.reduce(0.0) { $0 + $1.monto }
 
-        let currentMonthCuotas = cuotas.filter {
-            guard let dueDate = $0.fechaVencimiento else { return false }
-            return Calendar.current.isDate(dueDate, equalTo: Date(), toGranularity: .month)
-        }
-        let currentMonthTotal = currentMonthCuotas.reduce(0.0) { $0 + $1.monto }
-        let currentMonthPaid = currentMonthCuotas.filter(\.pagada).reduce(0.0) { $0 + $1.monto }
-        let collectionProgress = currentMonthTotal > 0 ? currentMonthPaid / currentMonthTotal : 0
+        let paidAmount = cuotas.filter(\.pagada).reduce(0.0) { $0 + $1.monto }
+        let totalAmount = cuotas.reduce(0.0) { $0 + $1.monto }
+        let collectionProgress = totalAmount > 0 ? paidAmount / totalAmount : 0
 
         let debtRows = buildDebtRows()
         let cuotaRows = filteredCuotas.map { cuota in
@@ -216,9 +187,9 @@ final class CuotasViewController: UIViewController, UITableViewDataSource, UITab
             todayMetric: DatosDashboardCobros.Metrica(title: "HOY", value: formatearMoneda(paidTodayAmount), detail: "cobrado", accentHex: "22C55E"),
             progressText: "\(Int((collectionProgress * 100).rounded()))%",
             progressSlices: [
-                .init(label: "Vencido", valueText: formatearMoneda(overdueAmount), accentHex: "EF4444", share: currentMonthTotal > 0 ? overdueAmount / currentMonthTotal : 0),
-                .init(label: "Pendiente", valueText: formatearMoneda(pendingAmount), accentHex: "F59E0B", share: currentMonthTotal > 0 ? pendingAmount / currentMonthTotal : 0),
-                .init(label: "Cobrado", valueText: formatearMoneda(currentMonthPaid), accentHex: "4CCB63", share: currentMonthTotal > 0 ? currentMonthPaid / currentMonthTotal : 0)
+                .init(label: "Vencido", valueText: formatearMoneda(overdueAmount), accentHex: "EF4444", share: totalAmount > 0 ? overdueAmount / totalAmount : 0),
+                .init(label: "Pendiente", valueText: formatearMoneda(pendingAmount), accentHex: "F59E0B", share: totalAmount > 0 ? pendingAmount / totalAmount : 0),
+                .init(label: "Cobrado", valueText: formatearMoneda(paidAmount), accentHex: "4CCB63", share: totalAmount > 0 ? paidAmount / totalAmount : 0)
             ],
             alertText: vencidas.isEmpty ? nil : "\(vencidas.count) cuota vencida\(vencidas.count == 1 ? "" : "s") — contacta a los clientes de inmediato para evitar más retrasos.",
             debtRows: debtRows,

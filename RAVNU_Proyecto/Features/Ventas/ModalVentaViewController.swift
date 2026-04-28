@@ -4,11 +4,11 @@ import CoreData
 import FirebaseFirestore
 #endif
 
-protocol ModalVentaViewControllerDelegate: AnyObject {
-    func modalVentaViewControllerDidSaveVenta(_ controller: ModalVentaViewController)
+protocol ModalNuevaVentaViewControllerDelegate: AnyObject {
+    func modalNuevaVentaViewControllerDidSaveVenta(_ controller: ModalNuevaVentaViewController)
 }
 
-final class ModalVentaViewController: UIViewController {
+final class ModalNuevaVentaViewController: UIViewController {
 
     private struct InventorySyncSnapshot {
         let almacen: AlmacenEntity?
@@ -28,7 +28,7 @@ final class ModalVentaViewController: UIViewController {
     @IBOutlet private weak var lblFechaVencimiento: UILabel!
     @IBOutlet private weak var btnGuardarVenta: UIButton!
 
-    weak var delegate: ModalVentaViewControllerDelegate?
+    weak var delegate: ModalNuevaVentaViewControllerDelegate?
     var clientesDisponibles: [ClienteEntity] = []
     var productosDisponibles: [ProductoEntity] = []
 
@@ -48,7 +48,7 @@ final class ModalVentaViewController: UIViewController {
     private var selectedClienteIndex: Int?
     private var selectedProductoIndex: Int?
     private var firstDueDateOverride: Date?
-    private var embeddedController: NewSaleViewController?
+    private var embeddedController: NuevaVentaViewController?
     #if canImport(FirebaseFirestore)
     private let firestore = Firestore.firestore()
     #endif
@@ -71,44 +71,10 @@ final class ModalVentaViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureUI()
         configureEmbeddedForm()
     }
 
-    private func configureUI() {
-        view.backgroundColor = UIColor.systemBackground
-        txtCliente.delegate = self
-        txtProducto.delegate = self
-        txtCantidad.delegate = self
-
-        txtCliente.tintColor = .clear
-        txtProducto.tintColor = .clear
-        txtCantidad.keyboardType = .decimalPad
-        txtCantidad.addTarget(self, action: #selector(quantityDidChange), for: .editingChanged)
-
-        clientePicker.dataSource = self
-        clientePicker.delegate = self
-        productoPicker.dataSource = self
-        productoPicker.delegate = self
-
-        txtCliente.inputView = clientePicker
-        txtProducto.inputView = productoPicker
-        txtCliente.inputAccessoryView = pickerToolbar(selector: #selector(donePickingCliente))
-        txtProducto.inputAccessoryView = pickerToolbar(selector: #selector(donePickingProducto))
-
-        txtCliente.placeholder = "Seleccionar cliente"
-        txtProducto.placeholder = "Seleccionar producto y precio"
-        txtCantidad.placeholder = "Cantidad en litros (Ej: 50.5)"
-
-        btnGuardarVenta.layer.cornerRadius = 16
-        btnGuardarVenta.clipsToBounds = true
-        creditContainerView.layer.cornerRadius = 18
-        creditContainerView.clipsToBounds = true
-    }
-
     private func configureEmbeddedForm() {
-        hideLegacyForm()
-
         let clientOptions = clientesDisponibles.enumerated().map { index, client in
             OpcionCliente(
                 id: client.id?.uuidString ?? "\(index)",
@@ -140,7 +106,7 @@ final class ModalVentaViewController: UIViewController {
         cuotas = 3
         firstDueDateOverride = siguienteFechaMensual()
 
-        let child = NewSaleViewController(
+        let child = NuevaVentaViewController(
             clients: clientOptions,
             products: productOptions,
             initialClientIndex: suggestedClientIndex,
@@ -162,12 +128,6 @@ final class ModalVentaViewController: UIViewController {
         embeddedController = child
     }
 
-    private func hideLegacyForm() {
-        [txtCliente, txtProducto, txtCantidad, lblTotal, btnEfectivo, btnCredito, creditContainerView, lblCuotas, lblPorCuota, lblFechaVencimiento, btnGuardarVenta].forEach {
-            $0?.isHidden = true
-        }
-    }
-
     private func handleEmbeddedDraft(_ draft: BorradorNuevaVenta) {
         selectedClienteIndex = draft.clientIndex
         selectedProductoIndex = draft.productIndex
@@ -183,7 +143,7 @@ final class ModalVentaViewController: UIViewController {
 
         do {
             try saveVenta()
-            delegate?.modalVentaViewControllerDidSaveVenta(self)
+            delegate?.modalNuevaVentaViewControllerDidSaveVenta(self)
             dismiss(animated: true)
         } catch {
             showAlert(title: "Error", message: "No se pudo guardar la venta.")
@@ -502,6 +462,16 @@ final class ModalVentaViewController: UIViewController {
             "fechaVenta": Timestamp(date: fechaVenta)
         ]
 
+        if let userId = AppSession.shared.userDocumentId {
+            salePayload["createdByUserId"] = userId
+        }
+        if let authUid = AppSession.shared.authUid {
+            salePayload["createdByAuthUid"] = authUid
+        }
+        if let email = AppSession.shared.userEmail {
+            salePayload["createdByEmail"] = email
+        }
+
         if let almacenId = inventorySnapshot.almacen?.id?.uuidString {
             salePayload["almacenId"] = almacenId
         }
@@ -628,7 +598,7 @@ final class ModalVentaViewController: UIViewController {
 
         do {
             try saveVenta()
-            delegate?.modalVentaViewControllerDidSaveVenta(self)
+            delegate?.modalNuevaVentaViewControllerDidSaveVenta(self)
             dismiss(animated: true)
         } catch {
             showAlert(title: "Error", message: "No se pudo guardar la venta.")
@@ -636,7 +606,7 @@ final class ModalVentaViewController: UIViewController {
     }
 }
 
-extension ModalVentaViewController: UITextFieldDelegate {
+extension ModalNuevaVentaViewController: UITextFieldDelegate {
 
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
         if textField == txtCliente, clientesDisponibles.isEmpty {
@@ -687,7 +657,7 @@ extension ModalVentaViewController: UITextFieldDelegate {
     }
 }
 
-extension ModalVentaViewController: UIPickerViewDataSource, UIPickerViewDelegate {
+extension ModalNuevaVentaViewController: UIPickerViewDataSource, UIPickerViewDelegate {
 
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         1

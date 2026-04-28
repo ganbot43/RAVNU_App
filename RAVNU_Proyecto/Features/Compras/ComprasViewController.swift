@@ -113,7 +113,6 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     }
 
     private func configurarVistaHibrida() {
-        ocultarVistaLegacy()
         let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -127,31 +126,6 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         ])
         host.didMove(toParent: self)
         hostingController = host
-    }
-
-    private func ocultarVistaLegacy() {
-        [
-            btnProveedores,
-            btnOrdenes,
-            btnAnalisis,
-            proveedoresView,
-            ordenesView,
-            analisisScrollView,
-            proveedoresTableView,
-            ordenesTableView,
-            proveedoresSearchBar,
-            proveedoresEmptyLabel,
-            lblPendientesBadge,
-            lblGastoTotal,
-            lblPendientes,
-            lblRecibidas,
-            lblAnalisisGasto,
-            lblAnalisisVolumen,
-            lblAnalisisProveedores,
-            lblRanking,
-            lblGastoProducto,
-            lblPorProducto
-        ].forEach { $0?.isHidden = true }
     }
 
     private func actualizarVistaHibrida() {

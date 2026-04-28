@@ -1,4 +1,5 @@
 import UIKit
+import SwiftUI
 
 struct OpcionCliente {
     let id: String
@@ -26,7 +27,7 @@ struct BorradorNuevaVenta {
     let firstDueDate: Date
 }
 
-final class NewSaleViewController: UIViewController {
+final class NuevaVentaViewController: UIViewController {
 
     private let clients: [OpcionCliente]
     private let products: [OpcionProductoVenta]
@@ -50,6 +51,7 @@ final class NewSaleViewController: UIViewController {
     private let creditSectionCard = CreditSectionView()
     private let impactSectionCard = SaleImpactCardView()
     private let saveButton = UIButton(type: .system)
+    private var hostingController: UIHostingController<FormularioNuevaVentaView>?
 
     private var selectedClientIndex: Int {
         didSet { updateClientUI() }
@@ -108,19 +110,26 @@ final class NewSaleViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .appBackground
-        setupScrollView()
-        setupHeader()
-        setupForm()
-        bindActions()
-        refreshAll()
-        registerKeyboardObservers()
-        let tap = UITapGestureRecognizer(target: self, action: #selector(endEditingTap))
-        tap.cancelsTouchesInView = false
-        view.addGestureRecognizer(tap)
+        hostingController = embedHostedView(crearVistaRaiz(), backgroundColor: .clear)
     }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+
+    private func crearVistaRaiz() -> FormularioNuevaVentaView {
+        FormularioNuevaVentaView(
+            clients: clients,
+            products: products,
+            initialClientIndex: selectedClientIndex,
+            initialProductIndex: selectedProductIndex,
+            initialQuantity: quantity,
+            initialPaymentType: paymentType,
+            initialInstallments: installments,
+            initialDueDate: firstDueDate,
+            onCancel: onCancel,
+            onSave: onSave
+        )
     }
 
     private func setupScrollView() {
@@ -463,6 +472,315 @@ final class NewSaleViewController: UIViewController {
         formatter.dateFormat = "dd MMM, yyyy"
         return formatter
     }()
+}
+
+private struct FormularioNuevaVentaView: View {
+    let clients: [OpcionCliente]
+    let products: [OpcionProductoVenta]
+    let initialClientIndex: Int?
+    let initialProductIndex: Int?
+    let initialQuantity: Int
+    let initialPaymentType: String
+    let initialInstallments: Int
+    let initialDueDate: Date
+    let onCancel: () -> Void
+    let onSave: (BorradorNuevaVenta) -> Void
+
+    @State private var selectedClientIndex: Int
+    @State private var selectedProductIndex: Int
+    @State private var quantity: Int
+    @State private var paymentType: String
+    @State private var installments: Int
+    @State private var dueDate: Date
+
+    init(
+        clients: [OpcionCliente],
+        products: [OpcionProductoVenta],
+        initialClientIndex: Int?,
+        initialProductIndex: Int?,
+        initialQuantity: Int,
+        initialPaymentType: String,
+        initialInstallments: Int,
+        initialDueDate: Date,
+        onCancel: @escaping () -> Void,
+        onSave: @escaping (BorradorNuevaVenta) -> Void
+    ) {
+        self.clients = clients
+        self.products = products
+        self.initialClientIndex = initialClientIndex
+        self.initialProductIndex = initialProductIndex
+        self.initialQuantity = initialQuantity
+        self.initialPaymentType = initialPaymentType
+        self.initialInstallments = initialInstallments
+        self.initialDueDate = initialDueDate
+        self.onCancel = onCancel
+        self.onSave = onSave
+
+        _selectedClientIndex = State(initialValue: min(max(initialClientIndex ?? 0, 0), max(clients.count - 1, 0)))
+        _selectedProductIndex = State(initialValue: min(max(initialProductIndex ?? 0, 0), max(products.count - 1, 0)))
+        _quantity = State(initialValue: max(initialQuantity, 1))
+        _paymentType = State(initialValue: initialPaymentType)
+        _installments = State(initialValue: min(max(initialInstallments, 1), 12))
+        _dueDate = State(initialValue: initialDueDate)
+    }
+
+    private var selectedClient: OpcionCliente? {
+        guard clients.indices.contains(selectedClientIndex) else { return nil }
+        return clients[selectedClientIndex]
+    }
+
+    private var selectedProduct: OpcionProductoVenta? {
+        guard products.indices.contains(selectedProductIndex) else { return nil }
+        return products[selectedProductIndex]
+    }
+
+    private var total: Double {
+        Double(quantity) * (selectedProduct?.pricePerUnit ?? 0)
+    }
+
+    private var perInstallment: Double {
+        total / Double(max(installments, 1))
+    }
+
+    private var maxQuantity: Int {
+        max(Int((selectedProduct?.availableStock ?? 1).rounded(.down)), 1)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Group {
+                if clients.isEmpty || products.isEmpty {
+                    estadoVacio
+                } else {
+                    contenidoFormulario
+                }
+            }
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancelar", action: onCancel)
+                }
+                ToolbarItem(placement: .principal) {
+                    Text("Nueva Venta")
+                        .font(.system(size: 18, weight: .semibold))
+                }
+            }
+        }
+    }
+
+    private var contenidoFormulario: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 16) {
+                tarjeta {
+                    VStack(alignment: .leading, spacing: 12) {
+                        tituloSeccion("Cliente")
+                        Picker("Cliente", selection: $selectedClientIndex) {
+                            ForEach(Array(clients.enumerated()), id: \.offset) { index, client in
+                                Text(client.name).tag(index)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .tint(.blue)
+
+                        if let client = selectedClient {
+                            Text("\(estadoLocalizado(client.status)) · Deuda \(moneda(client.debt)) / Límite \(moneda(client.limit))")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                tarjeta {
+                    VStack(alignment: .leading, spacing: 12) {
+                        tituloSeccion("Producto")
+                        Picker("Producto", selection: $selectedProductIndex) {
+                            ForEach(Array(products.enumerated()), id: \.offset) { index, product in
+                                Text("\(product.name) · \(moneda(product.pricePerUnit))").tag(index)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .tint(.blue)
+
+                        if let product = selectedProduct {
+                            Text("\(numero(product.availableStock))\(unidadCompacta(product.unit)) disponibles · \(product.warehouseName)")
+                                .font(.system(size: 13))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                tarjeta {
+                    VStack(alignment: .leading, spacing: 12) {
+                        tituloSeccion("Cantidad")
+                        Stepper(value: $quantity, in: 1...maxQuantity) {
+                            HStack {
+                                Text("\(quantity) \(unidadLocalizada(selectedProduct?.unit ?? "L"))")
+                                    .font(.system(size: 18, weight: .semibold))
+                                Spacer()
+                                Text("Máx. \(maxQuantity)")
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                }
+
+                tarjeta {
+                    VStack(alignment: .leading, spacing: 12) {
+                        tituloSeccion("Pago")
+                        Picker("Tipo de pago", selection: $paymentType) {
+                            Text("Contado").tag("cash")
+                            Text("Crédito").tag("credit")
+                        }
+                        .pickerStyle(.segmented)
+
+                        if paymentType == "credit" {
+                            Stepper(value: $installments, in: 1...12) {
+                                HStack {
+                                    Text("Cuotas")
+                                    Spacer()
+                                    Text("\(installments)")
+                                        .font(.system(size: 16, weight: .bold))
+                                }
+                            }
+
+                            DatePicker(
+                                "Primer vencimiento",
+                                selection: $dueDate,
+                                displayedComponents: .date
+                            )
+                            .datePickerStyle(.compact)
+
+                            Text("Por cuota: \(moneda(perInstallment))")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+
+                tarjeta {
+                    VStack(alignment: .leading, spacing: 10) {
+                        tituloSeccion("Impacto")
+                        filaImpacto("Total", moneda(total), accent: .blue)
+                        filaImpacto("Almacén", "-\(quantity)\(unidadCompacta(selectedProduct?.unit ?? "L"))", accent: .red)
+                        filaImpacto("Tesorería", paymentType == "cash" ? "+\(moneda(total))" : "Pendiente", accent: .green)
+                        if paymentType == "credit" {
+                            filaImpacto("Cobros", "Se generarán cuotas", accent: .orange)
+                        }
+                    }
+                }
+
+                Button {
+                    onSave(
+                        BorradorNuevaVenta(
+                            clientIndex: selectedClientIndex,
+                            productIndex: selectedProductIndex,
+                            quantity: quantity,
+                            paymentType: paymentType,
+                            installments: installments,
+                            firstDueDate: dueDate
+                        )
+                    )
+                } label: {
+                    Text("Guardar Venta")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(Color.blue)
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(16)
+        }
+    }
+
+    private var estadoVacio: some View {
+        VStack(spacing: 12) {
+            Text("No hay datos suficientes para registrar la venta.")
+                .font(.system(size: 18, weight: .semibold))
+            Text("Debes tener al menos un cliente y un producto registrados.")
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(24)
+    }
+
+    private func tarjeta<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+
+    private func tituloSeccion(_ text: String) -> some View {
+        Text(text.uppercased())
+            .font(.system(size: 12, weight: .bold))
+            .foregroundStyle(.secondary)
+    }
+
+    private func filaImpacto(_ title: String, _ value: String, accent: Color) -> some View {
+        HStack {
+            Text(title)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(accent)
+        }
+    }
+
+    private func estadoLocalizado(_ status: String) -> String {
+        switch status.lowercased() {
+        case "activo", "active":
+            return "Activo"
+        case "enriesgo", "atrisk":
+            return "En riesgo"
+        case "vencido", "overdue":
+            return "Vencido"
+        case "blocked", "bloqueado":
+            return "Bloqueado"
+        default:
+            return status.capitalized
+        }
+    }
+
+    private func unidadLocalizada(_ unit: String) -> String {
+        switch unit.lowercased() {
+        case "liter", "litro", "l":
+            return "litros"
+        case "bal":
+            return "balones"
+        default:
+            return unit
+        }
+    }
+
+    private func unidadCompacta(_ unit: String) -> String {
+        switch unit.lowercased() {
+        case "liter", "litro", "l":
+            return "L"
+        case "bal":
+            return " bal"
+        default:
+            return " \(unit)"
+        }
+    }
+
+    private func moneda(_ value: Double) -> String {
+        "S/ \(String(format: "%.2f", value))"
+    }
+
+    private func numero(_ value: Double) -> String {
+        if value == value.rounded() {
+            return "\(Int(value))"
+        }
+        return String(format: "%.1f", value)
+    }
 }
 
 final class DropdownButton: UIControl {

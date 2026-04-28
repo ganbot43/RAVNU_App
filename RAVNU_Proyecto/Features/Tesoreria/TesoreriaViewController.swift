@@ -94,7 +94,6 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
     }
 
     private func configurarVistaHibrida() {
-        ocultarVistaLegacy()
         let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -108,25 +107,6 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
         ])
         host.didMove(toParent: self)
         hostingController = host
-    }
-
-    private func ocultarVistaLegacy() {
-        [
-            btnResumen,
-            btnTransacciones,
-            resumenScrollView,
-            transaccionesView,
-            tableView,
-            lblSaldo,
-            lblMargen,
-            lblIngresos,
-            lblGastos,
-            lblTendencia,
-            lblIngresosGastos,
-            lblDesglose
-        ].forEach { $0?.isHidden = true }
-        tableView?.dataSource = self
-        tableView?.delegate = self
     }
 
     private func actualizarVistaHibrida() {
@@ -254,7 +234,7 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
 
         let comprasPagadas = ordenes.compactMap { orden -> TransaccionTesoreria? in
             let status = (orden.estado ?? "").lowercased()
-            guard let date = orden.fecha, orden.total > 0, status == "pagada" else { return nil }
+            guard let date = orden.fecha, orden.total > 0, status == "pagada" || status == "recibida" else { return nil }
             return TransaccionTesoreria(
                 id: orden.id?.uuidString ?? UUID().uuidString,
                 titulo: "Compra de \(orden.producto?.nombre ?? "producto")",
@@ -299,7 +279,7 @@ final class TesoreriaViewController: UIViewController, UITableViewDataSource, UI
         let purchaseRequest: NSFetchRequest<OrdenCompraEntity> = OrdenCompraEntity.fetchRequest()
         let purchases = ((try? contexto.fetch(purchaseRequest)) ?? []).filter {
             let status = ($0.estado ?? "").lowercased()
-            return status == "pagada"
+            return status == "pagada" || status == "recibida"
         }
         let grouped = Dictionary(grouping: purchases) { order in
             order.producto?.nombre ?? "Operativo"

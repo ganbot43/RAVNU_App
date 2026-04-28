@@ -31,21 +31,7 @@ final class ModalClienteViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        ocultarFormularioLegacy()
         configurarFormularioEmbebido()
-    }
-
-    private func ocultarFormularioLegacy() {
-        [
-            txtNombre,
-            txtDocumento,
-            txtTelefono,
-            txtDireccion,
-            txtLimiteCredito,
-            clienteTipoControl,
-            btnGuardar
-        ].forEach { $0?.isHidden = true }
-        view.backgroundColor = UIColor(red: 244.0 / 255.0, green: 246.0 / 255.0, blue: 250.0 / 255.0, alpha: 1.0)
     }
 
     private func configurarFormularioEmbebido() {

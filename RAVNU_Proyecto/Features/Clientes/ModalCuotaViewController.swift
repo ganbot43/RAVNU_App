@@ -57,26 +57,8 @@ final class ModalCuotaViewController: UIViewController, UITextFieldDelegate, UIP
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        ocultarVistaLegacy()
         cargarCuotasPendientes()
         configurarVistaHibrida()
-    }
-
-    private func ocultarVistaLegacy() {
-        [
-            txtCliente,
-            txtMonto,
-            lblCuotaTitulo,
-            lblCuotaMonto,
-            lblCuotaVencimiento,
-            lblCuotaEstado,
-            lblSaldoRestante,
-            lblDeudaActual,
-            btnConfirmar,
-            cuotaCardView,
-            resumenCardView,
-            infoCardView
-        ].forEach { $0?.isHidden = true }
     }
 
     private func configurarVistaHibrida() {
@@ -185,8 +167,10 @@ final class ModalCuotaViewController: UIViewController, UITextFieldDelegate, UIP
 
         do {
             try registrarPago(monto: monto)
-            delegate?.modalCuotaViewControllerDidSavePago(self)
-            dismiss(animated: true)
+            dismiss(animated: true) { [weak self] in
+                guard let self else { return }
+                self.delegate?.modalCuotaViewControllerDidSavePago(self)
+            }
         } catch {
             mostrarAlerta(title: "Error", message: "No se pudo registrar el pago.")
         }
@@ -263,6 +247,16 @@ final class ModalCuotaViewController: UIViewController, UITextFieldDelegate, UIP
             "pagada": cuota.pagada,
             "fechaVencimiento": Timestamp(date: cuota.fechaVencimiento ?? Date())
         ]
+
+        if let userId = AppSession.shared.userDocumentId {
+            cuotaPayload["paidByUserId"] = userId
+        }
+        if let authUid = AppSession.shared.authUid {
+            cuotaPayload["createdByAuthUid"] = authUid
+        }
+        if let email = AppSession.shared.userEmail {
+            cuotaPayload["createdByEmail"] = email
+        }
 
         if let fechaPago = cuota.fechaPago {
             cuotaPayload["fechaPago"] = Timestamp(date: fechaPago)

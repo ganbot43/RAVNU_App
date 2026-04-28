@@ -71,7 +71,6 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
     }
 
     private func configurarDashboardSwiftUI() {
-        ocultarVistaLegacy()
         let host = UIHostingController(rootView: CajeroDashboardView(datos: crearDatosDashboard()))
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -85,30 +84,6 @@ final class CajeroViewController: UIViewController, UITableViewDataSource, UITab
         ])
         host.didMove(toParent: self)
         hostingController = host
-    }
-
-    private func ocultarVistaLegacy() {
-        [
-            lblNombreBienvenido,
-            lblSaldoActual,
-            lblResumenSecundario,
-            lblVentasHoy,
-            lblVentasHoyDetalle,
-            lblCobradoHoy,
-            lblCobradoHoyDetalle,
-            lblPendientes,
-            lblPendientesDetalle,
-            lblStockBajo,
-            lblStockBajoDetalle,
-            lblVentasSemana,
-            lblVentasSemanaDetalle,
-            lblAlertaStockTitulo,
-            lblAlertaStockDetalle,
-            emptyStateView,
-            tblCajero
-        ].forEach {
-            $0?.isHidden = true
-        }
     }
 
     private func reiniciarEtiquetas() {

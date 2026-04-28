@@ -1,4 +1,5 @@
 import UIKit
+import SwiftUI
 import CoreData
 #if canImport(FirebaseFirestore)
 import FirebaseFirestore
@@ -105,12 +106,12 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     @IBOutlet private weak var lblRiesgo: UILabel?
     @IBOutlet private weak var lblBloqueados: UILabel?
 
-    private enum PestanaInterna {
+    fileprivate enum PestanaInterna {
         case analytics
         case clients
     }
 
-    private enum ClienteFilter: String, CaseIterable {
+    fileprivate enum ClienteFilter: String, CaseIterable {
         case todos = "Todos"
         case activos = "Activos"
         case vencidos = "Vencidos"
@@ -148,6 +149,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     private var navSubtitleLabel: UILabel?
     private var navSubtitleTrailingConstraint: NSLayoutConstraint?
     private var rootTopConstraint: NSLayoutConstraint?
+    private var hostingController: UIHostingController<VistaClientesRaiz>?
     private var resumenAnalitico = ResumenAnalitico(
         summaryText: "0 registrados · 0 vencidos",
         totalClients: "0",
@@ -169,13 +171,9 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     override func viewDidLoad() {
         super.viewDidLoad()
         configurarBarraNavegacion()
-        ocultarVistaLegacyStoryboard()
-        construirLayoutHibrido()
         configurarAccesoPorRol()
-        configurarBuscador()
-        configurarTabla()
+        hostingController = embedHostedView(crearVistaRaiz(), backgroundColor: .clear)
         cargarClientes()
-        actualizarVisibilidadPestanas(animated: false)
     }
 
     override func viewDidLayoutSubviews() {
@@ -187,6 +185,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         cargarClientes()
+        actualizarVistaSwiftUI()
     }
 
     private func configurarBarraNavegacion() {
@@ -225,27 +224,37 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: button)
     }
 
-    private func ocultarVistaLegacyStoryboard() {
-        [
-            btnAnalitica,
-            btnClientes,
-            searchBar,
-            btnTodos,
-            btnActivos,
-            btnVencidos,
-            btnBloqueados,
-            tblClientes,
-            analyticsScrollView,
-            emptyStateView,
-            lblResumenClientes,
-            lblTotalClientes,
-            lblActivos,
-            lblRiesgo,
-            lblBloqueados
-        ].forEach { view in
-            view?.isHidden = true
-        }
-        view.backgroundColor = .appBackground
+    private func crearVistaRaiz() -> VistaClientesRaiz {
+        VistaClientesRaiz(
+            registros: filteredClientes.map(crearRegistro(from:)),
+            resumenAnalitico: resumenAnalitico,
+            pestanaActiva: pestanaActiva,
+            filtroActivo: filtroActivo,
+            textoBusqueda: textoBusquedaActual,
+            totalClientesFiltrados: filteredClientes.count,
+            puedeAgregarCliente: RoleAccessControl.canCreateCustomers,
+            alCambiarPestana: { [weak self] nuevaPestana in
+                self?.pestanaActiva = nuevaPestana
+                self?.actualizarVisibilidadPestanas(animated: false)
+                self?.actualizarVistaSwiftUI()
+            },
+            alCambiarFiltro: { [weak self] nuevoFiltro in
+                self?.filtroActivo = nuevoFiltro
+                self?.aplicarFiltros()
+            },
+            alCambiarBusqueda: { [weak self] nuevaBusqueda in
+                self?.textoBusquedaActual = nuevaBusqueda.trimmingCharacters(in: .whitespacesAndNewlines)
+                self?.aplicarFiltros()
+            },
+            alTocarAgregar: { [weak self] in
+                guard let self else { return }
+                self.btnAgregarClienteTapped(self)
+            }
+        )
+    }
+
+    private func actualizarVistaSwiftUI() {
+        hostingController?.rootView = crearVistaRaiz()
     }
 
     private func construirLayoutHibrido() {
@@ -676,6 +685,7 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
         actualizarAnalitica()
         updateFilterButtons()
         updateNavSubtitle()
+        actualizarVistaSwiftUI()
     }
 
     private func matchesFilter(_ cliente: ClienteEntity) -> Bool {
@@ -857,7 +867,8 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
 
         analyticsScrollViewV2.isHidden = pestanaActiva != .analytics
         clientsContainer.isHidden = pestanaActiva != .clients
-        navigationItem.searchController = pestanaActiva == .clients ? searchController : nil
+        navigationItem.searchController = nil
+        actualizarVistaSwiftUI()
     }
 
     private func updateNavSubtitle() {
@@ -1166,6 +1177,386 @@ extension ClientesViewController: ModalClienteViewControllerDelegate {
         segmentedControl.selectedSegmentIndex = 1
         actualizarVisibilidadPestanas(animated: false)
         showToast("Cliente guardado correctamente")
+    }
+}
+
+private struct VistaClientesRaiz: View {
+    let registros: [RegistroCliente]
+    let resumenAnalitico: ResumenAnalitico
+    let pestanaActiva: ClientesViewController.PestanaInterna
+    let filtroActivo: ClientesViewController.ClienteFilter
+    let textoBusqueda: String
+    let totalClientesFiltrados: Int
+    let puedeAgregarCliente: Bool
+    let alCambiarPestana: (ClientesViewController.PestanaInterna) -> Void
+    let alCambiarFiltro: (ClientesViewController.ClienteFilter) -> Void
+    let alCambiarBusqueda: (String) -> Void
+    let alTocarAgregar: () -> Void
+
+    @State private var textoBusquedaLocal: String
+
+    init(
+        registros: [RegistroCliente],
+        resumenAnalitico: ResumenAnalitico,
+        pestanaActiva: ClientesViewController.PestanaInterna,
+        filtroActivo: ClientesViewController.ClienteFilter,
+        textoBusqueda: String,
+        totalClientesFiltrados: Int,
+        puedeAgregarCliente: Bool,
+        alCambiarPestana: @escaping (ClientesViewController.PestanaInterna) -> Void,
+        alCambiarFiltro: @escaping (ClientesViewController.ClienteFilter) -> Void,
+        alCambiarBusqueda: @escaping (String) -> Void,
+        alTocarAgregar: @escaping () -> Void
+    ) {
+        self.registros = registros
+        self.resumenAnalitico = resumenAnalitico
+        self.pestanaActiva = pestanaActiva
+        self.filtroActivo = filtroActivo
+        self.textoBusqueda = textoBusqueda
+        self.totalClientesFiltrados = totalClientesFiltrados
+        self.puedeAgregarCliente = puedeAgregarCliente
+        self.alCambiarPestana = alCambiarPestana
+        self.alCambiarFiltro = alCambiarFiltro
+        self.alCambiarBusqueda = alCambiarBusqueda
+        self.alTocarAgregar = alTocarAgregar
+        _textoBusquedaLocal = State(initialValue: textoBusqueda)
+    }
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Picker("Vista", selection: seleccionPestana) {
+                Text("Analítica").tag(ClientesViewController.PestanaInterna.analytics)
+                Text("Clientes").tag(ClientesViewController.PestanaInterna.clients)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+
+            if pestanaActiva == .analytics {
+                contenidoAnalitico
+            } else {
+                contenidoClientes
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color(uiColor: .appBackground))
+        .onChange(of: textoBusquedaLocal) { _, nuevoValor in
+            alCambiarBusqueda(nuevoValor)
+        }
+    }
+
+    private var seleccionPestana: Binding<ClientesViewController.PestanaInterna> {
+        Binding(
+            get: { pestanaActiva },
+            set: { alCambiarPestana($0) }
+        )
+    }
+
+    private var contenidoAnalitico: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 16) {
+                tarjeta {
+                    Text(resumenAnalitico.summaryText)
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    tarjetaKPI(titulo: "CLIENTES", valor: resumenAnalitico.totalClients, subtitulo: "\(resumenAnalitico.activeClients) activos", color: .blue, icono: "person.2.fill")
+                    tarjetaKPI(titulo: "DEUDA TOTAL", valor: resumenAnalitico.totalDebt, subtitulo: "\(resumenAnalitico.statusMetrics.dropFirst().first?.count ?? 0) vencidos", color: .red, icono: "dollarsign.circle.fill")
+                    tarjetaKPI(titulo: "DEUDA VENCIDA", valor: resumenAnalitico.overdueDebt, subtitulo: "pendiente de cobro", color: .orange, icono: "exclamationmark.circle.fill")
+                    tarjetaKPI(titulo: "CRÉDITO USADO", valor: resumenAnalitico.usedCredit, subtitulo: "utilización prom.", color: Color(uiColor: UIColor(hex: "#8B5CF6")), icono: "chart.line.uptrend.xyaxis")
+                }
+
+                tarjeta {
+                    VStack(alignment: .leading, spacing: 14) {
+                        tituloSeccion("Distribución por Estado")
+                        ForEach(Array(resumenAnalitico.statusMetrics.enumerated()), id: \.offset) { _, metrica in
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Circle()
+                                        .fill(Color(uiColor: metrica.color))
+                                        .frame(width: 10, height: 10)
+                                    Text(metrica.title)
+                                        .font(.system(size: 14, weight: .semibold))
+                                    Spacer()
+                                    Text("\(metrica.count)")
+                                        .font(.system(size: 13, weight: .bold))
+                                        .foregroundStyle(.secondary)
+                                }
+                                ProgressView(value: max(0, min(1, metrica.ratio)))
+                                    .tint(Color(uiColor: metrica.color))
+                            }
+                        }
+                    }
+                }
+
+                tarjeta {
+                    VStack(alignment: .leading, spacing: 14) {
+                        tituloSeccion("Mayores Deudores")
+                        if resumenAnalitico.debtorMetrics.isEmpty {
+                            estadoVacio("Sin deudores registrados")
+                        } else {
+                            ForEach(Array(resumenAnalitico.debtorMetrics.enumerated()), id: \.offset) { _, metrica in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack {
+                                        Text(metrica.name)
+                                            .font(.system(size: 14, weight: .semibold))
+                                        Spacer()
+                                        Text(moneda(metrica.amount))
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundStyle(.red)
+                                    }
+                                    ProgressView(value: max(0, min(1, metrica.ratio)))
+                                        .tint(.red)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                tarjeta {
+                    VStack(alignment: .leading, spacing: 14) {
+                        tituloSeccion("Utilización de Crédito")
+                        if resumenAnalitico.creditMetrics.isEmpty {
+                            estadoVacio("Sin líneas de crédito registradas")
+                        } else {
+                            ForEach(Array(resumenAnalitico.creditMetrics.enumerated()), id: \.offset) { _, metrica in
+                                VStack(alignment: .leading, spacing: 6) {
+                                    HStack(alignment: .firstTextBaseline) {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(metrica.name)
+                                                .font(.system(size: 14, weight: .semibold))
+                                            Text(metrica.amountText)
+                                                .font(.system(size: 12))
+                                                .foregroundStyle(.secondary)
+                                        }
+                                        Spacer()
+                                        Text(metrica.percentageText)
+                                            .font(.system(size: 13, weight: .bold))
+                                            .foregroundStyle(Color(uiColor: metrica.color))
+                                    }
+                                    ProgressView(value: max(0, min(1, metrica.ratio)))
+                                        .tint(Color(uiColor: metrica.color))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 100)
+        }
+    }
+
+    private var contenidoClientes: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(.secondary)
+                    TextField("Buscar clientes...", text: $textoBusquedaLocal)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 44)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+                if puedeAgregarCliente {
+                    Button(action: alTocarAgregar) {
+                        Text("Agregar")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 14)
+                            .frame(height: 44)
+                            .background(Color(uiColor: .appBlue))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(ClientesViewController.ClienteFilter.allCases, id: \.self) { filtro in
+                        Button {
+                            alCambiarFiltro(filtro)
+                        } label: {
+                            Text(filtro.rawValue)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(filtro == filtroActivo ? .white : Color(uiColor: .secondaryLabel))
+                                .padding(.horizontal, 14)
+                                .frame(height: 36)
+                                .background(filtro == filtroActivo ? Color(uiColor: .appBlue) : Color(uiColor: .secondarySystemBackground))
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+
+            Text("\(totalClientesFiltrados) CLIENTES")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+
+            if registros.isEmpty {
+                Spacer()
+                estadoVacio("No se encontraron clientes con los filtros actuales.")
+                    .padding(.horizontal, 24)
+                Spacer()
+            } else {
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(spacing: 12) {
+                        ForEach(registros, id: \.id) { registro in
+                            tarjetaCliente(registro)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 100)
+                }
+            }
+        }
+    }
+
+    private func tarjetaCliente(_ registro: RegistroCliente) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(colorEstado(registro.status))
+                    .frame(width: 6, height: 54)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(registro.name)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        etiquetaEstado(registro.statusText, color: colorEstado(registro.status))
+                    }
+
+                    Text("\(registro.docType) \(registro.docNumber)")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+
+                    Text(registro.phone)
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Divider()
+
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Deuda")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                    Text(moneda(registro.debt))
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(.red)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("Límite")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                    Text(moneda(registro.limit))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.primary)
+                }
+            }
+        }
+        .padding(16)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+
+    private func tarjetaKPI(titulo: String, valor: String, subtitulo: String, color: Color, icono: String) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: icono)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(color)
+                    .frame(width: 28, height: 28)
+                    .background(color.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                Text(titulo)
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.secondary)
+            }
+            Text(valor)
+                .font(.system(size: 28, weight: .black))
+                .foregroundStyle(color)
+            Text(subtitulo)
+                .font(.system(size: 10))
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+
+    private func tarjeta<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+
+    private func tituloSeccion(_ texto: String) -> some View {
+        Text(texto)
+            .font(.system(size: 15, weight: .bold))
+            .foregroundStyle(.primary)
+    }
+
+    private func estadoVacio(_ texto: String) -> some View {
+        Text(texto)
+            .font(.system(size: 13))
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .multilineTextAlignment(.center)
+            .padding(.vertical, 20)
+    }
+
+    private func etiquetaEstado(_ texto: String, color: Color) -> some View {
+        Text(texto)
+            .font(.system(size: 11, weight: .bold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(color)
+            .clipShape(Capsule())
+    }
+
+    private func colorEstado(_ estado: String) -> Color {
+        switch estado {
+        case "active":
+            return Color(uiColor: .appGreen)
+        case "atrisk":
+            return Color(uiColor: .appOrange)
+        case "overdue":
+            return Color(uiColor: .appRed)
+        case "blocked":
+            return Color(uiColor: UIColor(hex: "#9CA3AF"))
+        default:
+            return .gray
+        }
+    }
+
+    private func moneda(_ monto: Double) -> String {
+        "S/\(Int(monto.rounded()))"
     }
 }
 

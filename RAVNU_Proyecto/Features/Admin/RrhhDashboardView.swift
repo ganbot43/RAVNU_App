@@ -287,18 +287,18 @@ struct RrhhDashboardView: View {
     }
 
     private var tarjetaResumen: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("RESUMEN DEL EQUIPO")
-                .font(.system(size: 13, weight: .bold))
+                .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(Color.white.opacity(0.8))
 
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(datos.totalActivos)")
-                        .font(.system(size: 46, weight: .black))
+                        .font(.system(size: 32, weight: .black))
                         .foregroundStyle(.white)
                     Text("Trabajadores activos")
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Color.white.opacity(0.9))
                 }
 
@@ -307,9 +307,9 @@ struct RrhhDashboardView: View {
                 HStack(spacing: -8) {
                     ForEach(datos.tarjetasTrabajadores.prefix(3)) { trabajador in
                         Text(trabajador.iniciales)
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(.white)
-                            .frame(width: 34, height: 34)
+                            .frame(width: 30, height: 30)
                             .background(Color(hex: trabajador.colorHex))
                             .clipShape(Circle())
                             .overlay(Circle().stroke(Color.white, lineWidth: 2))
@@ -317,25 +317,26 @@ struct RrhhDashboardView: View {
                 }
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 ForEach(datos.tarjetasRol) { rol in
-                    VStack(spacing: 6) {
+                    VStack(spacing: 4) {
                         Text("\(rol.total)")
-                            .font(.system(size: 24, weight: .black))
+                            .font(.system(size: 18, weight: .black))
                             .foregroundStyle(.white)
                         Text(rol.nombre)
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(Color.white.opacity(0.9))
                             .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                    .padding(.vertical, 10)
                     .background(Color.white.opacity(0.12))
-                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 }
             }
         }
-        .padding(18)
+        .padding(16)
         .background(
             LinearGradient(
                 colors: [Color(hex: "7C3AED"), Color(hex: "A855F7")],
@@ -343,112 +344,112 @@ struct RrhhDashboardView: View {
                 endPoint: .bottomTrailing
             )
         )
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
         .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 4)
     }
 
     private var tarjetaDistribucion: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Distribución por Rol")
-                .font(.system(size: 22, weight: .black))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(Color(hex: "1F2937"))
 
-            HStack(spacing: 18) {
+            HStack(spacing: 14) {
                 GraficoDonaRrhh(segmentos: datos.distribucionRoles)
-                    .frame(width: 116, height: 116)
+                    .frame(width: 90, height: 90)
 
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
                     ForEach(datos.distribucionRoles) { segmento in
-                        HStack(spacing: 10) {
+                        HStack(spacing: 8) {
                             Circle()
                                 .fill(Color(hex: segmento.colorHex))
-                                .frame(width: 10, height: 10)
+                                .frame(width: 8, height: 8)
                             Image(systemName: segmento.icono)
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 10, weight: .semibold))
                                 .foregroundStyle(Color(hex: "9CA3AF"))
                             Text(segmento.nombre)
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 14, weight: .semibold))
                                 .foregroundStyle(Color(hex: "4B5563"))
                             Spacer()
                             Text("\(segmento.total)")
-                                .font(.system(size: 18, weight: .black))
+                                .font(.system(size: 15, weight: .black))
                                 .foregroundStyle(Color(hex: "1F2937"))
                         }
                     }
                 }
             }
         }
-        .padding(18)
+        .padding(16)
         .tarjetaBase()
     }
 
     private var tarjetaActividad: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Actividad Esta Semana")
-                .font(.system(size: 22, weight: .black))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(Color(hex: "1F2937"))
             Text("Ventas y cobros por trabajador")
-                .font(.system(size: 14, weight: .regular))
+                .font(.system(size: 12, weight: .regular))
                 .foregroundStyle(Color(hex: "9CA3AF"))
 
-            HStack(alignment: .bottom, spacing: 18) {
+            HStack(alignment: .bottom, spacing: 12) {
                 ForEach(datos.actividadSemanal) { barra in
-                    VStack(spacing: 8) {
-                        HStack(alignment: .bottom, spacing: 6) {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    VStack(spacing: 6) {
+                        HStack(alignment: .bottom, spacing: 4) {
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
                                 .fill(Color(hex: "5B88F7"))
-                                .frame(width: 24, height: alturaBarra(barra.ventas))
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .frame(width: 16, height: alturaBarra(barra.ventas))
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
                                 .fill(Color(hex: "61C87A"))
-                                .frame(width: 24, height: alturaBarra(barra.cobros))
+                                .frame(width: 16, height: alturaBarra(barra.cobros))
                         }
-                        .frame(height: 110, alignment: .bottom)
+                        .frame(height: 80, alignment: .bottom)
 
                         Text(barra.iniciales)
-                            .font(.system(size: 14, weight: .bold))
+                            .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(Color(hex: "6B7280"))
                     }
                     .frame(maxWidth: .infinity)
                 }
             }
 
-            HStack(spacing: 16) {
+            HStack(spacing: 14) {
                 leyendaActividad(colorHex: "5B88F7", texto: "Ventas")
                 leyendaActividad(colorHex: "61C87A", texto: "Cobros")
             }
             .frame(maxWidth: .infinity)
         }
-        .padding(18)
+        .padding(16)
         .tarjetaBase()
     }
 
     private var tarjetaTurnos: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Horarios de Turno Hoy")
-                .font(.system(size: 22, weight: .black))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundStyle(Color(hex: "1F2937"))
 
             ForEach(datos.turnosHoy) { turno in
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     Circle()
                         .fill(Color(hex: turno.colorHex))
-                        .frame(width: 12, height: 12)
+                        .frame(width: 10, height: 10)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(turno.nombre)
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(Color(hex: "1F2937"))
                         Text("\(turno.rol) · \(turno.turno)")
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(Color(hex: "6B7280"))
                     }
                     Spacer()
                     Text(turno.telefono)
-                        .font(.system(size: 14, weight: .regular))
+                        .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(Color(hex: "9CA3AF"))
                 }
             }
         }
-        .padding(18)
+        .padding(16)
         .tarjetaBase()
     }
 
@@ -715,8 +716,8 @@ struct RrhhDashboardView: View {
     }
 
     private func alturaBarra(_ valor: Int) -> CGFloat {
-        if valor <= 0 { return 8 }
-        return min(CGFloat(valor) * 12, 100)
+        if valor <= 0 { return 6 }
+        return min(CGFloat(valor) * 10, 74)
     }
 
     private func iconoPermiso(_ nombre: String) -> String {

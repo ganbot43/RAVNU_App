@@ -12,6 +12,7 @@ final class AppSession {
         static let adminAPIAuthToken = "adminAPIAuthToken"
         static let remoteEnabled = "remoteDataEnabled"
         static let lastSync = "remoteLastSyncDate"
+        static let remoteWorkerCount = "remoteWorkerCount"
     }
 
     private let defaults = UserDefaults.standard
@@ -56,6 +57,11 @@ final class AppSession {
     var lastRemoteSyncAt: Date? {
         get { defaults.object(forKey: Keys.lastSync) as? Date }
         set { defaults.set(newValue, forKey: Keys.lastSync) }
+    }
+
+    var remoteWorkerCount: Int {
+        get { defaults.integer(forKey: Keys.remoteWorkerCount) }
+        set { defaults.set(newValue, forKey: Keys.remoteWorkerCount) }
     }
 
     func clear() {

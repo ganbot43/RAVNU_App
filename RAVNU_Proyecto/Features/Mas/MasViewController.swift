@@ -1,6 +1,9 @@
 import CoreData
 import SwiftUI
 import UIKit
+#if canImport(FirebaseFirestore)
+import FirebaseFirestore
+#endif
 
 final class MasViewController: UIViewController {
 
@@ -21,6 +24,9 @@ final class MasViewController: UIViewController {
 
     private let context = AppCoreData.viewContext
     private var hostingController: UIHostingController<MoreDashboardView>?
+    #if canImport(FirebaseFirestore)
+    private var workerListener: ListenerRegistration?
+    #endif
 
     private let currencyFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -34,9 +40,9 @@ final class MasViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureLegacyUI()
         configureCardTaps()
         configureHybridView()
+        startWorkerCountListener()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -44,23 +50,23 @@ final class MasViewController: UIViewController {
         refreshHybridView()
     }
 
-    private func configureLegacyUI() {
-        [
-            lblNombre,
-            lblRol,
-            lblIniciales,
-            lblCobrosTotal,
-            lblVencidos,
-            lblPendientes,
-            lblDetalleTesoreria,
-            lblDetalleCobros,
-            stackModulosAdmin,
-            stackModulosAdminRow,
-            cardTesoreria,
-            cardCompras,
-            cardRRHH,
-            cardCobros
-        ].forEach { $0?.isHidden = true }
+    deinit {
+        #if canImport(FirebaseFirestore)
+        workerListener?.remove()
+        #endif
+    }
+
+    private func startWorkerCountListener() {
+        #if canImport(FirebaseFirestore)
+        guard FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled else { return }
+        workerListener = Firestore.firestore().collection("users").addSnapshotListener { [weak self] snapshot, _ in
+            guard let count = snapshot?.documents.count, count > 0 else { return }
+            AppSession.shared.remoteWorkerCount = count
+            DispatchQueue.main.async {
+                self?.refreshHybridView()
+            }
+        }
+        #endif
     }
 
     private func configureHybridView() {
@@ -140,6 +146,8 @@ final class MasViewController: UIViewController {
             rrhh: RoleAccessControl.isAdmin
         )
 
+        let remoteCount = AppSession.shared.remoteWorkerCount
+        let teamCount = remoteCount > 0 ? remoteCount : usuarios.count
         let teamMembers = usuarios.prefix(4).map { login in
             MoreDashboardViewData.TeamMember(
                 initials: iniciales(from: login.usuario ?? "Usuario"),
@@ -166,8 +174,8 @@ final class MasViewController: UIViewController {
             purchasesSuppliers: proveedores.isEmpty ? "Sin proveedores" : "\(proveedores.count) proveedores",
             teamTitle: "RRHH · PERSONAL",
             teamSubtitle: "Resumen del equipo",
-            teamCount: "\(usuarios.count) Trabajadores",
-            teamStatus: usuarios.isEmpty ? "Sin usuarios cargados" : "Todos activos hoy",
+            teamCount: "\(teamCount) Trabajadores",
+            teamStatus: teamCount == 0 ? "Sin usuarios cargados" : "Todos activos hoy",
             teamMembers: teamMembers,
             sparklineValues: [0.72, 0.75, 0.73, 0.71, 0.78, 0.81, 0.80, 0.77],
             visibleModules: visibleModules

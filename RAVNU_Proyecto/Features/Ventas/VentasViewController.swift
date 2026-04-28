@@ -75,7 +75,6 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
     }
 
     private func configurarVistaHibrida() {
-        ocultarVistaLegacy()
         let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -89,39 +88,6 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
         ])
         host.didMove(toParent: self)
         hostingController = host
-    }
-
-    private func ocultarVistaLegacy() {
-        [
-            scrollViewResumen,
-            tblListaVentas,
-            btnResumen,
-            btnListaVentas,
-            emptyStateView,
-            lblIngresosTotal,
-            lblEfectivoTotal,
-            lblCreditoTotal,
-            lblVentaRecienteCliente1,
-            lblVentaRecienteProducto1,
-            lblVentaRecienteDetalle1,
-            lblVentaRecienteMonto1,
-            lblVentaRecienteMetodo1,
-            ventaRecienteCard1,
-            lblVentaRecienteCliente2,
-            lblVentaRecienteProducto2,
-            lblVentaRecienteDetalle2,
-            lblVentaRecienteMonto2,
-            lblVentaRecienteMetodo2,
-            ventaRecienteCard2,
-            lblVentaRecienteCliente3,
-            lblVentaRecienteProducto3,
-            lblVentaRecienteDetalle3,
-            lblVentaRecienteMonto3,
-            lblVentaRecienteMetodo3,
-            ventaRecienteCard3
-        ].forEach { $0?.isHidden = true }
-        tblListaVentas?.dataSource = self
-        tblListaVentas?.delegate = self
     }
 
     private func cargarDatosCatalogo() {
@@ -455,7 +421,7 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         guard segue.identifier == "mostrarModalVenta",
-              let destination = segue.destination as? ModalVentaViewController else {
+              let destination = segue.destination as? ModalNuevaVentaViewController else {
             return
         }
 
@@ -485,8 +451,8 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
     }
 }
 
-extension VentasViewController: ModalVentaViewControllerDelegate {
-    func modalVentaViewControllerDidSaveVenta(_ controller: ModalVentaViewController) {
+extension VentasViewController: ModalNuevaVentaViewControllerDelegate {
+    func modalNuevaVentaViewControllerDidSaveVenta(_ controller: ModalNuevaVentaViewController) {
         cargarDatosCatalogo()
         cargarVentas()
     }

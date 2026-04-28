@@ -34,7 +34,6 @@ final class ModalMovimientoViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        configurarVistaLegacy()
         cargarDatos()
         configurarVistaHibrida()
     }
@@ -43,12 +42,6 @@ final class ModalMovimientoViewController: UIViewController {
         super.viewWillAppear(animated)
         cargarDatos()
         actualizarVistaHibrida()
-    }
-
-    private func configurarVistaLegacy() {
-        [tipoControl, txtOrigen, txtDestino, txtProducto, txtCantidad, txtNota, btnGuardar].forEach {
-            $0?.isHidden = true
-        }
     }
 
     private func configurarVistaHibrida() {

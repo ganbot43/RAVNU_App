@@ -422,6 +422,7 @@ final class RrhhViewController: UIViewController {
 
     private func reconstruirVista() {
         datosVista = construirDatosVista()
+        AppSession.shared.remoteWorkerCount = trabajadores.count
         actualizarVista()
     }
 
@@ -567,31 +568,57 @@ final class RrhhViewController: UIViewController {
     }
 
     private func consolidarTrabajadores(_ lista: [TrabajadorRemoto]) -> [TrabajadorRemoto] {
-        lista.reduce(into: [String: TrabajadorRemoto]()) { acumulado, trabajador in
-            let clave = identidadTrabajador(trabajador)
-            if let existente = acumulado[clave] {
-                acumulado[clave] = combinarTrabajador(existente, con: trabajador)
+        // Pass 1: merge by authUid
+        var porAuthUid = [String: TrabajadorRemoto]()
+        var sinAuthUid = [TrabajadorRemoto]()
+        for t in lista {
+            if t.authUid.isEmpty == false {
+                let key = t.authUid.lowercased()
+                if let existente = porAuthUid[key] {
+                    porAuthUid[key] = combinarTrabajador(existente, con: t)
+                } else {
+                    porAuthUid[key] = t
+                }
             } else {
-                acumulado[clave] = trabajador
+                sinAuthUid.append(t)
             }
         }
-        .values
-        .sorted {
+
+        // Pass 2: merge by email
+        var porEmail = [String: TrabajadorRemoto]()
+        var sinEmail = [TrabajadorRemoto]()
+        for t in Array(porAuthUid.values) + sinAuthUid {
+            if t.email.isEmpty == false {
+                let key = t.email.lowercased()
+                if let existente = porEmail[key] {
+                    porEmail[key] = combinarTrabajador(existente, con: t)
+                } else {
+                    porEmail[key] = t
+                }
+            } else {
+                sinEmail.append(t)
+            }
+        }
+
+        // Pass 3: merge by fullName + roleId for remaining anonymous docs
+        var porNombreRol = [String: TrabajadorRemoto]()
+        for t in Array(porEmail.values) + sinEmail {
+            let key = "\(t.fullName.lowercased())|\(t.roleId.lowercased())"
+            if key == "sin nombre|sin_rol" {
+                porNombreRol["doc:\(t.id)"] = t
+            } else if let existente = porNombreRol[key] {
+                porNombreRol[key] = combinarTrabajador(existente, con: t)
+            } else {
+                porNombreRol[key] = t
+            }
+        }
+
+        return Array(porNombreRol.values).sorted {
             if $0.active != $1.active {
                 return $0.active && !$1.active
             }
             return $0.fullName.localizedCaseInsensitiveCompare($1.fullName) == .orderedAscending
         }
-    }
-
-    private func identidadTrabajador(_ trabajador: TrabajadorRemoto) -> String {
-        if trabajador.authUid.isEmpty == false {
-            return "auth:\(trabajador.authUid.lowercased())"
-        }
-        if trabajador.email.isEmpty == false {
-            return "email:\(trabajador.email.lowercased())"
-        }
-        return "doc:\(trabajador.id)"
     }
 
     private func combinarTrabajador(_ actual: TrabajadorRemoto, con nuevo: TrabajadorRemoto) -> TrabajadorRemoto {

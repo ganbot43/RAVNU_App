@@ -117,7 +117,6 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
     }
 
     private func configurarVistaHibrida() {
-        ocultarVistaLegacy()
         let host = UIHostingController(rootView: crearVistaRaiz())
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -131,29 +130,6 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         ])
         host.didMove(toParent: self)
         hostingController = host
-    }
-
-    private func ocultarVistaLegacy() {
-        [
-            lblTitulo,
-            lblResumen,
-            segmentedTabs,
-            lblValorStock,
-            lblAlmacenes,
-            lblProductos,
-            lblValorRed,
-            lblEntradas,
-            lblSalidas,
-            lblTransferencias,
-            lblBajoMinimo,
-            lblAlerta,
-            tableView,
-            summaryCardView,
-            alertCardView,
-            btnRegistrar
-        ].forEach { $0?.isHidden = true }
-        tableView?.dataSource = self
-        tableView?.delegate = self
     }
 
     private func observarSincronizacionRemota() {

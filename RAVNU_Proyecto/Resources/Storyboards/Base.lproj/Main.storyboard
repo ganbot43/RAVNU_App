@@ -427,40 +427,10 @@
                     <view key="view" contentMode="scaleToFill" id="nGq-Bv-9aq">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Bzp-jq-qey">
-                                <rect key="frame" x="40" y="99" width="313" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Cerrar Sesion">
-                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                </buttonConfiguration>
-                                <connections>
-                                    <action selector="btnSalir:" destination="vGo-Y3-bPy" eventType="touchUpInside" id="zRp-qx-16d"/>
-                                </connections>
-                            </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bienvenido:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WgM-bI-fr5">
-                                <rect key="frame" x="24" y="174" width="345" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                        </subviews>
                         <viewLayoutGuide key="safeArea" id="QQK-4L-oOp"/>
                         <color key="backgroundColor" red="0.97254901960784312" green="0.98039215686274506" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <constraints>
-                            <constraint firstItem="QQK-4L-oOp" firstAttribute="trailing" secondItem="Bzp-jq-qey" secondAttribute="trailing" constant="40" id="Cru-yN-F0j"/>
-                            <constraint firstItem="Bzp-jq-qey" firstAttribute="top" secondItem="QQK-4L-oOp" secondAttribute="top" constant="40" id="R9D-0q-JPc"/>
-                            <constraint firstItem="WgM-bI-fr5" firstAttribute="leading" secondItem="QQK-4L-oOp" secondAttribute="leading" constant="24" id="S1V-e1-pg3"/>
-                            <constraint firstItem="WgM-bI-fr5" firstAttribute="top" secondItem="Bzp-jq-qey" secondAttribute="bottom" constant="40" id="pdZ-wc-L9k"/>
-                            <constraint firstItem="QQK-4L-oOp" firstAttribute="trailing" secondItem="WgM-bI-fr5" secondAttribute="trailing" constant="24" id="pgG-Zh-25F"/>
-                            <constraint firstItem="Bzp-jq-qey" firstAttribute="leading" secondItem="QQK-4L-oOp" secondAttribute="leading" constant="40" id="raD-oo-F7V"/>
-                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="5hX-yv-fAv"/>
-                    <connections>
-                        <outlet property="lblNombreBienvenido" destination="WgM-bI-fr5" id="LMH-5j-RGO"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="OTc-rH-zyI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -898,48 +868,10 @@
                     <view key="view" contentMode="scaleToFill" id="P1i-gf-iAC">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="sXb-tc-UgZ">
-                                <rect key="frame" x="40" y="99" width="313" height="34.333333333333343"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="filled" title="Cerrar Sesion">
-                                    <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <color key="baseBackgroundColor" red="0.23137254901960785" green="0.50980392156862742" blue="0.96470588235294119" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                </buttonConfiguration>
-                                <connections>
-                                    <action selector="btnSalir:" destination="x09-qe-Lad" eventType="touchUpInside" id="J19-qh-mav"/>
-                                </connections>
-                            </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Bienvenido:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cMG-bd-J3E">
-                                <rect key="frame" x="24" y="173.33333333333334" width="245" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Rx2-S4-sKD">
-                                <rect key="frame" x="29" y="234.33333333333337" width="240" height="128"/>
-                                <color key="backgroundColor" red="0.97254901960784312" green="0.98039215686274506" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                            </view>
-                        </subviews>
                         <viewLayoutGuide key="safeArea" id="fiN-Xl-m2l"/>
                         <color key="backgroundColor" red="0.97254901960784312" green="0.98039215686274506" blue="0.9882352941176471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                        <constraints>
-                            <constraint firstItem="fiN-Xl-m2l" firstAttribute="trailing" secondItem="sXb-tc-UgZ" secondAttribute="trailing" constant="40" id="8tq-jF-YJc"/>
-                            <constraint firstItem="sXb-tc-UgZ" firstAttribute="top" secondItem="fiN-Xl-m2l" secondAttribute="top" constant="40" id="AwA-Sf-TpM"/>
-                            <constraint firstItem="sXb-tc-UgZ" firstAttribute="leading" secondItem="fiN-Xl-m2l" secondAttribute="leading" constant="40" id="DeP-TP-cmX"/>
-                            <constraint firstItem="fiN-Xl-m2l" firstAttribute="trailing" secondItem="cMG-bd-J3E" secondAttribute="trailing" constant="124" id="JrB-O4-bsn"/>
-                            <constraint firstItem="Rx2-S4-sKD" firstAttribute="leading" secondItem="fiN-Xl-m2l" secondAttribute="leading" constant="29" id="adm-C1-001"/>
-                            <constraint firstItem="Rx2-S4-sKD" firstAttribute="top" secondItem="cMG-bd-J3E" secondAttribute="bottom" constant="40" id="adm-C1-002"/>
-                            <constraint firstItem="Rx2-S4-sKD" firstAttribute="width" constant="240" id="adm-C1-003"/>
-                            <constraint firstItem="Rx2-S4-sKD" firstAttribute="height" constant="128" id="adm-C1-004"/>
-                            <constraint firstItem="cMG-bd-J3E" firstAttribute="leading" secondItem="fiN-Xl-m2l" secondAttribute="leading" constant="24" id="fa0-aZ-XG1"/>
-                            <constraint firstItem="cMG-bd-J3E" firstAttribute="top" secondItem="sXb-tc-UgZ" secondAttribute="bottom" constant="40" id="k9J-aR-SWF"/>
-                        </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="PiK-50-sMc"/>
-                    <connections>
-                        <outlet property="lblNombreBienvenido" destination="cMG-bd-J3E" id="P7q-LZ-mvH"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Z0H-tJ-Zi2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1769,10 +1701,10 @@
             </objects>
             <point key="canvasLocation" x="4697" y="118"/>
         </scene>
-        <!--Modal Venta View Controller-->
+        <!--Modal Nueva Venta View Controller-->
         <scene sceneID="9OY-5W-PW4">
             <objects>
-                <viewController modalPresentationStyle="pageSheet" id="yJ3-D0-g5O" customClass="ModalVentaViewController" customModule="RAVNU_Proyecto" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController modalPresentationStyle="pageSheet" id="yJ3-D0-g5O" customClass="ModalNuevaVentaViewController" customModule="RAVNU_Proyecto" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="R0S-5f-VDP">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="783"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
