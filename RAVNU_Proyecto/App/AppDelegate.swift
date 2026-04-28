@@ -855,28 +855,34 @@ enum RoleAccessControl {
         currentRole == .admin
     }
 
+    static var canManageDirectly: Bool {
+        currentRole == .admin || currentRole == .supervisor
+    }
+
+    static var canManagePurchaseLifecycleDirectly: Bool {
+        canManageDirectly || currentRole == .almacen
+    }
+
     static var canCreateSales: Bool { can(.createSales) }
     static var canManageCollections: Bool { can(.manageCollections) }
     static var canManageCustomers: Bool { can(.manageCustomers) }
-    static var canCreateCustomers: Bool { currentRole == .admin || currentRole == .supervisor }
+    static var canCreateCustomers: Bool { canManageDirectly }
     static var canManageWarehouse: Bool { can(.manageWarehouse) }
     static var canManagePurchases: Bool { can(.managePurchases) }
     static var canViewTreasury: Bool { can(.viewTreasury) }
     static var canAddTreasuryAdjustments: Bool { can(.addTreasuryAdjustments) }
-    static var canRequestCustomerCreation: Bool { currentRole == .supervisor }
+    static var canRequestCustomerCreation: Bool { false }
     static var canRequestProductCreation: Bool { currentRole == .almacen }
     static var canRequestWarehouseCreation: Bool { currentRole == .almacen }
     static var canRequestSupplierCreation: Bool { currentRole == .almacen }
     static var canRequestPurchaseOrders: Bool { currentRole == .almacen }
-    static var canRequestSaleChanges: Bool { currentRole == .cajero || currentRole == .supervisor }
+    static var canRequestSaleChanges: Bool { currentRole == .cajero }
 
     static func can(_ permission: AppPermission) -> Bool {
         switch (currentRole, permission) {
-        case (.admin, _):
+        case (.admin, _), (.supervisor, _):
             return true
         case (.cajero, .createSales), (.cajero, .manageCollections), (.cajero, .manageCustomers):
-            return true
-        case (.supervisor, .createSales), (.supervisor, .manageCollections), (.supervisor, .manageCustomers), (.supervisor, .viewTreasury):
             return true
         case (.almacen, .manageWarehouse), (.almacen, .managePurchases):
             return true

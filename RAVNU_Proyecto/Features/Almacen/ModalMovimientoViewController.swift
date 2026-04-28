@@ -28,6 +28,7 @@ final class ModalMovimientoViewController: UIViewController {
     private var almacenes: [AlmacenEntity] = []
     private var productos: [ProductoEntity] = []
     private var proveedores: [ProveedorEntity] = []
+    private var registrosStock: [StockAlmacenEntity] = []
     private var hostingController: UIHostingController<VistaRaizModalMovimiento>?
 
     private let contexto = AppCoreData.viewContext
@@ -85,6 +86,9 @@ final class ModalMovimientoViewController: UIViewController {
         productoRequest.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
         productos = (try? contexto.fetch(productoRequest)) ?? []
 
+        let stockRequest: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        registrosStock = (try? contexto.fetch(stockRequest)) ?? []
+
         let proveedorRequest: NSFetchRequest<ProveedorEntity> = ProveedorEntity.fetchRequest()
         proveedorRequest.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
         proveedores = (try? contexto.fetch(proveedorRequest)) ?? []
@@ -111,6 +115,13 @@ final class ModalMovimientoViewController: UIViewController {
                 unit: producto.unidadMedida?.isEmpty == false ? producto.unidadMedida! : "L",
                 price: producto.precioPorLitro,
                 totalStock: producto.stockLitros,
+                minimumStock: producto.stockMinimo,
+                capacitiesByWarehouse: Dictionary(
+                    uniqueKeysWithValues: almacenes.map { almacen in
+                        let stock = stockRecord(producto: producto, almacen: almacen)
+                        return (almacen.id?.uuidString ?? "", capacidad(for: stock, producto: producto))
+                    }
+                ),
                 stocksByWarehouse: warehouseStocks
             )
         }
@@ -130,10 +141,7 @@ final class ModalMovimientoViewController: UIViewController {
     }
 
     private func stockAmount(producto: ProductoEntity, almacen: AlmacenEntity) -> Double {
-        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
-        request.fetchLimit = 1
-        request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
-        return (try? contexto.fetch(request).first?.stockActual) ?? 0
+        stockRecord(producto: producto, almacen: almacen).stockActual
     }
 
     private func manejarBorrador(_ draft: BorradorModalMovimiento) {
@@ -184,7 +192,7 @@ final class ModalMovimientoViewController: UIViewController {
                 ? almacenes[draft.destinationWarehouseIndex]
                 : origen
             let stockDestino = stockAmount(producto: producto, almacen: destino)
-            let capacidad = max(producto.capacidadTotal, stockRecord(producto: producto, almacen: destino).capacidadTotal)
+            let capacidad = capacidad(for: stockRecord(producto: producto, almacen: destino), producto: producto)
             if capacidad > 0, stockDestino + draft.quantity > capacidad {
                 return "La cantidad supera la capacidad disponible del almacén destino."
             }
@@ -277,16 +285,12 @@ final class ModalMovimientoViewController: UIViewController {
         let stock = stockRecord(producto: producto, almacen: almacen)
         stock.stockActual = max(stock.stockActual + delta, 0)
         if stock.capacidadTotal <= 0 { stock.capacidadTotal = producto.capacidadTotal }
-        if stock.stockMinimo <= 0 { stock.stockMinimo = producto.stockMinimo }
+        stock.stockMinimo = producto.stockMinimo
         stock.unidadMedida = producto.unidadMedida ?? "L"
     }
 
     private func stockRecord(producto: ProductoEntity, almacen: AlmacenEntity) -> StockAlmacenEntity {
-        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
-        request.fetchLimit = 1
-        request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
-
-        if let existing = try? contexto.fetch(request).first {
+        if let existing = registrosStock.first(where: { $0.producto == producto && $0.almacen == almacen }) {
             return existing
         }
 
@@ -298,7 +302,13 @@ final class ModalMovimientoViewController: UIViewController {
         stock.stockMinimo = producto.stockMinimo
         stock.capacidadTotal = producto.capacidadTotal
         stock.unidadMedida = producto.unidadMedida ?? "L"
+        registrosStock.append(stock)
         return stock
+    }
+
+    private func capacidad(for stock: StockAlmacenEntity, producto: ProductoEntity) -> Double {
+        let base = stock.capacidadTotal > 0 ? stock.capacidadTotal : producto.capacidadTotal
+        return max(base, 0)
     }
 
     private func totalStock(for producto: ProductoEntity) -> Double {
@@ -471,6 +481,8 @@ private struct FilaProductoModalMovimiento: Identifiable {
     let unit: String
     let price: Double
     let totalStock: Double
+    let minimumStock: Double
+    let capacitiesByWarehouse: [String: Double]
     let stocksByWarehouse: [String: Double]
 }
 
@@ -554,6 +566,25 @@ private struct VistaRaizModalMovimiento: View {
         return selectedProduct.stocksByWarehouse[selectedOrigin.id] ?? 0
     }
 
+    private var currentWarehouseCapacity: Double {
+        guard let selectedProduct, let selectedOrigin else { return 0 }
+        return selectedProduct.capacitiesByWarehouse[selectedOrigin.id] ?? 0
+    }
+
+    private var destinationWarehouseStock: Double {
+        guard kind == .transfer,
+              let selectedProduct,
+              let selectedDestination else { return 0 }
+        return selectedProduct.stocksByWarehouse[selectedDestination.id] ?? 0
+    }
+
+    private var destinationWarehouseCapacity: Double {
+        guard kind == .transfer,
+              let selectedProduct,
+              let selectedDestination else { return 0 }
+        return selectedProduct.capacitiesByWarehouse[selectedDestination.id] ?? 0
+    }
+
     private var projectedSourceStock: Double {
         switch kind {
         case .ingreso:
@@ -561,6 +592,11 @@ private struct VistaRaizModalMovimiento: View {
         case .salida, .transfer:
             return max(currentWarehouseStock - quantityValue, 0)
         }
+    }
+
+    private var projectedDestinationStock: Double {
+        guard kind == .transfer else { return 0 }
+        return destinationWarehouseStock + quantityValue
     }
 
     private var actionTitle: String {
@@ -802,6 +838,38 @@ private struct VistaRaizModalMovimiento: View {
                 }
             }
             .frame(height: 8)
+
+            HStack(spacing: 10) {
+                metricBadge(
+                    title: "Capacidad",
+                    value: currentWarehouseCapacity > 0 ? "\(intString(currentWarehouseCapacity)) \(selectedProduct?.unit ?? "L")" : "Sin límite"
+                )
+                metricBadge(
+                    title: "Mínimo",
+                    value: "\(intString(selectedProduct?.minimumStock ?? 0)) \(selectedProduct?.unit ?? "L")"
+                )
+                metricBadge(
+                    title: "Estado",
+                    value: estadoStockTexto
+                )
+            }
+
+            if kind == .transfer, let selectedDestination {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("\(selectedDestination.name) — Tras recibir")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(.secondaryLabel))
+                    HStack {
+                        Text("\(intString(destinationWarehouseStock)) -> \(intString(projectedDestinationStock)) \(selectedProduct?.unit ?? "L")")
+                            .font(.system(size: 13, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(uiColor: kind.accentColor))
+                        Spacer()
+                        Text(destinationWarehouseCapacity > 0 ? "Cap. \(intString(destinationWarehouseCapacity))" : "Sin límite")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color(.secondaryLabel))
+                    }
+                }
+            }
         }
         .padding(14)
         .background(
@@ -954,7 +1022,8 @@ private struct VistaRaizModalMovimiento: View {
 
     private var productTitle: String {
         guard let selectedProduct else { return "Seleccionar producto" }
-        return "\(selectedProduct.name) — \(intString(selectedProduct.totalStock)) \(selectedProduct.unit) disp."
+        let minimum = intString(selectedProduct.minimumStock)
+        return "\(selectedProduct.name) — \(intString(selectedProduct.totalStock)) \(selectedProduct.unit) disp. · Min \(minimum)"
     }
 
     private var stockTitle: String {
@@ -986,12 +1055,40 @@ private struct VistaRaizModalMovimiento: View {
     }
 
     private var projectedRatio: CGFloat {
-        guard let selectedProduct else { return 0 }
-        let capacity = max(selectedProduct.totalStock > 0 ? selectedProduct.totalStock : 1, 1)
+        let capacity = max(currentWarehouseCapacity, 1)
         return CGFloat(projectedSourceStock / capacity)
+    }
+
+    private var estadoStockTexto: String {
+        guard let selectedProduct else { return "Sin producto" }
+        if currentWarehouseCapacity > 0, projectedSourceStock > currentWarehouseCapacity {
+            return "Excede capacidad"
+        }
+        if projectedSourceStock <= selectedProduct.minimumStock {
+            return "Bajo mínimo"
+        }
+        return "Operativo"
     }
 
     private func intString(_ value: Double) -> String {
         String(Int(value.rounded()))
+    }
+
+    private func metricBadge(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title.uppercased())
+                .font(.system(size: 9, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(.tertiaryLabel))
+            Text(value)
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(.label))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(.systemGray6))
+        )
     }
 }

@@ -26,7 +26,7 @@ final class ModalClienteViewController: UIViewController {
     private let contexto = AppCoreData.viewContext
 
     private var puedeGestionarDirecto: Bool {
-        RoleAccessControl.isAdmin
+        RoleAccessControl.canManageDirectly
     }
 
     override func viewDidLoad() {

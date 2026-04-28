@@ -81,6 +81,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     private var ordenes: [OrdenCompraEntity] = []
     private var productos: [ProductoEntity] = []
     private var almacenes: [AlmacenEntity] = []
+    private var stocksAlmacen: [StockAlmacenEntity] = []
     private var hostingController: UIHostingController<PurchasesDashboardView>?
     #if canImport(FirebaseFirestore)
     private let firestore = Firestore.firestore()
@@ -171,8 +172,10 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             )
         }
 
+        let resumenPorProducto = construirResumenesProducto()
         let tarjetasOrden = ordenes.map { orden in
             let accent = orderAccentHex(for: orden)
+            let textoAsignacion = resumenDistribucionTexto(for: orden)
             return DatosDashboardCompras.TarjetaOrden(
                 id: orden.id?.uuidString ?? UUID().uuidString,
                 initials: initials(for: orden.proveedor?.nombre),
@@ -181,12 +184,13 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                 amountText: formatearMoneda(orden.total),
                 dateText: formatearFecha(orden.fecha),
                 volumeText: "\(Int(orden.cantidadLitros.rounded()).formatted()) L",
-                warehouseText: orden.almacen?.nombre ?? "Almacén",
-                workerText: orden.almacen?.responsable ?? "Sin responsable",
+                warehouseText: orden.almacen?.nombre ?? "Por asignar",
+                workerText: orden.almacen?.responsable ?? "Asignación pendiente",
                 noteText: notaOrdenCompra(for: orden),
                 statusText: estadoOrdenCompra(for: orden).title,
                 statusAccentHex: estadoOrdenCompra(for: orden).accentHex,
-                accentHex: accent
+                accentHex: accent,
+                allocationText: textoAsignacion
             )
         }
 
@@ -244,6 +248,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             pendingCountText: "\(pendingOrders.count)",
             receivedCountText: "\(receivedOrders.count)",
             cancelledCountText: "\(cancelledOrders.count)",
+            productSummaries: resumenPorProducto,
             tarjetasOrden: tarjetasOrden,
             filasRanking: Array(ranking),
             segmentosProducto: segmentosProducto,
@@ -255,7 +260,94 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
 
     private func presentOrderDetails(orderID: String) {
         guard let orden = ordenes.first(where: { $0.id?.uuidString == orderID }) else { return }
-        presentOrderActions(for: orden)
+        let detalle = construirDetalleOrden(orden)
+        let controller = UIHostingController(
+            rootView: PurchaseOrderDetailSheetView(
+                data: detalle,
+                onClose: { [weak self] in self?.dismiss(animated: true) }
+            )
+        )
+        controller.modalPresentationStyle = .pageSheet
+        if let sheet = controller.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.preferredCornerRadius = 24
+        }
+        present(controller, animated: true)
+    }
+
+    private func construirDetalleOrden(_ orden: OrdenCompraEntity) -> PurchaseOrderDetailData {
+        let status = estadoOrdenCompra(for: orden)
+        var actions: [PurchaseOrderDetailData.Action] = []
+
+        func ejecutar(_ bloque: @escaping () -> Void) {
+            dismiss(animated: true, completion: bloque)
+        }
+
+        if RoleAccessControl.canManagePurchaseLifecycleDirectly {
+            switch status {
+            case .registrada:
+                actions.append(.init(title: "Aprobar", accentHex: "F59E0B", isDestructive: false, handler: {
+                    ejecutar { [weak self] in self?.updateOrderStatus(orden, to: .aprobada) }
+                }))
+            case .aprobada:
+                actions.append(.init(title: "Marcar pagada", accentHex: "4F7CF7", isDestructive: false, handler: {
+                    ejecutar { [weak self] in self?.updateOrderStatus(orden, to: .pagada) }
+                }))
+            case .pagada:
+                actions.append(.init(title: "Asignar stock y recibir", accentHex: "22C55E", isDestructive: false, handler: {
+                    ejecutar { [weak self] in self?.presentReceiveOrderFlow(orden) }
+                }))
+            case .recibida, .cancelada:
+                break
+            }
+
+            if status != .recibida && status != .cancelada {
+                actions.append(.init(title: "Cancelar orden", accentHex: "EF4444", isDestructive: true, handler: {
+                    ejecutar { [weak self] in self?.updateOrderStatus(orden, to: .cancelada) }
+                }))
+            }
+        } else if RoleAccessControl.canRequestPurchaseOrders {
+            switch status {
+            case .registrada:
+                actions.append(.init(title: "Solicitar aprobación", accentHex: "F59E0B", isDestructive: false, handler: {
+                    ejecutar { [weak self] in self?.solicitarCambioEstadoOrden(orden, requestedStatus: .aprobada) }
+                }))
+            case .aprobada:
+                actions.append(.init(title: "Solicitar pago", accentHex: "4F7CF7", isDestructive: false, handler: {
+                    ejecutar { [weak self] in self?.solicitarCambioEstadoOrden(orden, requestedStatus: .pagada) }
+                }))
+            case .pagada:
+                actions.append(.init(title: "Solicitar asignación y recepción", accentHex: "22C55E", isDestructive: false, handler: {
+                    ejecutar { [weak self] in self?.solicitarCambioEstadoOrden(orden, requestedStatus: .recibida) }
+                }))
+            case .recibida, .cancelada:
+                break
+            }
+
+            if status != .recibida && status != .cancelada {
+                actions.append(.init(title: "Solicitar cancelación", accentHex: "EF4444", isDestructive: true, handler: {
+                    ejecutar { [weak self] in self?.solicitarCambioEstadoOrden(orden, requestedStatus: .cancelada) }
+                }))
+            }
+        }
+
+        return PurchaseOrderDetailData(
+            providerName: orden.proveedor?.nombre ?? "Proveedor",
+            productName: orden.producto?.nombre ?? "Producto",
+            amountText: formatearMoneda(orden.total),
+            volumeText: "\(Int(orden.cantidadLitros.rounded()).formatted()) L",
+            dateText: formatearFecha(orden.fecha),
+            statusText: status.title,
+            statusAccentHex: status.accentHex,
+            warehouseText: orden.almacen?.nombre ?? "Pendiente de asignación",
+            workerText: orden.almacen?.responsable ?? "Se define al asignar stock",
+            noteText: textoNotaLimpia(for: orden),
+            allocationText: resumenDistribucionTexto(for: orden),
+            stockByWarehouse: resumenStockPorAlmacen(producto: orden.producto),
+            actions: actions
+        )
     }
 
     private func providerRating(for proveedor: ProveedorEntity) -> Double {
@@ -305,6 +397,133 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             return "\"\(nota)\""
         }
         return "\"Sin observaciones\""
+    }
+
+    private func textoNotaLimpia(for orden: OrdenCompraEntity) -> String {
+        let lineas = (orden.nota ?? "")
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { $0.isEmpty == false && $0.lowercased().contains("distribución final:") == false }
+        return lineas.joined(separator: "\n")
+    }
+
+    private func resumenDistribucionTexto(for orden: OrdenCompraEntity) -> String {
+        let nota = orden.nota ?? ""
+        let lineas = nota
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { $0.isEmpty == false }
+        return lineas.last(where: { $0.lowercased().contains("distribución final:") }) ?? ""
+    }
+
+    private func construirResumenesProducto() -> [DatosDashboardCompras.ResumenProducto] {
+        let grupos = Dictionary(grouping: productos) { claveProducto($0.nombre) }
+
+        return grupos.values.compactMap { grupo in
+            guard let principal = grupo.first else { return nil }
+            let resumenes = resumenStockPorAlmacen(nombreProducto: principal.nombre)
+            guard resumenes.isEmpty == false else { return nil }
+            return DatosDashboardCompras.ResumenProducto(
+                name: principal.nombre ?? "Producto",
+                totalStockText: "\(Int(totalStockParaDashboard(nombreProducto: principal.nombre).rounded()).formatted()) L",
+                coverageText: "\(resumenes.count) almacén\(resumenes.count == 1 ? "" : "es")",
+                accentHex: colorHexForProductName(principal.nombre ?? ""),
+                warehouses: resumenes
+            )
+        }
+        .sorted { lhs, rhs in
+            let lhsValue = numeroDesdeTextoStock(lhs.totalStockText)
+            let rhsValue = numeroDesdeTextoStock(rhs.totalStockText)
+            return lhsValue > rhsValue
+        }
+    }
+
+    private func totalStockParaDashboard(nombreProducto: String?) -> Double {
+        resumenStockConsolidado()
+            .filter { claveProducto($0.producto.nombre) == claveProducto(nombreProducto) }
+            .reduce(0) { $0 + $1.stockActual }
+    }
+
+    private func numeroDesdeTextoStock(_ texto: String) -> Double {
+        let limpio = texto
+            .replacingOccurrences(of: "L", with: "")
+            .replacingOccurrences(of: ",", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return Double(limpio) ?? 0
+    }
+
+    private func resumenStockPorAlmacen(producto: ProductoEntity?) -> [DatosDashboardCompras.TarjetaOrden.StockAlmacenResumen] {
+        resumenStockPorAlmacen(nombreProducto: producto?.nombre)
+    }
+
+    private func resumenStockPorAlmacen(nombreProducto: String?) -> [DatosDashboardCompras.TarjetaOrden.StockAlmacenResumen] {
+        guard let nombreProducto else { return [] }
+        let consolidados = Dictionary(uniqueKeysWithValues: resumenStockConsolidado()
+            .filter { claveProducto($0.producto.nombre) == claveProducto(nombreProducto) }
+            .map { item in
+                let almacenKey = item.almacen.id?.uuidString ?? item.almacen.objectID.uriRepresentation().absoluteString
+                return (almacenKey, item)
+            })
+
+        return almacenes
+            .sorted { ($0.nombre ?? "").localizedCaseInsensitiveCompare($1.nombre ?? "") == .orderedAscending }
+            .map { almacen in
+                let key = almacen.id?.uuidString ?? almacen.objectID.uriRepresentation().absoluteString
+                let item = consolidados[key]
+                let stockActual = item?.stockActual ?? 0
+                let producto = item?.producto ?? productos.first(where: { claveProducto($0.nombre) == claveProducto(nombreProducto) })
+                let stockMinimo = item?.stockMinimo ?? producto?.stockMinimo ?? 0
+                let capacidad = max(item?.capacidadTotal ?? 0, producto?.capacidadTotal ?? 0)
+                let unidad = item?.unidadMedida ?? producto?.unidadMedida ?? "L"
+                let estadoBajo = stockActual <= stockMinimo
+                return DatosDashboardCompras.TarjetaOrden.StockAlmacenResumen(
+                    warehouseName: almacen.nombre ?? "Almacén",
+                    stockText: "\(Int(stockActual.rounded()).formatted()) \(unidad)",
+                    capacityText: "Min \(Int(stockMinimo.rounded()).formatted()) · Cap \(Int(capacidad.rounded()).formatted()) \(unidad)",
+                    statusText: stockActual == 0 ? "Sin stock" : (estadoBajo ? "Reponer" : "Operativo"),
+                    accentHex: stockActual == 0 ? "94A3B8" : (estadoBajo ? "EF4444" : "22C55E")
+                )
+            }
+    }
+
+    private func claveProducto(_ nombre: String?) -> String {
+        (nombre ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+    }
+
+    private struct StockDashboardItem {
+        let producto: ProductoEntity
+        let almacen: AlmacenEntity
+        let stockActual: Double
+        let stockMinimo: Double
+        let capacidadTotal: Double
+        let unidadMedida: String
+    }
+
+    private func resumenStockConsolidado() -> [StockDashboardItem] {
+        let grupos = Dictionary(grouping: stocksAlmacen) { stock in
+            let productoId = stock.producto?.id?.uuidString ?? stock.producto?.objectID.uriRepresentation().absoluteString ?? "sin-producto"
+            let almacenId = stock.almacen?.id?.uuidString ?? stock.almacen?.objectID.uriRepresentation().absoluteString ?? "sin-almacen"
+            return "\(productoId)|\(almacenId)"
+        }
+
+        return grupos.values.compactMap { grupo in
+            guard let base = grupo.first,
+                  let producto = base.producto,
+                  let almacen = base.almacen else {
+                return nil
+            }
+
+            return StockDashboardItem(
+                producto: producto,
+                almacen: almacen,
+                stockActual: grupo.map(\.stockActual).max() ?? 0,
+                stockMinimo: grupo.map(\.stockMinimo).max() ?? producto.stockMinimo,
+                capacidadTotal: max(grupo.map(\.capacidadTotal).max() ?? 0, producto.capacidadTotal),
+                unidadMedida: grupo.compactMap(\.unidadMedida).first ?? producto.unidadMedida ?? "L"
+            )
+        }
     }
 
     private func colorHexForProductName(_ name: String) -> String {
@@ -385,10 +604,12 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
 
     private func cargarDatos() {
         do {
-            proveedores = try fetchProveedores()
-            ordenes = try fetchOrdenes()
-            productos = try fetchProductos()
-            almacenes = try fetchAlmacenes()
+            normalizarStocksDuplicadosGlobales()
+            proveedores = deduplicarProveedores(try fetchProveedores())
+            ordenes = deduplicarOrdenes(try fetchOrdenes())
+            productos = deduplicarProductos(try fetchProductos())
+            almacenes = deduplicarAlmacenes(try fetchAlmacenes())
+            stocksAlmacen = try fetchStocksAlmacen()
             applyProviderFilter()
             updateMetrics()
             proveedoresTableView?.reloadData()
@@ -399,6 +620,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             ordenes = []
             productos = []
             almacenes = []
+            stocksAlmacen = []
             updateProviderEmptyState()
             updateMetrics()
         }
@@ -423,19 +645,98 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         return try contexto.fetch(request)
     }
 
+    private func fetchStocksAlmacen() throws -> [StockAlmacenEntity] {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        request.sortDescriptors = [
+            NSSortDescriptor(key: "producto.nombre", ascending: true),
+            NSSortDescriptor(key: "almacen.nombre", ascending: true)
+        ]
+        return try contexto.fetch(request)
+    }
+
     private func fetchAlmacenes() throws -> [AlmacenEntity] {
         let request: NSFetchRequest<AlmacenEntity> = AlmacenEntity.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "nombre", ascending: true)]
         return try contexto.fetch(request)
     }
 
+    private func normalizarStocksDuplicadosGlobales() {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        guard let stocks = try? contexto.fetch(request), stocks.isEmpty == false else { return }
+
+        let grupos = Dictionary(grouping: stocks) { stock in
+            let productoId = stock.producto?.id?.uuidString ?? stock.producto?.objectID.uriRepresentation().absoluteString ?? "sin-producto"
+            let almacenId = stock.almacen?.id?.uuidString ?? stock.almacen?.objectID.uriRepresentation().absoluteString ?? "sin-almacen"
+            return "\(productoId)|\(almacenId)"
+        }
+
+        var huboCambios = false
+        for grupo in grupos.values where grupo.count > 1 {
+            guard let principal = grupo.max(by: { $0.stockActual < $1.stockActual }) else { continue }
+            principal.stockActual = grupo.map(\.stockActual).max() ?? principal.stockActual
+            principal.stockMinimo = grupo.map(\.stockMinimo).max() ?? principal.stockMinimo
+            principal.capacidadTotal = grupo.map(\.capacidadTotal).max() ?? principal.capacidadTotal
+            if principal.id == nil {
+                principal.id = UUID()
+            }
+            grupo
+                .filter { $0.objectID != principal.objectID }
+                .forEach {
+                    contexto.delete($0)
+                    huboCambios = true
+                }
+            huboCambios = true
+        }
+
+        if huboCambios {
+            try? contexto.save()
+        }
+    }
+
+    private func deduplicarProveedores(_ items: [ProveedorEntity]) -> [ProveedorEntity] {
+        var vistos = Set<String>()
+        return items.filter { item in
+            let key = item.id?.uuidString ?? item.objectID.uriRepresentation().absoluteString
+            return vistos.insert(key).inserted
+        }
+    }
+
+    private func deduplicarOrdenes(_ items: [OrdenCompraEntity]) -> [OrdenCompraEntity] {
+        var vistos = Set<String>()
+        return items.filter { item in
+            let key = item.id?.uuidString ?? item.objectID.uriRepresentation().absoluteString
+            return vistos.insert(key).inserted
+        }
+    }
+
+    private func deduplicarProductos(_ items: [ProductoEntity]) -> [ProductoEntity] {
+        var vistos = Set<String>()
+        return items.filter { item in
+            let key = claveProducto(item.nombre).isEmpty == false
+                ? claveProducto(item.nombre)
+                : (item.id?.uuidString ?? item.objectID.uriRepresentation().absoluteString)
+            return vistos.insert(key).inserted
+        }
+    }
+
+    private func deduplicarAlmacenes(_ items: [AlmacenEntity]) -> [AlmacenEntity] {
+        var vistos = Set<String>()
+        return items.filter { item in
+            let key = item.id?.uuidString ?? item.objectID.uriRepresentation().absoluteString
+            return vistos.insert(key).inserted
+        }
+    }
+
     private func updateMetrics() {
         let total = ordenes.reduce(0.0) { $0 + $1.total }
-        let pendientes = ordenes.filter { ($0.estado ?? "").lowercased().contains("pend") }
-        let recibidas = ordenes.filter { ($0.estado ?? "").lowercased().contains("recib") || ($0.estado ?? "").lowercased().contains("complet") }
+        let pendientes = ordenes.filter {
+            let estado = estadoOrdenCompra(for: $0)
+            return estado == .registrada || estado == .aprobada || estado == .pagada
+        }
+        let recibidas = ordenes.filter { estadoOrdenCompra(for: $0) == .recibida }
         let volumen = ordenes.reduce(0.0) { $0 + $1.cantidadLitros }
 
-        lblPendientesBadge?.text = pendientes.isEmpty ? "Sin pendientes" : "\(pendientes.count) pendiente"
+        lblPendientesBadge?.text = pendientes.isEmpty ? "Sin pendientes" : "\(pendientes.count) pendiente\(pendientes.count == 1 ? "" : "s")"
         lblGastoTotal?.text = formatearMoneda(total)
         lblPendientes?.text = "\(pendientes.count)"
         lblRecibidas?.text = "\(recibidas.count)"
@@ -613,7 +914,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             initials: initials(for: orden.proveedor?.nombre),
             title: orden.proveedor?.nombre ?? "Proveedor",
             subtitle: orden.producto?.nombre ?? "Producto",
-            detail: "\(Int(orden.cantidadLitros.rounded()).formatted())L · \(orden.almacen?.nombre ?? "Almacén") · \(formatearFecha(orden.fecha))",
+            detail: "\(Int(orden.cantidadLitros.rounded()).formatted())L · \(orden.almacen?.nombre ?? "Por asignar") · \(formatearFecha(orden.fecha))",
             amount: formatearMoneda(orden.total),
             badge: estado,
             color: estadoColor
@@ -668,10 +969,6 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             showAlert(title: "Compras", message: "No hay productos registrados.")
             return
         }
-        guard !almacenes.isEmpty else {
-            showAlert(title: "Compras", message: "No hay almacenes registrados.")
-            return
-        }
         let providerOptions = proveedores.map {
             PurchaseOrderSheetView.OpcionProveedor(
                 id: $0.id?.uuidString ?? UUID().uuidString,
@@ -686,19 +983,10 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                 pricePerLiter: $0.precioPorLitro
             )
         }
-        let warehouseOptions = almacenes.map {
-            PurchaseOrderSheetView.OpcionAlmacen(
-                id: $0.id?.uuidString ?? UUID().uuidString,
-                name: $0.nombre ?? "Almacén",
-                managerName: $0.responsable ?? "Sin responsable"
-            )
-        }
-
         let controller = UIHostingController(
             rootView: PurchaseOrderSheetView(
                 providers: providerOptions,
                 products: productOptions,
-                warehouses: warehouseOptions,
                 onCancel: { [weak self] in self?.dismiss(animated: true) },
                 onSave: { [weak self] draft in self?.handleBorradorOrdenCompra(draft) }
             )
@@ -748,7 +1036,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             return
         }
 
-        if RoleAccessControl.isAdmin == false {
+        if RoleAccessControl.canManageDirectly == false {
             guard RoleAccessControl.canRequestSupplierCreation else {
                 showAlert(title: "Permiso denegado", message: "Tu rol no puede solicitar nuevos proveedores.")
                 return
@@ -786,8 +1074,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     private func handleBorradorOrdenCompra(_ draft: BorradorOrdenCompra) {
         guard
             proveedores.indices.contains(draft.indiceProveedor),
-            productos.indices.contains(draft.indiceProducto),
-            almacenes.indices.contains(draft.indiceAlmacen)
+            productos.indices.contains(draft.indiceProducto)
         else {
             showAlert(title: "Compras", message: "Completa los datos de la orden.")
             return
@@ -803,7 +1090,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             return
         }
 
-        if RoleAccessControl.isAdmin == false {
+        if RoleAccessControl.canManageDirectly == false {
             guard RoleAccessControl.canRequestPurchaseOrders else {
                 showAlert(title: "Permiso denegado", message: "Tu rol no puede solicitar órdenes de compra.")
                 return
@@ -814,27 +1101,26 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
 
         let proveedor = proveedores[draft.indiceProveedor]
         let producto = productos[draft.indiceProducto]
-        let almacen = almacenes[draft.indiceAlmacen]
-        ensureIdentifiers(proveedor: proveedor, producto: producto, almacen: almacen)
+        ensureIdentifiers(proveedor: proveedor, producto: producto)
 
         let orden = OrdenCompraEntity(context: contexto)
         orden.id = UUID()
         orden.proveedor = proveedor
         orden.producto = producto
-        orden.almacen = almacen
         orden.cantidadLitros = draft.cantidad
         orden.precioUnitarioCompra = draft.precioUnitario
         orden.total = draft.cantidad * draft.precioUnitario
         orden.fecha = Date()
         orden.estado = EstadoOrdenCompra.registrada.rawValue
-        orden.nota = draft.notas.trimmingCharacters(in: .whitespacesAndNewlines)
+        let notasLimpias = draft.notas.trimmingCharacters(in: .whitespacesAndNewlines)
+        orden.nota = notasLimpias.isEmpty ? "Pendiente de asignación de stock por almacén." : "\(notasLimpias)\nPendiente de asignación de stock por almacén."
 
         do {
             try contexto.save()
             syncPurchaseOrderToRemote(orden, event: .registrada, note: draft.notas, unitPrice: draft.precioUnitario)
             dismiss(animated: true) { [weak self] in
                 self?.cargarDatos()
-                self?.showAlert(title: "Compras", message: "Compra registrada.")
+                self?.showAlert(title: "Compras", message: "Orden registrada. Ahora debe aprobarse, pagarse y luego asignarse al almacén.")
             }
         } catch {
             contexto.rollback()
@@ -931,7 +1217,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             preferredStyle: .actionSheet
         )
 
-        if RoleAccessControl.isAdmin {
+        if RoleAccessControl.canManagePurchaseLifecycleDirectly {
             switch status {
             case .registrada:
                 alert.addAction(UIAlertAction(title: "Aprobar", style: .default) { [weak self] _ in
@@ -942,8 +1228,8 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                     self?.updateOrderStatus(orden, to: .pagada)
                 })
             case .pagada:
-                alert.addAction(UIAlertAction(title: "Ingresar a almacén", style: .default) { [weak self] _ in
-                    self?.receivePurchaseOrder(orden)
+                alert.addAction(UIAlertAction(title: "Asignar stock a almacén", style: .default) { [weak self] _ in
+                    self?.presentReceiveOrderFlow(orden)
                 })
             case .recibida, .cancelada:
                 break
@@ -965,7 +1251,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                     self?.solicitarCambioEstadoOrden(orden, requestedStatus: .pagada)
                 })
             case .pagada:
-                alert.addAction(UIAlertAction(title: "Solicitar ingreso a almacén", style: .default) { [weak self] _ in
+                alert.addAction(UIAlertAction(title: "Solicitar asignación y recepción", style: .default) { [weak self] _ in
                     self?.solicitarCambioEstadoOrden(orden, requestedStatus: .recibida)
                 })
             case .recibida, .cancelada:
@@ -983,24 +1269,116 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         present(alert, animated: true)
     }
 
+    private func presentReceiveOrderFlow(_ orden: OrdenCompraEntity) {
+        guard !almacenes.isEmpty else {
+            showAlert(title: "Compras", message: "No hay almacenes registrados para asignar el stock.")
+            return
+        }
+        guard let producto = orden.producto else {
+            showAlert(title: "Compras", message: "La orden no tiene producto asociado.")
+            return
+        }
+
+        let opciones = almacenes.map { almacen in
+            let stock = stockRecord(producto: producto, almacen: almacen)
+            let stockActual = stockActualRepresentativo(producto: producto, almacen: almacen)
+            let capacidad = capacidadDisponible(producto: producto, almacen: almacen, stockPrincipal: stock)
+            return PurchaseOrderAllocationSheetView.OpcionAlmacen(
+                id: almacen.id?.uuidString ?? UUID().uuidString,
+                nombre: almacen.nombre ?? "Almacén",
+                responsable: almacen.responsable ?? "Sin responsable",
+                stockActual: stockActual,
+                capacidadTotal: capacidad,
+                stockMinimo: max(stock.stockMinimo, producto.stockMinimo),
+                espacioDisponible: max(capacidad - stockActual, 0)
+            )
+        }
+
+        let controller = UIHostingController(
+            rootView: PurchaseOrderAllocationSheetView(
+                cantidadTotalOrden: orden.cantidadLitros,
+                productName: producto.nombre ?? "Producto",
+                warehouses: opciones,
+                onCancel: { [weak self] in self?.dismiss(animated: true) },
+                onSave: { [weak self] borrador in self?.handleBorradorAsignacionOrden(borrador, orden: orden) }
+            )
+        )
+        controller.modalPresentationStyle = .pageSheet
+        if let sheet = controller.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+            sheet.prefersScrollingExpandsWhenScrolledToEdge = false
+            sheet.preferredCornerRadius = 24
+        }
+        present(controller, animated: true)
+    }
+
+    private func handleBorradorAsignacionOrden(_ borrador: BorradorAsignacionOrdenCompra, orden: OrdenCompraEntity) {
+        guard let producto = orden.producto else {
+            showAlert(title: "Compras", message: "La orden no tiene producto asociado.")
+            return
+        }
+
+        let filasValidas = borrador.filas.filter { $0.cantidad > 0 }
+        guard filasValidas.isEmpty == false else {
+            showAlert(title: "Compras", message: "Ingresa al menos una asignación válida.")
+            return
+        }
+
+        let totalAsignado = filasValidas.reduce(0) { $0 + $1.cantidad }
+        guard abs(totalAsignado - orden.cantidadLitros) < 0.0001 else {
+            showAlert(title: "Compras", message: "La suma asignada debe coincidir exactamente con la cantidad de la orden.")
+            return
+        }
+
+        var distribuciones: [(almacen: AlmacenEntity, cantidad: Double)] = []
+        for fila in filasValidas {
+            guard almacenes.indices.contains(fila.indiceAlmacen) else {
+                showAlert(title: "Compras", message: "Hay almacenes no válidos en la asignación.")
+                return
+            }
+            let almacen = almacenes[fila.indiceAlmacen]
+            if let index = distribuciones.firstIndex(where: { $0.almacen.objectID == almacen.objectID }) {
+                distribuciones[index].cantidad += fila.cantidad
+            } else {
+                distribuciones.append((almacen: almacen, cantidad: fila.cantidad))
+            }
+        }
+
+        receivePurchaseOrder(orden, distribuciones: distribuciones, producto: producto)
+    }
+
     private func solicitarMotivoProveedor(_ draft: AddSupplierDraft) {
         let alert = UIAlertController(
             title: "Enviar solicitud",
-            message: "Se enviará una solicitud al panel administrativo para crear el proveedor.",
+            message: "Se enviará una solicitud detallada para crear el proveedor. Describe la razón, la urgencia y el uso esperado.",
             preferredStyle: .alert
         )
-        alert.addTextField { $0.placeholder = "Motivo de la solicitud" }
+        alert.addTextField { $0.placeholder = "Motivo principal" }
+        alert.addTextField { $0.placeholder = "Uso esperado o categoría operativa" }
+        alert.addTextField { $0.placeholder = "Urgencia o referencia interna" }
         alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
         alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
             guard let self else { return }
-            let reason = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let reason = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let intendedUse = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let urgency = alert.textFields?[2].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             guard reason.isEmpty == false else {
                 self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
                 return
             }
+            guard intendedUse.isEmpty == false else {
+                self.showAlert(title: "Validación", message: "Describe para qué se requiere este proveedor.")
+                return
+            }
             Task {
                 do {
-                    try await self.enviarSolicitudProveedor(draft: draft, reason: reason)
+                    try await self.enviarSolicitudProveedor(
+                        draft: draft,
+                        reason: reason,
+                        intendedUse: intendedUse,
+                        urgency: urgency
+                    )
                     await MainActor.run {
                         self.showAlert(title: "Solicitud enviada", message: "La solicitud fue enviada al panel administrativo.")
                     }
@@ -1017,21 +1395,34 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     private func solicitarMotivoOrdenCompra(_ draft: BorradorOrdenCompra) {
         let alert = UIAlertController(
             title: "Enviar solicitud",
-            message: "Se enviará una solicitud al panel administrativo para registrar la orden de compra.",
+            message: "Se enviará una solicitud detallada para registrar la orden de compra. Indica la necesidad operativa y la prioridad.",
             preferredStyle: .alert
         )
-        alert.addTextField { $0.placeholder = "Motivo de la solicitud" }
+        alert.addTextField { $0.placeholder = "Motivo principal" }
+        alert.addTextField { $0.placeholder = "Justificación operativa" }
+        alert.addTextField { $0.placeholder = "Prioridad o fecha requerida" }
         alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
         alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
             guard let self else { return }
-            let reason = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let reason = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let operationalNeed = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let priority = alert.textFields?[2].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             guard reason.isEmpty == false else {
                 self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
                 return
             }
+            guard operationalNeed.isEmpty == false else {
+                self.showAlert(title: "Validación", message: "Describe la necesidad operativa de la compra.")
+                return
+            }
             Task {
                 do {
-                    try await self.enviarSolicitudOrdenCompra(draft: draft, reason: reason)
+                    try await self.enviarSolicitudOrdenCompra(
+                        draft: draft,
+                        reason: reason,
+                        operationalNeed: operationalNeed,
+                        priority: priority
+                    )
                     await MainActor.run {
                         self.showAlert(title: "Solicitud enviada", message: "La solicitud fue enviada al panel administrativo.")
                     }
@@ -1048,21 +1439,32 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     private func solicitarCambioEstadoOrden(_ orden: OrdenCompraEntity, requestedStatus: EstadoOrdenCompra) {
         let alert = UIAlertController(
             title: "Enviar solicitud",
-            message: "Se enviará una solicitud al panel administrativo para cambiar el estado de la orden a \(requestedStatus.title.lowercased()).",
+            message: "Se enviará una solicitud detallada para cambiar el estado de la orden a \(requestedStatus.title.lowercased()).",
             preferredStyle: .alert
         )
-        alert.addTextField { $0.placeholder = "Motivo de la solicitud" }
+        alert.addTextField { $0.placeholder = "Motivo principal" }
+        alert.addTextField { $0.placeholder = "Acción operativa esperada" }
         alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
         alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
             guard let self else { return }
-            let reason = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let reason = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let operationNote = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             guard reason.isEmpty == false else {
                 self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
                 return
             }
+            guard operationNote.isEmpty == false else {
+                self.showAlert(title: "Validación", message: "Describe la acción operativa esperada.")
+                return
+            }
             Task {
                 do {
-                    try await self.enviarSolicitudCambioEstadoOrden(orden: orden, requestedStatus: requestedStatus, reason: reason)
+                    try await self.enviarSolicitudCambioEstadoOrden(
+                        orden: orden,
+                        requestedStatus: requestedStatus,
+                        reason: reason,
+                        operationNote: operationNote
+                    )
                     await MainActor.run {
                         self.showAlert(title: "Solicitud enviada", message: "La solicitud fue enviada al panel administrativo.")
                     }
@@ -1076,7 +1478,12 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         present(alert, animated: true)
     }
 
-    private func enviarSolicitudProveedor(draft: AddSupplierDraft, reason: String) async throws {
+    private func enviarSolicitudProveedor(
+        draft: AddSupplierDraft,
+        reason: String,
+        intendedUse: String,
+        urgency: String
+    ) async throws {
         let requester = try AdminRequestService.currentRequester()
         let request = AdminRequestPayload(
             requestId: UUID().uuidString,
@@ -1093,7 +1500,12 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                 "address": .string(draft.address.trimmingCharacters(in: .whitespacesAndNewlines)),
                 "rating": .number(Double(draft.rating)),
                 "isPreferred": .bool(draft.isPreferred),
-                "isVerified": .bool(draft.isVerified)
+                "isVerified": .bool(draft.isVerified),
+                "detalleSolicitud": .object([
+                    "usoEsperado": .string(intendedUse),
+                    "urgencia": urgency.isEmpty ? .string("normal") : .string(urgency),
+                    "requiereHomologacion": .bool(true)
+                ])
             ],
             reason: reason,
             createdAt: isoFormatter.string(from: Date()),
@@ -1104,11 +1516,15 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         try await AdminRequestService.submit(request)
     }
 
-    private func enviarSolicitudOrdenCompra(draft: BorradorOrdenCompra, reason: String) async throws {
+    private func enviarSolicitudOrdenCompra(
+        draft: BorradorOrdenCompra,
+        reason: String,
+        operationalNeed: String,
+        priority: String
+    ) async throws {
         let requester = try AdminRequestService.currentRequester()
         let proveedor = proveedores[draft.indiceProveedor]
         let producto = productos[draft.indiceProducto]
-        let almacen = almacenes[draft.indiceAlmacen]
         let request = AdminRequestPayload(
             requestId: UUID().uuidString,
             type: "create_purchase_order",
@@ -1121,12 +1537,19 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                 "supplierName": .string(proveedor.nombre ?? "Proveedor"),
                 "productId": .string(producto.id?.uuidString ?? ""),
                 "productName": .string(producto.nombre ?? "Producto"),
-                "warehouseId": .string(almacen.id?.uuidString ?? ""),
-                "warehouseName": .string(almacen.nombre ?? "Almacén"),
                 "cantidadLitros": .number(draft.cantidad),
                 "precioUnitario": .number(draft.precioUnitario),
                 "total": .number(draft.cantidad * draft.precioUnitario),
-                "notes": .string(draft.notas.trimmingCharacters(in: .whitespacesAndNewlines))
+                "notes": .string(draft.notas.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "detalleSolicitud": .object([
+                    "necesidadOperativa": .string(operationalNeed),
+                    "prioridad": priority.isEmpty ? .string("normal") : .string(priority),
+                    "requiereAprobacionInicial": .bool(true),
+                    "requierePagoPosterior": .bool(true),
+                    "requiereAsignacionStockPosterior": .bool(true),
+                    "almacenDefinidoEnAlta": .bool(false),
+                    "asignacionPosteriorPermiteMultipleAlmacen": .bool(true)
+                ])
             ],
             reason: reason,
             createdAt: isoFormatter.string(from: Date()),
@@ -1140,7 +1563,8 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
     private func enviarSolicitudCambioEstadoOrden(
         orden: OrdenCompraEntity,
         requestedStatus: EstadoOrdenCompra,
-        reason: String
+        reason: String,
+        operationNote: String
     ) async throws {
         let requester = try AdminRequestService.currentRequester()
         let request = AdminRequestPayload(
@@ -1157,7 +1581,12 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                 "productName": .string(orden.producto?.nombre ?? "Producto"),
                 "warehouseName": .string(orden.almacen?.nombre ?? "Almacén"),
                 "cantidadLitros": .number(orden.cantidadLitros),
-                "total": .number(orden.total)
+                "total": .number(orden.total),
+                "detalleSolicitud": .object([
+                    "notaOperativa": .string(operationNote),
+                    "estadoVisibleActual": .string(EstadoOrdenCompra(value: orden.estado).title),
+                    "estadoVisibleSolicitado": .string(requestedStatus.title)
+                ])
             ],
             reason: reason,
             createdAt: isoFormatter.string(from: Date()),
@@ -1180,47 +1609,79 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         }
     }
 
-    private func receivePurchaseOrder(_ orden: OrdenCompraEntity) {
-        guard let producto = orden.producto, let almacen = orden.almacen else {
-            showAlert(title: "Compras", message: "La orden no tiene producto o almacén asignado.")
+    private func receivePurchaseOrder(
+        _ orden: OrdenCompraEntity,
+        distribuciones: [(almacen: AlmacenEntity, cantidad: Double)],
+        producto: ProductoEntity
+    ) {
+        guard distribuciones.isEmpty == false else {
+            showAlert(title: "Compras", message: "No hay distribución para recibir la orden.")
             return
         }
 
-        ensureIdentifiers(producto: producto, almacen: almacen)
-        let stock = stockRecord(producto: producto, almacen: almacen)
-        let capacidad = max(producto.capacidadTotal, stock.capacidadTotal)
-        if capacidad > 0, stock.stockActual + orden.cantidadLitros > capacidad {
-            showAlert(title: "Compras", message: "La recepción supera la capacidad del almacén para ese producto.")
-            return
+        for distribucion in distribuciones {
+            ensureIdentifiers(producto: producto, almacen: distribucion.almacen)
+            let stock = stockRecord(producto: producto, almacen: distribucion.almacen)
+            let stockActual = stockActualRepresentativo(producto: producto, almacen: distribucion.almacen)
+            let capacidad = capacidadDisponible(producto: producto, almacen: distribucion.almacen, stockPrincipal: stock)
+            if capacidad > 0, stockActual + distribucion.cantidad > capacidad {
+                let nombreAlmacen = distribucion.almacen.nombre ?? "Almacén"
+                let disponible = max(capacidad - stockActual, 0)
+                showAlert(title: "Compras", message: "\(nombreAlmacen) no tiene capacidad suficiente. Disponible: \(Int(disponible.rounded()).formatted())L.")
+                return
+            }
         }
-        stock.stockActual += orden.cantidadLitros
-        stock.stockMinimo = producto.stockMinimo
-        stock.capacidadTotal = producto.capacidadTotal
-        stock.unidadMedida = producto.unidadMedida ?? "L"
 
-        let movimiento = MovimientoInventarioEntity(context: contexto)
-        movimiento.id = UUID()
-        movimiento.fecha = Date()
-        movimiento.tipo = "entrada"
-        movimiento.cantidadLitros = orden.cantidadLitros
-        movimiento.producto = producto
-        movimiento.almacen = almacen
-        movimiento.origen = orden.proveedor?.nombre ?? "Proveedor"
-        movimiento.destino = almacen.nombre ?? "Almacén"
-        movimiento.nota = "Ingreso por orden \(orden.id?.uuidString ?? "")"
+        var movimientosSincronizables: [(movimiento: MovimientoInventarioEntity, stock: StockAlmacenEntity)] = []
+        let resumenDistribucion = distribuciones.map {
+            "\($0.almacen.nombre ?? "Almacén") \(Int($0.cantidad.rounded()).formatted())L"
+        }.joined(separator: ", ")
+
+        for distribucion in distribuciones {
+            let almacen = distribucion.almacen
+            let stock = stockRecord(producto: producto, almacen: almacen)
+            let stockActual = stockActualRepresentativo(producto: producto, almacen: almacen)
+            stock.stockActual = stockActual + distribucion.cantidad
+            stock.stockMinimo = producto.stockMinimo
+            if stock.capacidadTotal <= 0 {
+                stock.capacidadTotal = producto.capacidadTotal
+            }
+            stock.unidadMedida = producto.unidadMedida ?? "L"
+            consolidarStocksDuplicados(producto: producto, almacen: almacen, principal: stock)
+
+            let movimiento = MovimientoInventarioEntity(context: contexto)
+            movimiento.id = UUID()
+            movimiento.fecha = Date()
+            movimiento.tipo = "entrada"
+            movimiento.cantidadLitros = distribucion.cantidad
+            movimiento.producto = producto
+            movimiento.almacen = almacen
+            movimiento.origen = orden.proveedor?.nombre ?? "Proveedor"
+            movimiento.destino = almacen.nombre ?? "Almacén"
+            movimiento.nota = "Ingreso por orden \(orden.id?.uuidString ?? "")"
+            movimientosSincronizables.append((movimiento: movimiento, stock: stock))
+        }
 
         producto.stockLitros = totalStock(for: producto)
+        orden.almacen = distribuciones.first?.almacen
         orden.estado = EstadoOrdenCompra.recibida.rawValue
+        let notaBase = (orden.nota ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let lineaDistribucion = "Distribución final: \(resumenDistribucion)"
+        orden.nota = notaBase.isEmpty ? lineaDistribucion : "\(notaBase)\n\(lineaDistribucion)"
 
         do {
             try contexto.save()
             syncPurchaseOrderToRemote(orden, event: .recibida)
-            syncInboundMovementToRemote(orden: orden, movimiento: movimiento, stock: stock)
-            cargarDatos()
-            showAlert(title: "Compras", message: "Stock ingresado al almacén.")
+            movimientosSincronizables.forEach { item in
+                syncInboundMovementToRemote(orden: orden, movimiento: item.movimiento, stock: item.stock)
+            }
+            dismiss(animated: true) { [weak self] in
+                self?.cargarDatos()
+                self?.showAlert(title: "Compras", message: "Stock asignado y recibido correctamente.")
+            }
         } catch {
             contexto.rollback()
-            showAlert(title: "Error", message: "No se pudo ingresar la compra al almacén.")
+            showAlert(title: "Error", message: "No se pudo registrar la recepción distribuida.")
         }
     }
 
@@ -1238,8 +1699,8 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
 
     private func stockRecord(producto: ProductoEntity, almacen: AlmacenEntity) -> StockAlmacenEntity {
         let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
-        request.fetchLimit = 1
         request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
+        request.sortDescriptors = [NSSortDescriptor(key: "stockActual", ascending: false)]
 
         if let existing = try? contexto.fetch(request).first {
             if existing.id == nil {
@@ -1259,16 +1720,57 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         return stock
     }
 
-    private func totalStock(for producto: ProductoEntity) -> Double {
+    private func stockActualConsolidado(producto: ProductoEntity, almacen: AlmacenEntity) -> Double {
         let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
-        request.predicate = NSPredicate(format: "producto == %@", producto)
+        request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
         return ((try? contexto.fetch(request)) ?? []).reduce(0) { $0 + $1.stockActual }
+    }
+
+    private func stockActualRepresentativo(producto: ProductoEntity, almacen: AlmacenEntity) -> Double {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
+        return ((try? contexto.fetch(request)) ?? []).map(\.stockActual).max() ?? 0
+    }
+
+    private func capacidadDisponible(producto: ProductoEntity, almacen: AlmacenEntity, stockPrincipal: StockAlmacenEntity) -> Double {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
+        let stocks = (try? contexto.fetch(request)) ?? []
+        let mayorCapacidadEnStocks = stocks.map(\.capacidadTotal).max() ?? 0
+        return max(producto.capacidadTotal, stockPrincipal.capacidadTotal, mayorCapacidadEnStocks)
+    }
+
+    private func consolidarStocksDuplicados(producto: ProductoEntity, almacen: AlmacenEntity, principal: StockAlmacenEntity) {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
+        let stocks = (try? contexto.fetch(request)) ?? []
+        let duplicados = stocks.filter { $0.objectID != principal.objectID }
+        principal.stockActual = ([principal] + duplicados).map(\.stockActual).max() ?? principal.stockActual
+        principal.stockMinimo = ([principal] + duplicados).map(\.stockMinimo).max() ?? principal.stockMinimo
+        principal.capacidadTotal = ([principal] + duplicados).map(\.capacidadTotal).max() ?? principal.capacidadTotal
+        duplicados.forEach { contexto.delete($0) }
+    }
+
+    private func totalStock(for producto: ProductoEntity) -> Double {
+        resumenStockConsolidado()
+            .filter { ($0.producto.id ?? UUID()) == (producto.id ?? UUID()) }
+            .reduce(0) { $0 + $1.stockActual }
     }
 
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Aceptar", style: .default))
-        present(alert, animated: true)
+        let presenter = topPresenterForAlerts()
+        presenter.present(alert, animated: true)
+    }
+
+    private func topPresenterForAlerts() -> UIViewController {
+        var presenter: UIViewController = self
+        while let presented = presenter.presentedViewController,
+              presented.isBeingDismissed == false {
+            presenter = presented
+        }
+        return presenter
     }
 
     private func syncPurchaseOrderToRemote(
@@ -1282,8 +1784,7 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         guard
             let orderId = orden.id?.uuidString,
             let proveedorId = orden.proveedor?.id?.uuidString,
-            let productoId = orden.producto?.id?.uuidString,
-            let almacenId = orden.almacen?.id?.uuidString
+            let productoId = orden.producto?.id?.uuidString
         else {
             return
         }
@@ -1294,19 +1795,26 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             "supplierId": proveedorId,
             "productoId": productoId,
             "productId": productoId,
-            "almacenId": almacenId,
-            "warehouseId": almacenId,
             "cantidadLitros": orden.cantidadLitros,
             "total": orden.total,
             "estado": orden.estado ?? EstadoOrdenCompra.registrada.rawValue,
             "fecha": Timestamp(date: orden.fecha ?? Date()),
             "updatedAt": Timestamp(date: Date())
         ]
+        if let almacenId = orden.almacen?.id?.uuidString {
+            payload["almacenId"] = almacenId
+            payload["warehouseId"] = almacenId
+        }
+        payload["asignacionStockPendiente"] = EstadoOrdenCompra(value: orden.estado) != .recibida
         if let note, note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
             payload["nota"] = note.trimmingCharacters(in: .whitespacesAndNewlines)
+        } else if let notaOrden = orden.nota, notaOrden.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false {
+            payload["nota"] = notaOrden.trimmingCharacters(in: .whitespacesAndNewlines)
         }
         if let unitPrice {
             payload["precioUnitarioCompra"] = unitPrice
+        } else if orden.precioUnitarioCompra > 0 {
+            payload["precioUnitarioCompra"] = orden.precioUnitarioCompra
         }
 
         switch event {

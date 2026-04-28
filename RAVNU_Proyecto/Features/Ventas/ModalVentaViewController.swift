@@ -242,11 +242,15 @@ final class ModalNuevaVentaViewController: UIViewController {
                 almacen.id = UUID()
             }
             let currentStock = stockRecord(producto: producto, almacen: almacen)
+            let stockDisponible = stockActualConsolidado(producto: producto, almacen: almacen)
             stock = currentStock
-            currentStock.stockActual = max(currentStock.stockActual - cantidad, 0)
+            currentStock.stockActual = max(stockDisponible - cantidad, 0)
             currentStock.stockMinimo = producto.stockMinimo
-            currentStock.capacidadTotal = producto.capacidadTotal
+            if currentStock.capacidadTotal <= 0 {
+                currentStock.capacidadTotal = producto.capacidadTotal
+            }
             currentStock.unidadMedida = producto.unidadMedida ?? "L"
+            consolidarStocksDuplicados(producto: producto, almacen: almacen, principal: currentStock)
         }
 
         producto.stockLitros = totalStock(for: producto)
@@ -266,8 +270,8 @@ final class ModalNuevaVentaViewController: UIViewController {
 
     private func stockRecord(producto: ProductoEntity, almacen: AlmacenEntity) -> StockAlmacenEntity {
         let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
-        request.fetchLimit = 1
         request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
+        request.sortDescriptors = [NSSortDescriptor(key: "stockActual", ascending: false)]
 
         if let existing = try? context.fetch(request).first {
             return existing
@@ -282,6 +286,21 @@ final class ModalNuevaVentaViewController: UIViewController {
         stock.capacidadTotal = producto.capacidadTotal
         stock.unidadMedida = producto.unidadMedida ?? "L"
         return stock
+    }
+
+    private func stockActualConsolidado(producto: ProductoEntity, almacen: AlmacenEntity) -> Double {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
+        return ((try? context.fetch(request)) ?? []).reduce(0) { $0 + $1.stockActual }
+    }
+
+    private func consolidarStocksDuplicados(producto: ProductoEntity, almacen: AlmacenEntity, principal: StockAlmacenEntity) {
+        let request: NSFetchRequest<StockAlmacenEntity> = StockAlmacenEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "producto == %@ AND almacen == %@", producto, almacen)
+        let stocks = (try? context.fetch(request)) ?? []
+        stocks
+            .filter { $0.objectID != principal.objectID }
+            .forEach { context.delete($0) }
     }
 
     private func totalStock(for producto: ProductoEntity) -> Double {

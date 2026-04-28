@@ -16,6 +16,7 @@ final class ModalAlmacenViewController: UIViewController {
     @IBOutlet private weak var btnGuardar: UIButton?
 
     weak var delegate: ModalAlmacenViewControllerDelegate?
+    var almacenExistente: AlmacenEntity?
     #if canImport(FirebaseFirestore)
     private let firestore = Firestore.firestore()
     #endif
@@ -25,7 +26,7 @@ final class ModalAlmacenViewController: UIViewController {
     private let selectorResponsable = UIPickerView()
 
     private var puedeGestionarDirecto: Bool {
-        RoleAccessControl.isAdmin
+        RoleAccessControl.canManageDirectly
     }
 
     override func viewDidLoad() {
@@ -34,6 +35,7 @@ final class ModalAlmacenViewController: UIViewController {
         btnGuardar?.clipsToBounds = true
         configurarSelectorResponsable()
         cargarResponsables()
+        cargarAlmacenExistenteSiAplica()
     }
 
     private func validateInputs() -> String? {
@@ -50,10 +52,18 @@ final class ModalAlmacenViewController: UIViewController {
         let request: NSFetchRequest<AlmacenEntity> = AlmacenEntity.fetchRequest()
         request.fetchLimit = 1
         request.predicate = NSPredicate(format: "nombre =[c] %@", trimmedName)
-        if ((try? context.fetch(request)) ?? []).isEmpty == false {
+        let duplicados = ((try? context.fetch(request)) ?? []).filter { $0.objectID != almacenExistente?.objectID }
+        if duplicados.isEmpty == false {
             return "Ya existe un almacén con ese nombre."
         }
         return nil
+    }
+
+    private func cargarAlmacenExistenteSiAplica() {
+        guard let almacenExistente else { return }
+        txtNombre?.text = almacenExistente.nombre
+        txtDireccion?.text = almacenExistente.direccion
+        txtResponsable?.text = almacenExistente.responsable
     }
 
     private func payload(for almacenId: UUID) -> [String: Any] {
@@ -68,18 +78,20 @@ final class ModalAlmacenViewController: UIViewController {
     }
 
     private func saveAlmacenToLocal(id: UUID) throws {
-        let almacen = AlmacenEntity(context: context)
+        let almacen = almacenExistente ?? AlmacenEntity(context: context)
         almacen.id = id
         almacen.nombre = txtNombre?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
         almacen.direccion = txtDireccion?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
         almacen.responsable = txtResponsable?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
         almacen.activo = true
-        createInitialStocks(for: almacen)
+        if almacenExistente == nil {
+            createInitialStocks(for: almacen)
+        }
         try context.save()
     }
 
     private func saveAlmacen() throws {
-        let almacenId = UUID()
+        let almacenId = almacenExistente?.id ?? UUID()
 
         #if canImport(FirebaseFirestore)
         if FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled {
@@ -87,20 +99,22 @@ final class ModalAlmacenViewController: UIViewController {
             let batch = firestore.batch()
             batch.setData(payload(for: almacenId), forDocument: warehouseRef, merge: true)
 
-            let request: NSFetchRequest<ProductoEntity> = ProductoEntity.fetchRequest()
-            let productos = (try? context.fetch(request)) ?? []
-            for producto in productos {
-                let stockId = UUID().uuidString
-                let stockRef = firestore.collection("warehouse_stock").document(stockId)
-                batch.setData([
-                    "id": stockId,
-                    "almacenId": almacenId.uuidString,
-                    "productoId": producto.id?.uuidString ?? UUID().uuidString,
-                    "stockActual": 0.0,
-                    "stockMinimo": producto.stockMinimo,
-                    "capacidadTotal": producto.capacidadTotal,
-                    "unidadMedida": producto.unidadMedida ?? "L"
-                ], forDocument: stockRef, merge: true)
+            if almacenExistente == nil {
+                let request: NSFetchRequest<ProductoEntity> = ProductoEntity.fetchRequest()
+                let productos = (try? context.fetch(request)) ?? []
+                for producto in productos {
+                    let stockId = UUID().uuidString
+                    let stockRef = firestore.collection("warehouse_stock").document(stockId)
+                    batch.setData([
+                        "id": stockId,
+                        "almacenId": almacenId.uuidString,
+                        "productoId": producto.id?.uuidString ?? UUID().uuidString,
+                        "stockActual": 0.0,
+                        "stockMinimo": producto.stockMinimo,
+                        "capacidadTotal": producto.capacidadTotal,
+                        "unidadMedida": producto.unidadMedida ?? "L"
+                    ], forDocument: stockRef, merge: true)
+                }
             }
             batch.commit()
         }
@@ -125,6 +139,10 @@ final class ModalAlmacenViewController: UIViewController {
         }
     }
 
+    private func tipoSolicitudAlmacen() -> String {
+        almacenExistente == nil ? "create_warehouse" : "update_warehouse"
+    }
+
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Aceptar", style: .default))
@@ -134,23 +152,39 @@ final class ModalAlmacenViewController: UIViewController {
     private func solicitarMotivoYEnviar() {
         let alert = UIAlertController(
             title: "Enviar solicitud",
-            message: "Se enviará una solicitud al panel administrativo para crear el almacén.",
+            message: "Se enviará una solicitud detallada para registrar el almacén. Describe el motivo y el impacto operativo.",
             preferredStyle: .alert
         )
         alert.addTextField { textField in
-            textField.placeholder = "Motivo de la solicitud"
+            textField.placeholder = "Motivo principal"
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Uso o cobertura operativa"
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Observación adicional"
         }
         alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
         alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
             guard let self else { return }
-            let motivo = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let motivo = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let cobertura = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let observacion = alert.textFields?[2].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             guard motivo.isEmpty == false else {
                 self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
                 return
             }
+            guard cobertura.isEmpty == false else {
+                self.showAlert(title: "Validación", message: "Describe la cobertura operativa del almacén.")
+                return
+            }
             Task {
                 do {
-                    try await self.enviarSolicitudAlmacen(motivo: motivo)
+                    try await self.enviarSolicitudAlmacen(
+                        motivo: motivo,
+                        cobertura: cobertura,
+                        observacion: observacion
+                    )
                     await MainActor.run {
                         self.showAlertAndDismiss(
                             title: "Solicitud enviada",
@@ -167,19 +201,38 @@ final class ModalAlmacenViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    private func enviarSolicitudAlmacen(motivo: String) async throws {
+    private func enviarSolicitudAlmacen(
+        motivo: String,
+        cobertura: String,
+        observacion: String
+    ) async throws {
         let requester = try AdminRequestService.currentRequester()
         let payload = AdminRequestPayload(
             requestId: UUID().uuidString,
-            type: "create_warehouse",
+            type: tipoSolicitudAlmacen(),
             module: "almacen",
             status: "pending",
             requestedBy: requester,
-            target: nil,
+            target: almacenExistente.flatMap { almacen in
+                guard let id = almacen.id?.uuidString else { return nil }
+                return .init(entity: "warehouse", entityId: id)
+            },
             payload: [
+                "modoOperacion": .string(almacenExistente == nil ? "crear" : "editar"),
                 "nombre": .string(txtNombre?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""),
                 "direccion": .string(txtDireccion?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""),
-                "responsable": .string(txtResponsable?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "")
+                "responsable": .string(txtResponsable?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""),
+                "estadoActual": .object([
+                    "id": .string(almacenExistente?.id?.uuidString ?? ""),
+                    "nombre": .string(almacenExistente?.nombre ?? ""),
+                    "direccion": .string(almacenExistente?.direccion ?? ""),
+                    "responsable": .string(almacenExistente?.responsable ?? "")
+                ]),
+                "detalleSolicitud": .object([
+                    "coberturaOperativa": .string(cobertura),
+                    "observacion": observacion.isEmpty ? .string("sin_observacion") : .string(observacion),
+                    "requiereMatrizStock": .bool(true)
+                ])
             ],
             reason: motivo,
             createdAt: ISO8601DateFormatter().string(from: Date()),
@@ -207,7 +260,7 @@ final class ModalAlmacenViewController: UIViewController {
         toolbar.sizeToFit()
         toolbar.items = [
             UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-            UIBarButtonItem(title: "Listo", style: .done, target: self, action: #selector(confirmarResponsable))
+            UIBarButtonItem(title: "Listo", style: .plain, target: self, action: #selector(confirmarResponsable))
         ]
         txtResponsable?.inputAccessoryView = toolbar
     }

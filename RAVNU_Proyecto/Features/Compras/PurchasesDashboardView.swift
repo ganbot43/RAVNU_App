@@ -15,6 +15,15 @@ struct DatosDashboardCompras {
     }
 
     struct TarjetaOrden: Identifiable {
+        struct StockAlmacenResumen: Identifiable {
+            let id = UUID()
+            let warehouseName: String
+            let stockText: String
+            let capacityText: String
+            let statusText: String
+            let accentHex: String
+        }
+
         let id: String
         let initials: String
         let providerName: String
@@ -28,6 +37,16 @@ struct DatosDashboardCompras {
         let statusText: String
         let statusAccentHex: String
         let accentHex: String
+        let allocationText: String
+    }
+
+    struct ResumenProducto: Identifiable {
+        let id = UUID()
+        let name: String
+        let totalStockText: String
+        let coverageText: String
+        let accentHex: String
+        let warehouses: [TarjetaOrden.StockAlmacenResumen]
     }
 
     struct FilaRanking: Identifiable {
@@ -66,12 +85,37 @@ struct DatosDashboardCompras {
     let pendingCountText: String
     let receivedCountText: String
     let cancelledCountText: String
+    let productSummaries: [ResumenProducto]
     let tarjetasOrden: [TarjetaOrden]
     let filasRanking: [FilaRanking]
     let segmentosProducto: [SegmentoProducto]
     let barrasProducto: [BarraProducto]
     let totalVolumeText: String
     let totalProvidersText: String
+}
+
+struct PurchaseOrderDetailData {
+    struct Action: Identifiable {
+        let id = UUID()
+        let title: String
+        let accentHex: String
+        let isDestructive: Bool
+        let handler: () -> Void
+    }
+
+    let providerName: String
+    let productName: String
+    let amountText: String
+    let volumeText: String
+    let dateText: String
+    let statusText: String
+    let statusAccentHex: String
+    let warehouseText: String
+    let workerText: String
+    let noteText: String
+    let allocationText: String
+    let stockByWarehouse: [DatosDashboardCompras.TarjetaOrden.StockAlmacenResumen]
+    let actions: [Action]
 }
 
 struct PurchasesDashboardView: View {
@@ -254,6 +298,23 @@ struct PurchasesDashboardView: View {
                 metricCard(title: "GASTO TOTAL", value: data.totalSpendText, accent: "F59E0B")
                 metricCard(title: "PENDIENTES", value: data.pendingCountText, accent: "F59E0B")
                 metricCard(title: "RECIBIDAS", value: data.receivedCountText, accent: "22C55E")
+            }
+
+            if data.productSummaries.isEmpty == false {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Stock por producto y almacén")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(hex: "172033"))
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(data.productSummaries) { summary in
+                                productSummaryCard(summary)
+                            }
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
             }
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -543,12 +604,17 @@ struct PurchasesDashboardView: View {
                 HStack(spacing: 18) {
                     orderMeta(text: order.volumeText, accentHex: "22C55E")
                     orderMeta(text: order.warehouseText, accentHex: "64748B")
-                    orderMeta(text: order.workerText, accentHex: "94A3B8")
                 }
 
                 Text(order.noteText)
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(Color(hex: "8E9AAD"))
+
+                if order.allocationText.isEmpty == false {
+                    Text(order.allocationText)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color(hex: "4F7CF7"))
+                }
 
                 Text(order.statusText)
                     .font(.system(size: 13, weight: .bold, design: .rounded))
@@ -562,6 +628,37 @@ struct PurchasesDashboardView: View {
             .background(cardBackground)
         }
         .buttonStyle(.plain)
+    }
+
+    private func productSummaryCard(_ summary: DatosDashboardCompras.ResumenProducto) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(summary.name)
+                    .font(.system(size: 17, weight: .black, design: .rounded))
+                    .foregroundStyle(Color(hex: "172033"))
+                Spacer()
+                Circle()
+                    .fill(Color(hex: summary.accentHex))
+                    .frame(width: 10, height: 10)
+            }
+
+            Text(summary.totalStockText)
+                .font(.system(size: 22, weight: .black, design: .rounded))
+                .foregroundStyle(Color(hex: summary.accentHex))
+
+            Text(summary.coverageText)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color(hex: "8E9AAD"))
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(summary.warehouses) { stock in
+                    stockWarehouseRow(stock)
+                }
+            }
+        }
+        .padding(16)
+        .frame(width: 270, alignment: .leading)
+        .background(cardBackground)
     }
 
     private func rankingRow(_ row: DatosDashboardCompras.FilaRanking) -> some View {
@@ -641,10 +738,208 @@ struct PurchasesDashboardView: View {
         }
     }
 
+    private func stockWarehouseRow(_ stock: DatosDashboardCompras.TarjetaOrden.StockAlmacenResumen) -> some View {
+        HStack(alignment: .center, spacing: 10) {
+            Circle()
+                .fill(Color(hex: stock.accentHex))
+                .frame(width: 8, height: 8)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(stock.warehouseName)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: "172033"))
+                Text(stock.capacityText)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(hex: "8E9AAD"))
+            }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(stock.stockText)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: "172033"))
+                Text(stock.statusText)
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: stock.accentHex))
+            }
+        }
+    }
+
     private var cardBackground: some View {
         RoundedRectangle(cornerRadius: 20, style: .continuous)
             .fill(Color.white)
             .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 3)
+    }
+}
+
+struct PurchaseOrderDetailSheetView: View {
+    let data: PurchaseOrderDetailData
+    let onClose: () -> Void
+
+    var body: some View {
+        ZStack {
+            Color(hex: "F4F6FA").ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                Capsule()
+                    .fill(Color(hex: "D6DCE5"))
+                    .frame(width: 46, height: 5)
+                    .padding(.top, 8)
+                    .padding(.bottom, 10)
+
+                HStack {
+                    Button("Cerrar", action: onClose)
+                        .font(.system(size: 18, weight: .regular, design: .rounded))
+                        .foregroundStyle(Color(hex: "3B82F6"))
+                    Spacer()
+                    Text("Detalle de Orden")
+                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .foregroundStyle(Color(hex: "172033"))
+                    Spacer()
+                    Color.clear.frame(width: 56, height: 1)
+                }
+                .padding(.horizontal, 18)
+                .padding(.bottom, 14)
+
+                Divider()
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(data.providerName)
+                                .font(.system(size: 24, weight: .black, design: .rounded))
+                                .foregroundStyle(Color(hex: "172033"))
+                            Text(data.productName)
+                                .font(.system(size: 16, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color(hex: "8E9AAD"))
+                            HStack(spacing: 10) {
+                                detalleBadge(data.statusText, accentHex: data.statusAccentHex)
+                                detalleBadge(data.volumeText, accentHex: "22C55E")
+                                detalleBadge(data.amountText, accentHex: "F59E0B")
+                            }
+                        }
+                        .padding(18)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+                        VStack(alignment: .leading, spacing: 10) {
+                            detalleFila("Fecha", data.dateText)
+                            detalleFila("Almacén principal", data.warehouseText)
+                            detalleFila("Responsable", data.workerText)
+                        }
+                        .padding(18)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+                        if data.noteText.isEmpty == false {
+                            bloqueTexto("Notas", data.noteText)
+                        }
+
+                        if data.allocationText.isEmpty == false {
+                            bloqueTexto("Distribución final", data.allocationText)
+                        }
+
+                        if data.stockByWarehouse.isEmpty == false {
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Stock actual del producto")
+                                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Color(hex: "172033"))
+                                ForEach(data.stockByWarehouse) { stock in
+                                    stockWarehouseRow(stock)
+                                }
+                            }
+                            .padding(18)
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                        }
+
+                        if data.actions.isEmpty == false {
+                            VStack(spacing: 10) {
+                                ForEach(data.actions) { action in
+                                    Button(action.title) {
+                                        action.handler()
+                                    }
+                                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                                    .foregroundStyle(action.isDestructive ? Color(hex: "EF4444") : .white)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 52)
+                                    .background(action.isDestructive ? Color(hex: "FEF2F2") : Color(hex: action.accentHex))
+                                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.top, 18)
+                    .padding(.bottom, 24)
+                }
+            }
+        }
+    }
+
+    private func detalleFila(_ titulo: String, _ valor: String) -> some View {
+        HStack {
+            Text(titulo)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(hex: "8E9AAD"))
+            Spacer()
+            Text(valor)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(hex: "172033"))
+        }
+    }
+
+    private func detalleBadge(_ texto: String, accentHex: String) -> some View {
+        Text(texto)
+            .font(.system(size: 13, weight: .bold, design: .rounded))
+            .foregroundStyle(Color(hex: accentHex))
+            .padding(.horizontal, 10)
+            .frame(height: 28)
+            .background(Color(hex: accentHex).opacity(0.12))
+            .clipShape(Capsule())
+    }
+
+    private func bloqueTexto(_ titulo: String, _ valor: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(titulo)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(hex: "172033"))
+            Text(valor)
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundStyle(Color(hex: "6F7B8D"))
+        }
+        .padding(18)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func stockWarehouseRow(_ stock: DatosDashboardCompras.TarjetaOrden.StockAlmacenResumen) -> some View {
+        HStack(alignment: .center, spacing: 10) {
+            Circle()
+                .fill(Color(hex: stock.accentHex))
+                .frame(width: 8, height: 8)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(stock.warehouseName)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: "172033"))
+                Text(stock.capacityText)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundStyle(Color(hex: "8E9AAD"))
+            }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(stock.stockText)
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: "172033"))
+                Text(stock.statusText)
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color(hex: stock.accentHex))
+            }
+        }
     }
 }
 

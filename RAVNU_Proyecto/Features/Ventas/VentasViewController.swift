@@ -289,26 +289,38 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
         guard RoleAccessControl.canRequestSaleChanges else { return }
         let alert = UIAlertController(
             title: "Solicitar edición",
-            message: "Describe los cambios requeridos para esta venta y el motivo de la solicitud.",
+            message: "Detalla con precisión qué debe corregirse, por qué y qué impacto operativo tendrá el cambio.",
             preferredStyle: .alert
         )
         alert.addTextField { textField in
             textField.placeholder = "Cambios solicitados"
         }
         alert.addTextField { textField in
-            textField.placeholder = "Motivo de la solicitud"
+            textField.placeholder = "Motivo principal"
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Impacto operativo o comercial"
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Referencia adicional (opcional)"
         }
         alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
         alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
             guard let self else { return }
             let changes = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let reason = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let impact = alert.textFields?[2].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let reference = alert.textFields?[3].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             guard changes.isEmpty == false else {
                 self.showErrorAlert(message: "Describe los cambios que deseas realizar.")
                 return
             }
             guard reason.isEmpty == false else {
                 self.showErrorAlert(message: "Ingresa el motivo de la solicitud.")
+                return
+            }
+            guard impact.isEmpty == false else {
+                self.showErrorAlert(message: "Describe el impacto operativo o comercial del cambio.")
                 return
             }
             Task {
@@ -318,7 +330,14 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
                         sale: sale,
                         reason: reason,
                         extraPayload: [
-                            "requestedChanges": .string(changes)
+                            "requestedChanges": .string(changes),
+                            "impactoOperativo": .string(impact),
+                            "referenciaAdicional": reference.isEmpty ? .null : .string(reference),
+                            "detalleSolicitud": .object([
+                                "accionSolicitada": .string("editar_venta"),
+                                "requiereRevisionStock": .bool(true),
+                                "requiereRevisionTesoreria": .bool(true)
+                            ])
                         ]
                     )
                     await MainActor.run {
@@ -338,18 +357,34 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
         guard RoleAccessControl.canRequestSaleChanges else { return }
         let alert = UIAlertController(
             title: "Solicitar anulación",
-            message: "Esta venta no se anulará desde la app. Se enviará una solicitud al panel administrativo.",
+            message: "La venta no se anulará desde la app. Describe la causa, el contexto y el ajuste esperado.",
             preferredStyle: .alert
         )
         alert.addTextField { textField in
-            textField.placeholder = "Motivo de la anulación"
+            textField.placeholder = "Motivo principal"
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Detalle del incidente"
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Ajuste esperado en stock/caja"
         }
         alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
         alert.addAction(UIAlertAction(title: "Enviar", style: .destructive) { [weak self] _ in
             guard let self else { return }
-            let reason = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let reason = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let incident = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let expectedAdjustment = alert.textFields?[2].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             guard reason.isEmpty == false else {
                 self.showErrorAlert(message: "Ingresa el motivo de la anulación.")
+                return
+            }
+            guard incident.isEmpty == false else {
+                self.showErrorAlert(message: "Describe el incidente o la razón operativa.")
+                return
+            }
+            guard expectedAdjustment.isEmpty == false else {
+                self.showErrorAlert(message: "Indica qué ajuste esperas en stock o caja.")
                 return
             }
             Task {
@@ -358,7 +393,15 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
                         type: "cancel_sale",
                         sale: sale,
                         reason: reason,
-                        extraPayload: [:]
+                        extraPayload: [
+                            "detalleIncidente": .string(incident),
+                            "ajusteEsperado": .string(expectedAdjustment),
+                            "detalleSolicitud": .object([
+                                "accionSolicitada": .string("anular_venta"),
+                                "requiereReversionStock": .bool(true),
+                                "requiereReversionTesoreria": .bool(true)
+                            ])
+                        ]
                     )
                     await MainActor.run {
                         self.showSuccessAndDismissAlert(title: "Solicitud enviada", message: "La solicitud de anulación fue enviada al panel administrativo.")
@@ -386,7 +429,14 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
             "productInfo": .string(sale.productInfo),
             "total": .string(sale.total),
             "paymentType": .string(sale.paymentType),
-            "dateLabel": .string(sale.date)
+            "dateLabel": .string(sale.date),
+            "resumenVenta": .object([
+                "cliente": .string(sale.clientName),
+                "producto": .string(sale.productInfo),
+                "totalTexto": .string(sale.total),
+                "tipoPago": .string(sale.paymentType),
+                "fechaVisible": .string(sale.date)
+            ])
         ]
         if let currentSale {
             payload["estadoActual"] = .string(currentSale.estado ?? "pendiente")
@@ -395,7 +445,20 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
             payload["totalActual"] = .number(currentSale.total)
             payload["metodoPagoActual"] = .string(currentSale.metodoPago ?? "")
             payload["fechaVenta"] = .string(isoFormatter.string(from: currentSale.fechaVenta ?? Date()))
+            payload["ventaActual"] = .object([
+                "id": .string(currentSale.id?.uuidString ?? sale.entityId),
+                "estado": .string(currentSale.estado ?? "pendiente"),
+                "cliente": .string(currentSale.cliente?.nombre ?? sale.clientName),
+                "producto": .string(currentSale.producto?.nombre ?? sale.productInfo),
+                "cantidadLitros": .number(currentSale.cantidadLitros),
+                "precioUnitario": .number(currentSale.precioUnitario),
+                "total": .number(currentSale.total),
+                "metodoPago": .string(currentSale.metodoPago ?? ""),
+                "fechaISO": .string(isoFormatter.string(from: currentSale.fechaVenta ?? Date()))
+            ])
         }
+        payload["solicitadoPorRolOperativo"] = .string(AppSession.shared.rolLogueado ?? "desconocido")
+        payload["requiereAprobacionAdmin"] = .bool(true)
         extraPayload.forEach { payload[$0.key] = $0.value }
 
         let request = AdminRequestPayload(

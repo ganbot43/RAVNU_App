@@ -1151,7 +1151,9 @@ final class ClientesViewController: UIViewController, UITableViewDelegate, UITab
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: clienteCellIdentifier, for: indexPath) as! ClientCell
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: clienteCellIdentifier, for: indexPath) as? ClientCell else {
+            return UITableViewCell(style: .default, reuseIdentifier: "clienteFallbackCell")
+        }
         let record = crearRegistro(from: filteredClientes[indexPath.row])
         cell.configure(with: record)
         return cell

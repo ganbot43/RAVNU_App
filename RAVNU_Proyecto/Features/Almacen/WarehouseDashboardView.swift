@@ -34,6 +34,7 @@ struct DatosDashboardAlmacen {
         let warehouseName: String
         let colorHex: String
         let stockText: String
+        let detailText: String
         let fillRatio: Double
         let isLow: Bool
     }
@@ -44,6 +45,8 @@ struct DatosDashboardAlmacen {
         let priceText: String
         let minimumText: String
         let totalStockText: String
+        let capacityText: String
+        let healthText: String
         let totalValueText: String
         let fillRatio: Double
         let colorHex: String
@@ -445,7 +448,7 @@ struct WarehouseDashboardView: View {
                     Text(product.name)
                         .font(.system(size: 14, weight: .black))
                         .foregroundStyle(Color.black)
-                    Text("\(product.priceText) · Min: \(product.minimumText)")
+                    Text("\(product.priceText) · Min: \(product.minimumText) · Cap: \(product.capacityText)")
                         .font(.system(size: 10, weight: .regular))
                         .foregroundStyle(Color(uiColor: .systemGray))
                 }
@@ -456,11 +459,9 @@ struct WarehouseDashboardView: View {
                     Text(product.totalStockText)
                         .font(.system(size: 14, weight: .black))
                         .foregroundStyle(product.isLow ? PaletaAlmacen.red : Color.black)
-                    if product.isLow {
-                        Text("STOCK BAJO")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(PaletaAlmacen.red)
-                    }
+                    Text(product.healthText.uppercased())
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(product.isLow ? PaletaAlmacen.red : PaletaAlmacen.green)
                 }
             }
 
@@ -514,6 +515,11 @@ struct WarehouseDashboardView: View {
                             .foregroundStyle(stock.isLow ? PaletaAlmacen.red : Color.black)
                             .frame(width: 64, alignment: .trailing)
                     }
+
+                    Text(stock.detailText)
+                        .font(.system(size: 9, weight: .regular))
+                        .foregroundStyle(Color(uiColor: .tertiaryLabel))
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
         }

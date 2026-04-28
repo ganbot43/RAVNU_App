@@ -175,7 +175,7 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
 
     private func crearDatosDashboard() -> DatosDashboardAlmacen {
         let valorTotal = productos.reduce(0.0) { $0 + ($1.stockLitros * $1.precioPorLitro) }
-        let bajoMinimo = stocks.filter { $0.stockActual > 0 && $0.stockActual < minimo(for: $0) }.count
+        let bajoMinimo = stocks.filter { $0.stockActual <= minimo(for: $0) }.count
         let entradas = movimientos.filter { $0.tipo == "entrada" }.reduce(0.0) { $0 + max($1.cantidadLitros, 0) }
         let salidas = movimientos.filter { $0.tipo == "salida" }.reduce(0.0) { $0 + abs($1.cantidadLitros) }
         let transferencias = movimientos.filter { $0.tipo == "transfer" }.reduce(0.0) { $0 + abs($1.cantidadLitros) }
@@ -199,7 +199,7 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
             let warehouseStocks = stocks.filter { $0.almacen == almacen }
             let totalLiters = warehouseStocks.reduce(0.0) { $0 + $1.stockActual }
             let totalCapacity = warehouseStocks.reduce(0.0) { $0 + capacidad(for: $1) }
-            let lowCount = warehouseStocks.filter { $0.stockActual > 0 && $0.stockActual < minimo(for: $0) }.count
+            let lowCount = warehouseStocks.filter { $0.stockActual <= minimo(for: $0) }.count
             let warehouseValue = warehouseStocks.reduce(0.0) { partial, stock in
                 partial + (stock.stockActual * (stock.producto?.precioPorLitro ?? 0))
             }
@@ -234,6 +234,8 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                 priceText: "\(formatearMoneda(producto.precioPorLitro)) / \(producto.unidadMedida ?? "L")",
                 minimumText: formatearValorLitros(producto.stockMinimo),
                 totalStockText: formatearValorLitros(totalStock),
+                capacityText: formatearValorLitros(totalCapacity),
+                healthText: isLow ? "Reponer" : "Operativo",
                 totalValueText: formatearMoneda(totalValue),
                 fillRatio: totalCapacity > 0 ? min(totalStock / totalCapacity, 1) : 0,
                 colorHex: meta.colorHex,
@@ -245,8 +247,9 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                         warehouseName: nombreCortoAlmacen(stock.almacen?.nombre ?? "Almacén"),
                         colorHex: warehouseColorHex(for: stockIndex),
                         stockText: formatearValorLitros(stock.stockActual),
+                        detailText: "Min \(formatearValorLitros(minimo(for: stock))) · Cap \(formatearValorLitros(capacidad(for: stock)))",
                         fillRatio: capacidad(for: stock) > 0 ? min(stock.stockActual / capacidad(for: stock), 1) : 0,
-                        isLow: stock.stockActual > 0 && stock.stockActual < minimo(for: stock)
+                        isLow: stock.stockActual <= minimo(for: stock)
                     )
                 }
             )
@@ -344,7 +347,8 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
             NSSortDescriptor(key: "almacen.nombre", ascending: true),
             NSSortDescriptor(key: "producto.nombre", ascending: true)
         ]
-        stocks = (try? contexto.fetch(request)) ?? []
+        let cargados = (try? contexto.fetch(request)) ?? []
+        stocks = consolidarStocksRepresentativos(cargados)
     }
 
     private func cargarMovimientos() {
@@ -361,10 +365,34 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         }
     }
 
+    private func consolidarStocksRepresentativos(_ lista: [StockAlmacenEntity]) -> [StockAlmacenEntity] {
+        let grupos = Dictionary(grouping: lista) { stock in
+            let productoId = stock.producto?.id?.uuidString ?? stock.producto?.objectID.uriRepresentation().absoluteString ?? "sin-producto"
+            let almacenId = stock.almacen?.id?.uuidString ?? stock.almacen?.objectID.uriRepresentation().absoluteString ?? "sin-almacen"
+            return "\(productoId)|\(almacenId)"
+        }
+
+        return grupos.values.compactMap { grupo in
+            guard let principal = grupo.max(by: { $0.stockActual < $1.stockActual }) else { return nil }
+            principal.stockActual = grupo.map(\.stockActual).max() ?? principal.stockActual
+            principal.stockMinimo = grupo.map(\.stockMinimo).max() ?? principal.stockMinimo
+            principal.capacidadTotal = grupo.map(\.capacidadTotal).max() ?? principal.capacidadTotal
+            return principal
+        }
+        .sorted {
+            let almacen0 = $0.almacen?.nombre ?? ""
+            let almacen1 = $1.almacen?.nombre ?? ""
+            if almacen0 == almacen1 {
+                return ($0.producto?.nombre ?? "") < ($1.producto?.nombre ?? "")
+            }
+            return almacen0 < almacen1
+        }
+    }
+
     private func actualizarMetricas() {
         let stockTotal = stocks.reduce(0.0) { $0 + $1.stockActual }
         let valorTotal = productos.reduce(0.0) { $0 + ($1.stockLitros * $1.precioPorLitro) }
-        let bajoMinimo = stocks.filter { $0.stockActual > 0 && $0.stockActual < minimo(for: $0) }.count
+        let bajoMinimo = stocks.filter { $0.stockActual <= minimo(for: $0) }.count
         let entradas = movimientos.filter { $0.tipo == "entrada" }.reduce(0.0) { $0 + max($1.cantidadLitros, 0) }
         let salidas = movimientos.filter { $0.tipo == "salida" }.reduce(0.0) { $0 + abs($1.cantidadLitros) }
         let transferencias = movimientos.filter { $0.tipo == "transfer" }.reduce(0.0) { $0 + abs($1.cantidadLitros) }
@@ -577,7 +605,7 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
             let warehouseStocks = stocks.filter { $0.almacen == almacen }
             let totalLiters = warehouseStocks.reduce(0.0) { $0 + $1.stockActual }
             let totalCapacity = warehouseStocks.reduce(0.0) { $0 + capacidad(for: $1) }
-            let lowCount = warehouseStocks.filter { $0.stockActual > 0 && $0.stockActual < minimo(for: $0) }.count
+            let lowCount = warehouseStocks.filter { $0.stockActual <= minimo(for: $0) }.count
             almacenCell.configure(
                 accent: lowCount > 0
                     ? UIColor(red: 0.961, green: 0.620, blue: 0.043, alpha: 1)
