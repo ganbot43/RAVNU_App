@@ -1,4 +1,6 @@
+import Combine
 import CoreData
+import SwiftUI
 import UIKit
 #if canImport(FirebaseFirestore)
 import FirebaseFirestore
@@ -22,8 +24,9 @@ final class ModalAlmacenViewController: UIViewController {
     #endif
 
     private let context = AppCoreData.viewContext
+    private let formState = AlmacenFormState()
     private var responsablesDisponibles: [String] = []
-    private let selectorResponsable = UIPickerView()
+    private var hostingController: UIHostingController<AlmacenModalContentView>?
 
     private var puedeGestionarDirecto: Bool {
         RoleAccessControl.canManageDirectly
@@ -33,21 +36,70 @@ final class ModalAlmacenViewController: UIViewController {
         super.viewDidLoad()
         btnGuardar?.layer.cornerRadius = 16
         btnGuardar?.clipsToBounds = true
-        configurarSelectorResponsable()
+        configurarVistaHibrida()
+        configurarMensajesDeContexto()
         cargarResponsables()
         cargarAlmacenExistenteSiAplica()
+        actualizarVistaHibrida()
+    }
+
+    private func configurarVistaHibrida() {
+        [txtNombre, txtDireccion, txtResponsable, btnGuardar].forEach { $0?.isHidden = true }
+
+        let host = UIHostingController(rootView: crearVistaAlmacen())
+        addChild(host)
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        host.view.backgroundColor = .clear
+        view.addSubview(host.view)
+        NSLayoutConstraint.activate([
+            host.view.topAnchor.constraint(equalTo: view.topAnchor),
+            host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        host.didMove(toParent: self)
+        hostingController = host
+    }
+
+    private func crearVistaAlmacen() -> AlmacenModalContentView {
+        AlmacenModalContentView(
+            state: formState,
+            isEditing: almacenExistente != nil,
+            onCancel: { [weak self] in self?.dismiss(animated: true) },
+            onSave: { [weak self] in self?.handleSaveTapped() }
+        )
+    }
+
+    private func actualizarVistaHibrida() {
+        hostingController?.rootView = crearVistaAlmacen()
+    }
+
+    private func configurarMensajesDeContexto() {
+        txtNombre?.placeholder = "Nombre del almacén"
+        txtDireccion?.placeholder = "Dirección"
+        txtResponsable?.placeholder = "Responsable"
+        formState.namePlaceholder = "Main Station, Planta Norte..."
+        formState.addressPlaceholder = "Av. Principal 245, Lima"
+        formState.capacityPlaceholder = "Capacidad máxima del almacén"
+    }
+
+    private func parseDouble(_ text: String?) -> Double {
+        Double((text ?? "").replacingOccurrences(of: ",", with: ".")) ?? 0
     }
 
     private func validateInputs() -> String? {
-        let trimmedName = (txtNombre?.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedName = formState.name.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedName.isEmpty {
             return "Ingresa el nombre del almacén."
         }
-        if (txtDireccion?.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if formState.address.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return "Ingresa la dirección."
         }
-        if (txtResponsable?.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Ingresa el responsable."
+        if formState.manager.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "Selecciona un responsable."
+        }
+        if parseDouble(formState.capacity) <= 0 {
+            return "Ingresa la cantidad máxima del almacén."
         }
         let request: NSFetchRequest<AlmacenEntity> = AlmacenEntity.fetchRequest()
         request.fetchLimit = 1
@@ -61,28 +113,35 @@ final class ModalAlmacenViewController: UIViewController {
 
     private func cargarAlmacenExistenteSiAplica() {
         guard let almacenExistente else { return }
-        txtNombre?.text = almacenExistente.nombre
-        txtDireccion?.text = almacenExistente.direccion
-        txtResponsable?.text = almacenExistente.responsable
+        formState.name = almacenExistente.nombre ?? ""
+        formState.address = almacenExistente.direccion ?? ""
+        formState.manager = almacenExistente.responsable ?? ""
+        formState.capacity = almacenExistente.stockEspacio > 0 ? String(format: "%.0f", almacenExistente.stockEspacio) : ""
     }
 
     private func payload(for almacenId: UUID) -> [String: Any] {
-        [
+        var payload: [String: Any] = [
             "id": almacenId.uuidString,
-            "nombre": txtNombre?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
-            "direccion": txtDireccion?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
-            "responsable": txtResponsable?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "",
+            "nombre": formState.name.trimmingCharacters(in: .whitespacesAndNewlines),
+            "direccion": formState.address.trimmingCharacters(in: .whitespacesAndNewlines),
+            "responsable": formState.manager.trimmingCharacters(in: .whitespacesAndNewlines),
+            "stockEspacio": parseDouble(formState.capacity),
             "activo": true,
-            "createdAt": Timestamp(date: Date())
+            "updatedAt": Timestamp(date: Date())
         ]
+        if almacenExistente == nil {
+            payload["createdAt"] = Timestamp(date: Date())
+        }
+        return payload
     }
 
     private func saveAlmacenToLocal(id: UUID) throws {
         let almacen = almacenExistente ?? AlmacenEntity(context: context)
         almacen.id = id
-        almacen.nombre = txtNombre?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
-        almacen.direccion = txtDireccion?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
-        almacen.responsable = txtResponsable?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
+        almacen.nombre = formState.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        almacen.direccion = formState.address.trimmingCharacters(in: .whitespacesAndNewlines)
+        almacen.responsable = formState.manager.trimmingCharacters(in: .whitespacesAndNewlines)
+        almacen.stockEspacio = parseDouble(formState.capacity)
         almacen.activo = true
         if almacenExistente == nil {
             createInitialStocks(for: almacen)
@@ -219,14 +278,16 @@ final class ModalAlmacenViewController: UIViewController {
             },
             payload: [
                 "modoOperacion": .string(almacenExistente == nil ? "crear" : "editar"),
-                "nombre": .string(txtNombre?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""),
-                "direccion": .string(txtDireccion?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""),
-                "responsable": .string(txtResponsable?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""),
+                "nombre": .string(formState.name.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "direccion": .string(formState.address.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "responsable": .string(formState.manager.trimmingCharacters(in: .whitespacesAndNewlines)),
+                "stockEspacio": .number(parseDouble(formState.capacity)),
                 "estadoActual": .object([
                     "id": .string(almacenExistente?.id?.uuidString ?? ""),
                     "nombre": .string(almacenExistente?.nombre ?? ""),
                     "direccion": .string(almacenExistente?.direccion ?? ""),
-                    "responsable": .string(almacenExistente?.responsable ?? "")
+                    "responsable": .string(almacenExistente?.responsable ?? ""),
+                    "stockEspacio": .number(almacenExistente?.stockEspacio ?? 0)
                 ]),
                 "detalleSolicitud": .object([
                     "coberturaOperativa": .string(cobertura),
@@ -251,20 +312,6 @@ final class ModalAlmacenViewController: UIViewController {
         present(alert, animated: true)
     }
 
-    private func configurarSelectorResponsable() {
-        selectorResponsable.dataSource = self
-        selectorResponsable.delegate = self
-        txtResponsable?.inputView = selectorResponsable
-
-        let toolbar = UIToolbar()
-        toolbar.sizeToFit()
-        toolbar.items = [
-            UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-            UIBarButtonItem(title: "Listo", style: .plain, target: self, action: #selector(confirmarResponsable))
-        ]
-        txtResponsable?.inputAccessoryView = toolbar
-    }
-
     private func cargarResponsables() {
         #if canImport(FirebaseFirestore)
         guard FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled else { return }
@@ -281,29 +328,17 @@ final class ModalAlmacenViewController: UIViewController {
 
             DispatchQueue.main.async {
                 self.responsablesDisponibles = trabajadores
-                self.selectorResponsable.reloadAllComponents()
-                if self.txtResponsable?.text?.isEmpty != false, let primero = trabajadores.first {
-                    self.txtResponsable?.text = primero
+                self.formState.availableManagers = trabajadores
+                if self.formState.manager.isEmpty, let primero = trabajadores.first {
+                    self.formState.manager = primero
                 }
+                self.actualizarVistaHibrida()
             }
         }
         #endif
     }
 
-    @objc
-    private func confirmarResponsable() {
-        let indice = selectorResponsable.selectedRow(inComponent: 0)
-        if responsablesDisponibles.indices.contains(indice) {
-            txtResponsable?.text = responsablesDisponibles[indice]
-        }
-        txtResponsable?.resignFirstResponder()
-    }
-
-    @IBAction private func btnCancelarTapped(_ sender: UIButton) {
-        dismiss(animated: true)
-    }
-
-    @IBAction private func btnGuardarTapped(_ sender: UIButton) {
+    private func handleSaveTapped() {
         guard RoleAccessControl.canManageWarehouse else {
             showAlert(title: "Permiso denegado", message: RoleAccessControl.denialMessage(for: .manageWarehouse))
             return
@@ -328,21 +363,273 @@ final class ModalAlmacenViewController: UIViewController {
             showAlert(title: "Permiso denegado", message: "Tu rol no puede solicitar nuevos almacenes.")
         }
     }
+
+    @IBAction private func btnCancelarTapped(_ sender: UIButton) {
+        dismiss(animated: true)
+    }
+
+    @IBAction private func btnGuardarTapped(_ sender: UIButton) {
+        handleSaveTapped()
+    }
 }
 
-extension ModalAlmacenViewController: UIPickerViewDataSource, UIPickerViewDelegate {
-    func numberOfComponents(in pickerView: UIPickerView) -> Int {
-        1
+private final class AlmacenFormState: ObservableObject {
+    @Published var name = ""
+    @Published var address = ""
+    @Published var manager = ""
+    @Published var capacity = ""
+    @Published var availableManagers: [String] = []
+
+    var namePlaceholder = ""
+    var addressPlaceholder = ""
+    var capacityPlaceholder = ""
+}
+
+private struct AlmacenModalContentView: View {
+    @ObservedObject var state: AlmacenFormState
+    let isEditing: Bool
+    let onCancel: () -> Void
+    let onSave: () -> Void
+
+    @State private var showManagerPicker = false
+
+    private var capacityValue: Double {
+        Double(state.capacity.replacingOccurrences(of: ",", with: ".")) ?? 0
     }
 
-    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        max(responsablesDisponibles.count, 1)
-    }
-
-    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        if responsablesDisponibles.isEmpty {
-            return "No hay almaceneros"
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 18) {
+                    heroCard
+                    sectionCard(title: "Identidad operativa", subtitle: "Define cómo se verá y ubicará este almacén dentro de la red.") {
+                        field("Nombre del almacén", text: $state.name, placeholder: state.namePlaceholder, icon: "building.2")
+                        field("Dirección", text: $state.address, placeholder: state.addressPlaceholder, icon: "mappin.and.ellipse")
+                    }
+                    sectionCard(title: "Capacidad y responsable", subtitle: "La capacidad máxima fija el techo operativo; el responsable facilita control y trazabilidad.") {
+                        managerField
+                        field("Cantidad máxima del almacén", text: $state.capacity, placeholder: state.capacityPlaceholder, icon: "gauge.with.dots.needle.67percent", keyboard: .decimalPad)
+                    }
+                    insightCard
+                    Button(action: onSave) {
+                        HStack(spacing: 8) {
+                            Image(systemName: isEditing ? "square.and.pencil" : "shippingbox.fill")
+                            Text(isEditing ? "Guardar cambios" : "Registrar almacén")
+                        }
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "2563EB"), Color(hex: "1D4ED8")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
+            }
+            .background(Color(hex: "F3F7FB").ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancelar", action: onCancel)
+                }
+                ToolbarItem(placement: .principal) {
+                    Text(isEditing ? "Editar almacén" : "Nuevo almacén")
+                        .font(.system(size: 18, weight: .bold))
+                }
+            }
+            .confirmationDialog("Selecciona un responsable", isPresented: $showManagerPicker) {
+                if state.availableManagers.isEmpty {
+                    Button("No hay almaceneros disponibles", role: .cancel) { }
+                } else {
+                    ForEach(state.availableManagers, id: \.self) { manager in
+                        Button(manager) {
+                            state.manager = manager
+                        }
+                    }
+                }
+            }
         }
-        return responsablesDisponibles[row]
+    }
+
+    private var heroCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(isEditing ? "Refina la estación" : "Activa un nuevo almacén")
+                        .font(.system(size: 22, weight: .black))
+                        .foregroundStyle(.white)
+                    Text("Aquí defines la base operativa; luego el stock real se gestionará por producto y movimiento.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.84))
+                }
+                Spacer()
+                Image(systemName: "building.2.crop.circle")
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 56, height: 56)
+                    .background(Color.white.opacity(0.16))
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
+
+            HStack(spacing: 10) {
+                metricChip(title: "RESP.", value: state.manager.isEmpty ? "Pendiente" : state.manager)
+                metricChip(title: "CAP.", value: capacityValue > 0 ? "\(Int(capacityValue.rounded())) L" : "Definir")
+                metricChip(title: "MODO", value: isEditing ? "Edición" : "Alta")
+            }
+        }
+        .padding(20)
+        .background(
+            LinearGradient(
+                colors: [Color(hex: "0F172A"), Color(hex: "2563EB")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+    }
+
+    private var managerField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("RESPONSABLE")
+                .font(.system(size: 11, weight: .black))
+                .foregroundStyle(Color(hex: "64748B"))
+
+            Button {
+                showManagerPicker = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "person.crop.circle")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Color(hex: "2563EB"))
+                        .frame(width: 18)
+
+                    Text(state.manager.isEmpty ? "Selecciona un almacenero" : state.manager)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(state.manager.isEmpty ? Color(hex: "94A3B8") : Color(hex: "0F172A"))
+
+                    Spacer()
+
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(Color(hex: "94A3B8"))
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 14)
+                .background(Color(hex: "F8FAFC"))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var insightCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label("Cómo se usa este almacén", systemImage: "info.circle.fill")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(Color(hex: "92400E"))
+
+            Text("La cantidad máxima es la capacidad total de la estación. No representa litros libres; el espacio real disponible se verá después en el detalle por producto y transferencias.")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Color(hex: "7C2D12"))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color(hex: "FFF7ED"))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(Color(hex: "FED7AA"), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func sectionCard<Content: View>(title: String, subtitle: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 17, weight: .black))
+                    .foregroundStyle(Color(hex: "0F172A"))
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color(hex: "64748B"))
+            }
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
+    }
+
+    private func field(_ title: String, text: Binding<String>, placeholder: String, icon: String, keyboard: UIKeyboardType = .default) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title.uppercased())
+                .font(.system(size: 11, weight: .black))
+                .foregroundStyle(Color(hex: "64748B"))
+
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color(hex: "2563EB"))
+                    .frame(width: 18)
+
+                TextField(placeholder, text: text)
+                    .font(.system(size: 15, weight: .medium))
+                    .keyboardType(keyboard)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
+            .background(Color(hex: "F8FAFC"))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+    }
+
+    private func metricChip(title: String, value: String) -> some View {
+        VStack(spacing: 2) {
+            Text(title)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(Color.white.opacity(0.68))
+            Text(value.isEmpty ? "-" : value)
+                .font(.system(size: 13, weight: .black))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+private extension Color {
+    init(hex: String) {
+        let cleaned = hex.replacingOccurrences(of: "#", with: "")
+        var value: UInt64 = 0
+        Scanner(string: cleaned).scanHexInt64(&value)
+        self.init(
+            .sRGB,
+            red: Double((value >> 16) & 0xFF) / 255.0,
+            green: Double((value >> 8) & 0xFF) / 255.0,
+            blue: Double(value & 0xFF) / 255.0,
+            opacity: 1
+        )
     }
 }

@@ -400,6 +400,7 @@ final class ModalNuevaVentaViewController: UIViewController {
                 "nombre": almacen.nombre ?? "Almacén",
                 "direccion": almacen.direccion ?? "",
                 "responsable": almacen.responsable ?? "",
+                "stockEspacio": almacen.stockEspacio,
                 "activo": almacen.activo
             ], forDocument: warehouseRef, merge: true)
         }

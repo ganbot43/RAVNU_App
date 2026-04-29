@@ -395,6 +395,7 @@ final class RemoteSyncCoordinator {
             almacen.nombre = stringValue(data, keys: ["nombre", "name"])
             almacen.direccion = stringValue(data, keys: ["direccion", "address"])
             almacen.responsable = stringValue(data, keys: ["responsable", "managerName", "responsible"])
+            almacen.stockEspacio = doubleValue(data, keys: ["stockEspacio", "availableSpace", "spaceAvailable"])
             almacen.activo = boolValue(data, keys: ["activo", "active"], default: true)
         }
     }

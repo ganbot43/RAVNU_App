@@ -27,6 +27,8 @@ struct DatosDashboardAlmacen {
         let productsText: String
         let lowStockText: String?
         let valueText: String
+        let availableSpaceText: String
+        let stocks: [StockProductoPorAlmacen]
     }
 
     struct StockProductoPorAlmacen: Identifiable {
@@ -126,6 +128,7 @@ struct WarehouseDashboardView: View {
     @State private var filtroAlmacenMovimiento = "all"
     @State private var filtroTipoMovimiento: DatosDashboardAlmacen.TipoMovimiento?
     @State private var productosExpandidos: Set<String> = []
+    @State private var almacenesExpandidos: Set<String> = []
 
     private var movimientosFiltrados: [DatosDashboardAlmacen.TarjetaMovimiento] {
         data.movementCards.filter { item in
@@ -379,8 +382,14 @@ struct WarehouseDashboardView: View {
     }
 
     private func warehouseCard(_ warehouse: DatosDashboardAlmacen.TarjetaAlmacen) -> some View {
-        Button(action: { onSelectWarehouse(warehouse.id) }) {
-            VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
+            Button(action: {
+                if almacenesExpandidos.contains(warehouse.id) {
+                    almacenesExpandidos.remove(warehouse.id)
+                } else {
+                    almacenesExpandidos.insert(warehouse.id)
+                }
+            }) {
                 HStack(alignment: .center, spacing: 12) {
                     ZStack {
                         Circle()
@@ -402,47 +411,96 @@ struct WarehouseDashboardView: View {
 
                     Spacer()
 
-                    Text("Ver detalle")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(Color(hex: warehouse.colorHex))
-                }
-
-                HStack {
-                    Text(warehouse.levelText)
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: .systemGray))
-                    Spacer()
-                    Text("\(warehouse.totalStockText) / \(warehouse.totalCapacityText)")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(Color(.label))
-                }
-
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color(hex: "F3F4F6"))
-                        Capsule()
-                            .fill(Color(hex: warehouse.colorHex))
-                            .frame(width: geometry.size.width * max(0, min(1, warehouse.fillRatio)))
+                    HStack(spacing: 6) {
+                        Text(almacenesExpandidos.contains(warehouse.id) ? "Ocultar" : "Ver detalle")
+                            .font(.system(size: 12, weight: .bold))
+                        Image(systemName: almacenesExpandidos.contains(warehouse.id) ? "chevron.up" : "chevron.right")
+                            .font(.system(size: 11, weight: .black))
                     }
-                }
-                .frame(height: 8)
-
-                HStack(spacing: 8) {
-                    chip(text: warehouse.productsText, bgHex: "F9FAFB", fgHex: "6B7280", icon: "shippingbox")
-                    if let lowStockText = warehouse.lowStockText {
-                        chip(text: lowStockText, bgHex: "FEF2F2", fgHex: "EF4444", icon: "exclamationmark.triangle")
-                    }
-                    Spacer()
-                    Text(warehouse.valueText)
-                        .font(.system(size: 14, weight: .black))
-                        .foregroundStyle(Color(.label))
+                    .foregroundStyle(Color(hex: warehouse.colorHex))
                 }
             }
-            .padding(16)
-            .warehouseCardStyle()
+            .buttonStyle(.plain)
+
+            HStack {
+                Text(warehouse.levelText)
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Color(uiColor: .systemGray))
+                Spacer()
+                Text("\(warehouse.totalStockText) / \(warehouse.totalCapacityText)")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(Color(.label))
+            }
+
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color(hex: "F3F4F6"))
+                    Capsule()
+                        .fill(Color(hex: warehouse.colorHex))
+                        .frame(width: geometry.size.width * max(0, min(1, warehouse.fillRatio)))
+                }
+            }
+            .frame(height: 8)
+
+            HStack(spacing: 8) {
+                chip(text: warehouse.productsText, bgHex: "F9FAFB", fgHex: "6B7280", icon: "shippingbox")
+                chip(text: "Libre \(warehouse.availableSpaceText)", bgHex: "EFF6FF", fgHex: "2563EB", icon: "arrow.left.and.right.righttriangle.left.righttriangle.right")
+                if let lowStockText = warehouse.lowStockText {
+                    chip(text: lowStockText, bgHex: "FEF2F2", fgHex: "EF4444", icon: "exclamationmark.triangle")
+                }
+                Spacer()
+                Text(warehouse.valueText)
+                    .font(.system(size: 14, weight: .black))
+                    .foregroundStyle(Color(.label))
+            }
+
+            if almacenesExpandidos.contains(warehouse.id) {
+                VStack(spacing: 10) {
+                    ForEach(warehouse.stocks) { stock in
+                        HStack(spacing: 10) {
+                            Circle()
+                                .fill(Color(hex: stock.colorHex))
+                                .frame(width: 10, height: 10)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(stock.warehouseName)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(Color(.label))
+                                Text(stock.detailText)
+                                    .font(.system(size: 10, weight: .regular))
+                                    .foregroundStyle(Color(uiColor: .secondaryLabel))
+                            }
+
+                            Spacer()
+
+                            Text(stock.stockText)
+                                .font(.system(size: 12, weight: .black))
+                                .foregroundStyle(stock.isLow ? PaletaAlmacen.red : Color(.label))
+                        }
+                        .padding(10)
+                        .background(Color(hex: "F9FAFB"))
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+
+                    Button(action: { onSelectWarehouse(warehouse.id) }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.left.arrow.right")
+                            Text("Registrar movimiento en este almacén")
+                        }
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(Color.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(Color(hex: warehouse.colorHex))
+                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
-        .buttonStyle(.plain)
+        .padding(16)
+        .warehouseCardStyle()
     }
 
     private func productCard(_ product: DatosDashboardAlmacen.TarjetaProducto) -> some View {

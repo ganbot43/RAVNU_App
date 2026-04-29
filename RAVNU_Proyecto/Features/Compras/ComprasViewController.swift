@@ -1863,6 +1863,17 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             "telefono": orden.proveedor?.telefono ?? "",
             "activo": orden.proveedor?.activo ?? true
         ], forDocument: firestore.collection("suppliers").document(proveedorId), merge: true)
+        if let almacen = orden.almacen,
+           let almacenId = almacen.id?.uuidString {
+            batch.setData([
+                "id": almacenId,
+                "nombre": almacen.nombre ?? "Almacén",
+                "direccion": almacen.direccion ?? "",
+                "responsable": almacen.responsable ?? "",
+                "stockEspacio": almacen.stockEspacio,
+                "activo": almacen.activo
+            ], forDocument: firestore.collection("warehouses").document(almacenId), merge: true)
+        }
 
         batch.commit { [weak self] error in
             DispatchQueue.main.async {
@@ -1945,6 +1956,12 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             "id": productoId,
             "stockLitros": orden.producto?.stockLitros ?? stock.stockActual
         ], forDocument: firestore.collection("products").document(productoId), merge: true)
+        if let almacen = stock.almacen {
+            batch.setData([
+                "id": almacenId,
+                "stockEspacio": almacen.stockEspacio
+            ], forDocument: firestore.collection("warehouses").document(almacenId), merge: true)
+        }
 
         batch.commit { [weak self] error in
             DispatchQueue.main.async {

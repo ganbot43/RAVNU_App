@@ -198,11 +198,13 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         let warehouseCards = almacenes.enumerated().map { index, almacen in
             let warehouseStocks = stocks.filter { $0.almacen == almacen }
             let totalLiters = warehouseStocks.reduce(0.0) { $0 + $1.stockActual }
-            let totalCapacity = warehouseStocks.reduce(0.0) { $0 + capacidad(for: $1) }
+            let fallbackCapacity = warehouseStocks.reduce(0.0) { $0 + capacidad(for: $1) }
+            let totalCapacity = capacidadConfigurada(for: almacen, fallback: fallbackCapacity)
             let lowCount = warehouseStocks.filter { $0.stockActual < minimo(for: $0) }.count
             let warehouseValue = warehouseStocks.reduce(0.0) { partial, stock in
                 partial + (stock.stockActual * (stock.producto?.precioPorLitro ?? 0))
             }
+            let availableSpace = espacioDisponible(for: almacen, totalLiters: totalLiters, fallbackCapacity: fallbackCapacity)
 
             return DatosDashboardAlmacen.TarjetaAlmacen(
                 id: almacen.id?.uuidString ?? "\(index)",
@@ -216,7 +218,18 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                 levelText: "Nivel — \(Int((totalCapacity > 0 ? totalLiters / totalCapacity : 0) * 100))%",
                 productsText: "\(warehouseStocks.count) productos",
                 lowStockText: lowCount > 0 ? "\(lowCount) bajo" : nil,
-                valueText: formatearMoneda(warehouseValue)
+                valueText: formatearMoneda(warehouseValue),
+                availableSpaceText: formatearValorLitros(availableSpace),
+                stocks: warehouseStocks.sorted { ($0.producto?.nombre ?? "") < ($1.producto?.nombre ?? "") }.enumerated().map { stockIndex, stock in
+                    DatosDashboardAlmacen.StockProductoPorAlmacen(
+                        warehouseName: stock.producto?.nombre ?? "Producto",
+                        colorHex: fuelMeta(for: stock.producto).colorHex,
+                        stockText: formatearValorLitros(stock.stockActual),
+                        detailText: "Min \(formatearValorLitros(minimo(for: stock))) · Cap \(formatearValorLitros(capacidad(for: stock)))",
+                        fillRatio: capacidad(for: stock) > 0 ? min(stock.stockActual / capacidad(for: stock), 1) : 0,
+                        isLow: stock.stockActual < minimo(for: stock)
+                    )
+                }
             )
         }
 
@@ -368,6 +381,14 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
     private func capacidadTotalEnRed(for producto: ProductoEntity) -> Double {
         let productStocks = stocks.filter { $0.producto == producto }
         return productStocks.reduce(0) { $0 + capacidad(for: $1) }
+    }
+
+    private func capacidadConfigurada(for almacen: AlmacenEntity, fallback: Double) -> Double {
+        almacen.stockEspacio > 0 ? almacen.stockEspacio : fallback
+    }
+
+    private func espacioDisponible(for almacen: AlmacenEntity, totalLiters: Double, fallbackCapacity: Double) -> Double {
+        max(capacidadConfigurada(for: almacen, fallback: fallbackCapacity) - totalLiters, 0)
     }
 
     private func consolidarStocksRepresentativos(_ lista: [StockAlmacenEntity]) -> [StockAlmacenEntity] {
@@ -613,7 +634,9 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         case .almacen(let almacen):
             let warehouseStocks = stocks.filter { $0.almacen == almacen }
             let totalLiters = warehouseStocks.reduce(0.0) { $0 + $1.stockActual }
-            let totalCapacity = warehouseStocks.reduce(0.0) { $0 + capacidad(for: $1) }
+            let fallbackCapacity = warehouseStocks.reduce(0.0) { $0 + capacidad(for: $1) }
+            let totalCapacity = capacidadConfigurada(for: almacen, fallback: fallbackCapacity)
+            let availableSpace = espacioDisponible(for: almacen, totalLiters: totalLiters, fallbackCapacity: fallbackCapacity)
             let lowCount = warehouseStocks.filter { $0.stockActual < minimo(for: $0) }.count
             almacenCell.configure(
                 accent: lowCount > 0
@@ -621,10 +644,11 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                     : UIColor(red: 0.231, green: 0.510, blue: 0.965, alpha: 1),
                 title: almacen.nombre ?? "Almacén",
                 subtitle: almacen.responsable ?? "Sin responsable",
-                detail: almacen.direccion ?? "Sin dirección",
+                detail: "\(almacen.direccion ?? "Sin dirección") · Máx \(formatearLitros(totalCapacity)) · Libre \(formatearLitros(availableSpace))",
                 amount: formatearLitros(totalLiters),
                 progress: CGFloat(min(totalLiters / max(totalCapacity, 1), 1)),
-                status: lowCount > 0 ? "\(lowCount) bajo" : "Activo"
+                status: lowCount > 0 ? "\(lowCount) bajo" : "Activo",
+                showDisclosure: true
             )
         case .stock(let stock):
             let isLow = stock.stockActual < minimo(for: stock)
@@ -637,7 +661,8 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                 detail: "Mínimo ref. \(formatearLitros(minimo(for: stock))) · Cap. almacén \(formatearLitros(capacidad(for: stock)))",
                 amount: formatearLitros(stock.stockActual),
                 progress: CGFloat(min(stock.stockActual / capacidad(for: stock), 1)),
-                status: isLow ? "Stock Bajo" : "OK"
+                status: isLow ? "Stock Bajo" : "OK",
+                showDisclosure: false
             )
         case .producto(let producto):
             let minimum = producto.stockMinimo
@@ -650,7 +675,8 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                 detail: "Stock total consolidado · Mínimo base por almacén \(formatearLitros(minimum))",
                 amount: formatearLitros(producto.stockLitros),
                 progress: CGFloat(min(producto.stockLitros / totalCapacity, 1)),
-                status: low ? "Bajo" : "OK"
+                status: low ? "Bajo" : "OK",
+                showDisclosure: false
             )
         case .movimiento(let movimiento):
             let tipo = movimiento.tipo ?? "evento"
@@ -662,7 +688,8 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                 detail: movimiento.nota?.isEmpty == false ? movimiento.nota! : "\(movimiento.origen ?? "Origen") → \(movimiento.destino ?? movimiento.almacen?.nombre ?? "Destino")",
                 amount: formatearLitros(movimiento.cantidadLitros),
                 progress: 1,
-                status: tipo.capitalized
+                status: tipo.capitalized,
+                showDisclosure: false
             )
         }
 
@@ -707,6 +734,7 @@ private final class AlmacenTableViewCell: UITableViewCell {
     private let detailLabel = UILabel()
     private let amountLabel = UILabel()
     private let statusLabel = UILabel()
+    private let disclosureImageView = UIImageView()
     private let progressBackground = UIView()
     private let progressBar = UIView()
     private var progressWidthConstraint: NSLayoutConstraint?
@@ -735,7 +763,7 @@ private final class AlmacenTableViewCell: UITableViewCell {
         cardView.layer.shadowOffset = CGSize(width: 0, height: 3)
         contentView.addSubview(cardView)
 
-        [topLine, titleLabel, subtitleLabel, detailLabel, amountLabel, statusLabel, progressBackground, progressBar].forEach {
+        [topLine, titleLabel, subtitleLabel, detailLabel, amountLabel, statusLabel, disclosureImageView, progressBackground, progressBar].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
 
@@ -765,13 +793,18 @@ private final class AlmacenTableViewCell: UITableViewCell {
         statusLabel.layer.cornerRadius = 10
         statusLabel.clipsToBounds = true
 
+        disclosureImageView.image = UIImage(systemName: "chevron.right")
+        disclosureImageView.contentMode = .scaleAspectFit
+        disclosureImageView.tintColor = UIColor(red: 0.596, green: 0.608, blue: 0.675, alpha: 1)
+        disclosureImageView.isHidden = true
+
         progressBackground.backgroundColor = UIColor(red: 0.935, green: 0.941, blue: 0.961, alpha: 1)
         progressBackground.layer.cornerRadius = 3
         progressBackground.clipsToBounds = true
         progressBar.layer.cornerRadius = 3
         progressBar.clipsToBounds = true
 
-        [topLine, titleLabel, subtitleLabel, statusLabel, amountLabel, detailLabel, progressBackground].forEach { cardView.addSubview($0) }
+        [topLine, titleLabel, subtitleLabel, statusLabel, amountLabel, disclosureImageView, detailLabel, progressBackground].forEach { cardView.addSubview($0) }
         progressBackground.addSubview(progressBar)
 
         progressWidthConstraint = progressBar.widthAnchor.constraint(equalTo: progressBackground.widthAnchor, multiplier: 0.1)
@@ -798,8 +831,13 @@ private final class AlmacenTableViewCell: UITableViewCell {
             statusLabel.heightAnchor.constraint(equalToConstant: 22),
 
             amountLabel.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
-            amountLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -18),
+            amountLabel.trailingAnchor.constraint(equalTo: disclosureImageView.leadingAnchor, constant: -10),
             amountLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 86),
+
+            disclosureImageView.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
+            disclosureImageView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -18),
+            disclosureImageView.widthAnchor.constraint(equalToConstant: 10),
+            disclosureImageView.heightAnchor.constraint(equalToConstant: 16),
 
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
             subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
@@ -810,7 +848,7 @@ private final class AlmacenTableViewCell: UITableViewCell {
             progressBackground.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -18),
             progressBackground.heightAnchor.constraint(equalToConstant: 6),
 
-            progressBar.topAnchor.constraint(equalTo: progressBackground.topAnchor),
+            progressBar.topAnchor.constraint(equalTo: progressBackground.topAnchor),   
             progressBar.leadingAnchor.constraint(equalTo: progressBackground.leadingAnchor),
             progressBar.bottomAnchor.constraint(equalTo: progressBackground.bottomAnchor),
 
@@ -820,12 +858,13 @@ private final class AlmacenTableViewCell: UITableViewCell {
         ])
     }
 
-    func configure(accent: UIColor, title: String, subtitle: String, detail: String, amount: String, progress: CGFloat, status: String) {
+    func configure(accent: UIColor, title: String, subtitle: String, detail: String, amount: String, progress: CGFloat, status: String, showDisclosure: Bool) {
         topLine.backgroundColor = accent
         progressBar.backgroundColor = accent
         statusLabel.text = status
         statusLabel.textColor = accent
         statusLabel.backgroundColor = accent.withAlphaComponent(0.12)
+        disclosureImageView.isHidden = !showDisclosure
         titleLabel.text = title
         subtitleLabel.text = subtitle
         detailLabel.text = detail

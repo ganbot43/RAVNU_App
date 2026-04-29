@@ -6,6 +6,7 @@
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="nombre" optional="YES" attributeType="String"/>
         <attribute name="responsable" optional="YES" attributeType="String"/>
+        <attribute name="stockEspacio" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <relationship name="movimientos" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MovimientoInventarioEntity" inverseName="almacen" inverseEntity="MovimientoInventarioEntity"/>
         <relationship name="ordenesCompra" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="OrdenCompraEntity" inverseName="almacen" inverseEntity="OrdenCompraEntity"/>
         <relationship name="stocks" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="StockAlmacenEntity" inverseName="almacen" inverseEntity="StockAlmacenEntity"/>

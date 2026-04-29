@@ -555,14 +555,14 @@ private struct FormularioNuevaVentaView: View {
                     contenidoFormulario
                 }
             }
-            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .background(Color(hex: "F3F7FB").ignoresSafeArea())
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancelar", action: onCancel)
                 }
                 ToolbarItem(placement: .principal) {
-                    Text("Nueva Venta")
-                        .font(.system(size: 18, weight: .semibold))
+                    Text("Nueva venta")
+                        .font(.system(size: 18, weight: .bold))
                 }
             }
         }
@@ -570,78 +570,78 @@ private struct FormularioNuevaVentaView: View {
 
     private var contenidoFormulario: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 16) {
-                tarjeta {
-                    VStack(alignment: .leading, spacing: 12) {
-                        tituloSeccion("Cliente")
+            VStack(spacing: 18) {
+                heroCard
+                sectionCard(title: "Cliente y producto", subtitle: "Selecciona la contraparte comercial y el combustible exacto antes de comprometer stock.") {
+                    pickerCard(
+                        title: "Cliente",
+                        value: selectedClient?.name ?? "Seleccionar cliente",
+                        subtitle: selectedClient.map { "\(estadoLocalizado($0.status)) · Deuda \(moneda($0.debt)) / Límite \(moneda($0.limit))" },
+                        icon: "person.fill"
+                    ) {
                         Picker("Cliente", selection: $selectedClientIndex) {
                             ForEach(Array(clients.enumerated()), id: \.offset) { index, client in
                                 Text(client.name).tag(index)
                             }
                         }
                         .pickerStyle(.menu)
-                        .tint(.blue)
-
-                        if let client = selectedClient {
-                            Text("\(estadoLocalizado(client.status)) · Deuda \(moneda(client.debt)) / Límite \(moneda(client.limit))")
-                                .font(.system(size: 13))
-                                .foregroundStyle(.secondary)
-                        }
                     }
-                }
 
-                tarjeta {
-                    VStack(alignment: .leading, spacing: 12) {
-                        tituloSeccion("Producto")
+                    pickerCard(
+                        title: "Producto",
+                        value: selectedProduct?.name ?? "Seleccionar producto",
+                        subtitle: selectedProduct.map { "\(numero($0.availableStock))\(unidadCompacta($0.unit)) disponibles · \($0.warehouseName)" },
+                        icon: "drop.fill"
+                    ) {
                         Picker("Producto", selection: $selectedProductIndex) {
                             ForEach(Array(products.enumerated()), id: \.offset) { index, product in
                                 Text("\(product.name) · \(moneda(product.pricePerUnit))").tag(index)
                             }
                         }
                         .pickerStyle(.menu)
-                        .tint(.blue)
+                    }
 
-                        if let product = selectedProduct {
-                            Text("\(numero(product.availableStock))\(unidadCompacta(product.unit)) disponibles · \(product.warehouseName)")
-                                .font(.system(size: 13))
-                                .foregroundStyle(.secondary)
-                        }
+                    HStack(spacing: 10) {
+                        metricBadge(title: "Precio", value: moneda(selectedProduct?.pricePerUnit ?? 0))
+                        metricBadge(title: "Unidad", value: unidadLocalizada(selectedProduct?.unit ?? "L"))
+                        metricBadge(title: "Stock", value: "\(maxQuantity)\(unidadCompacta(selectedProduct?.unit ?? "L"))")
                     }
                 }
 
-                tarjeta {
+                sectionCard(title: "Cantidad y cobro", subtitle: "Ajusta volumen, forma de pago y, si aplica, el esquema de cuotas desde un solo bloque.") {
                     VStack(alignment: .leading, spacing: 12) {
                         tituloSeccion("Cantidad")
                         Stepper(value: $quantity, in: 1...maxQuantity) {
                             HStack {
                                 Text("\(quantity) \(unidadLocalizada(selectedProduct?.unit ?? "L"))")
-                                    .font(.system(size: 18, weight: .semibold))
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundStyle(Color(hex: "0F172A"))
                                 Spacer()
                                 Text("Máx. \(maxQuantity)")
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundStyle(Color(hex: "64748B"))
                             }
                         }
                     }
-                }
 
-                tarjeta {
-                    VStack(alignment: .leading, spacing: 12) {
-                        tituloSeccion("Pago")
+                    VStack(alignment: .leading, spacing: 10) {
+                        tituloSeccion("Forma de pago")
                         Picker("Tipo de pago", selection: $paymentType) {
                             Text("Contado").tag("cash")
                             Text("Crédito").tag("credit")
                         }
                         .pickerStyle(.segmented)
+                    }
 
-                        if paymentType == "credit" {
-                            Stepper(value: $installments, in: 1...12) {
-                                HStack {
-                                    Text("Cuotas")
-                                    Spacer()
-                                    Text("\(installments)")
-                                        .font(.system(size: 16, weight: .bold))
-                                }
+                    if paymentType == "credit" {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Text("Cuotas")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundStyle(Color(hex: "0F172A"))
+                                Spacer()
+                                Stepper("\(installments)", value: $installments, in: 1...12)
+                                    .labelsHidden()
                             }
 
                             DatePicker(
@@ -651,21 +651,28 @@ private struct FormularioNuevaVentaView: View {
                             )
                             .datePickerStyle(.compact)
 
-                            Text("Por cuota: \(moneda(perInstallment))")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.secondary)
+                            HStack(spacing: 10) {
+                                metricBadge(title: "Por cuota", value: moneda(perInstallment))
+                                metricBadge(title: "Cobro", value: "Mensual")
+                            }
                         }
+                        .padding(16)
+                        .background(Color(hex: "EFF6FF"))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .stroke(Color(hex: "BFDBFE"), lineWidth: 1)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                     }
                 }
 
-                tarjeta {
+                sectionCard(title: "Impacto operativo", subtitle: "Confirma cómo afectará la venta al stock, tesorería y cuenta por cobrar antes de guardar.") {
                     VStack(alignment: .leading, spacing: 10) {
-                        tituloSeccion("Impacto")
-                        filaImpacto("Total", moneda(total), accent: .blue)
-                        filaImpacto("Almacén", "-\(quantity)\(unidadCompacta(selectedProduct?.unit ?? "L"))", accent: .red)
-                        filaImpacto("Tesorería", paymentType == "cash" ? "+\(moneda(total))" : "Pendiente", accent: .green)
+                        filaImpacto("Total", moneda(total), accent: Color(hex: "2563EB"))
+                        filaImpacto("Almacén", "-\(quantity)\(unidadCompacta(selectedProduct?.unit ?? "L"))", accent: Color(hex: "DC2626"))
+                        filaImpacto("Tesorería", paymentType == "cash" ? "+\(moneda(total))" : "Pendiente", accent: Color(hex: "16A34A"))
                         if paymentType == "credit" {
-                            filaImpacto("Cobros", "Se generarán cuotas", accent: .orange)
+                            filaImpacto("Cobros", "Se generarán cuotas", accent: Color(hex: "D97706"))
                         }
                     }
                 }
@@ -682,13 +689,22 @@ private struct FormularioNuevaVentaView: View {
                         )
                     )
                 } label: {
-                    Text("Guardar Venta")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(Color.blue)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    HStack(spacing: 8) {
+                        Image(systemName: "banknote.fill")
+                        Text("Guardar venta")
+                    }
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        LinearGradient(
+                            colors: [Color(hex: "2563EB"), Color(hex: "1D4ED8")],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 }
                 .buttonStyle(.plain)
             }
@@ -699,7 +715,7 @@ private struct FormularioNuevaVentaView: View {
     private var estadoVacio: some View {
         VStack(spacing: 12) {
             Text("No hay datos suficientes para registrar la venta.")
-                .font(.system(size: 18, weight: .semibold))
+                .font(.system(size: 18, weight: .bold))
             Text("Debes tener al menos un cliente y un producto registrados.")
                 .font(.system(size: 14))
                 .foregroundStyle(.secondary)
@@ -708,30 +724,134 @@ private struct FormularioNuevaVentaView: View {
         .padding(24)
     }
 
-    private func tarjeta<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        content()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            .background(Color.white)
+    private var heroCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Cierra una venta con claridad")
+                        .font(.system(size: 22, weight: .black))
+                        .foregroundStyle(.white)
+                    Text("Revisa cliente, stock y forma de cobro en una sola vista antes de descontar inventario.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.84))
+                }
+                Spacer()
+                Image(systemName: paymentType == "cash" ? "banknote.fill" : "creditcard.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 54, height: 54)
+                    .background(Color.white.opacity(0.16))
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
+
+            HStack(spacing: 10) {
+                metricBadge(title: "CLIENTE", value: selectedClient?.name ?? "Pendiente")
+                metricBadge(title: "PAGO", value: paymentType == "cash" ? "Contado" : "Crédito")
+                metricBadge(title: "TOTAL", value: moneda(total))
+            }
+        }
+        .padding(20)
+        .background(
+            LinearGradient(
+                colors: [Color(hex: "0F172A"), Color(hex: "2563EB")],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+    }
+
+    private func sectionCard<Content: View>(title: String, subtitle: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 17, weight: .black))
+                    .foregroundStyle(Color(hex: "0F172A"))
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color(hex: "64748B"))
+            }
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
+    }
+
+    private func pickerCard<PickerContent: View>(
+        title: String,
+        value: String,
+        subtitle: String?,
+        icon: String,
+        @ViewBuilder picker: () -> PickerContent
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            tituloSeccion(title)
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color(hex: "2563EB"))
+                    .frame(width: 18)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(value)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Color(hex: "0F172A"))
+                    if let subtitle, subtitle.isEmpty == false {
+                        Text(subtitle)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color(hex: "64748B"))
+                    }
+                }
+                Spacer()
+                picker()
+                    .tint(Color(hex: "2563EB"))
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
+            .background(Color(hex: "F8FAFC"))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
+            )
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        }
     }
 
     private func tituloSeccion(_ text: String) -> some View {
         Text(text.uppercased())
-            .font(.system(size: 12, weight: .bold))
-            .foregroundStyle(.secondary)
+            .font(.system(size: 11, weight: .black))
+            .foregroundStyle(Color(hex: "64748B"))
     }
 
     private func filaImpacto(_ title: String, _ value: String, accent: Color) -> some View {
         HStack {
             Text(title)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color(hex: "64748B"))
             Spacer()
             Text(value)
-                .font(.system(size: 15, weight: .semibold))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(accent)
         }
+    }
+
+    private func metricBadge(title: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title)
+                .font(.system(size: 9, weight: .black))
+                .foregroundStyle(Color(hex: "94A3B8"))
+            Text(value)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(Color(hex: "0F172A"))
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(Color(hex: "F8FAFC"))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private func estadoLocalizado(_ status: String) -> String {
@@ -780,6 +900,21 @@ private struct FormularioNuevaVentaView: View {
             return "\(Int(value))"
         }
         return String(format: "%.1f", value)
+    }
+}
+
+private extension Color {
+    init(hex: String) {
+        let cleaned = hex.replacingOccurrences(of: "#", with: "")
+        var value: UInt64 = 0
+        Scanner(string: cleaned).scanHexInt64(&value)
+        self.init(
+            .sRGB,
+            red: Double((value >> 16) & 0xFF) / 255.0,
+            green: Double((value >> 8) & 0xFF) / 255.0,
+            blue: Double(value & 0xFF) / 255.0,
+            opacity: 1
+        )
     }
 }
 

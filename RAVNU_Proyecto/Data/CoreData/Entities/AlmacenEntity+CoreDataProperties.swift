@@ -14,6 +14,7 @@ extension AlmacenEntity {
     @NSManaged public var id: UUID?
     @NSManaged public var nombre: String?
     @NSManaged public var responsable: String?
+    @NSManaged public var stockEspacio: Double
     @NSManaged public var movimientos: NSSet?
     @NSManaged public var ordenesCompra: NSSet?
     @NSManaged public var stocks: NSSet?

@@ -397,11 +397,13 @@ final class ModalMovimientoViewController: UIViewController {
         group.notify(queue: .main) { [weak self] in
             guard let self else { return }
 
+            let origenStockActualizado = max(origenStock - quantity, 0)
+            let destinoStockActualizado = destinoStock + quantity
             let origenDoc = origenRef ?? self.firestore.collection("warehouse_stock").document(UUID().uuidString)
             batch.setData([
                 "almacenId": origenId,
                 "productoId": productoId,
-                "stockActual": max(origenStock - quantity, 0),
+                "stockActual": origenStockActualizado,
                 "stockMinimo": producto.stockMinimo,
                 "capacidadTotal": producto.capacidadTotal,
                 "unidadMedida": producto.unidadMedida ?? "L"
@@ -411,7 +413,7 @@ final class ModalMovimientoViewController: UIViewController {
             batch.setData([
                 "almacenId": destinoId,
                 "productoId": productoId,
-                "stockActual": destinoStock + quantity,
+                "stockActual": destinoStockActualizado,
                 "stockMinimo": producto.stockMinimo,
                 "capacidadTotal": producto.capacidadTotal,
                 "unidadMedida": producto.unidadMedida ?? "L"
@@ -688,32 +690,87 @@ private struct VistaRaizModalMovimiento: View {
     }
 
     var body: some View {
-        ZStack(alignment: .top) {
-            Color(.systemBackground).ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                Capsule()
-                    .fill(Color(.systemGray4))
-                    .frame(width: 42, height: 5)
-                    .padding(.top, 8)
-                    .padding(.bottom, 10)
-
-                header
-                Divider()
-
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 18) {
-                        kindSelector
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 18) {
+                    heroCard
+                    kindSelector
+                    sectionCard(
+                        title: "Ruta logística",
+                        subtitle: kind == .transfer
+                            ? "Define con claridad desde qué estación sale el stock y a cuál entra."
+                            : "Selecciona el origen operativo del movimiento y el punto de llegada."
+                    ) {
                         routeSection
+                    }
+                    sectionCard(
+                        title: "Producto y lectura actual",
+                        subtitle: "Revisa el producto, su disponibilidad consolidada y la foto actual del almacén."
+                    ) {
                         productSection
+                        quickInsightRow
+                    }
+                    sectionCard(
+                        title: "Proyección del movimiento",
+                        subtitle: "Antes de guardar, confirma cómo quedará el origen y el destino."
+                    ) {
                         stockCard
+                    }
+                    sectionCard(
+                        title: "Cantidad y observación",
+                        subtitle: "Registra el volumen y deja contexto útil para auditoría y seguimiento."
+                    ) {
                         inputRow
                         noteSection
-                        saveButton
                     }
-                    .padding(.horizontal, 18)
-                    .padding(.top, 18)
-                    .padding(.bottom, 28)
+                    Button {
+                        guard !isSaving else { return }
+                        isSaving = true
+                        onSave(
+                            BorradorModalMovimiento(
+                                kind: kind,
+                                supplierIndex: supplierIndex,
+                                originWarehouseIndex: originWarehouseIndex,
+                                destinationWarehouseIndex: destinationWarehouseIndex,
+                                productIndex: productIndex,
+                                quantity: quantityValue,
+                                note: note
+                            )
+                        )
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: kind == .transfer ? "arrow.left.arrow.right.circle.fill" : "shippingbox.fill")
+                            Text(actionTitle)
+                        }
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(uiColor: kind.accentColor), Color(uiColor: kind.accentColor).opacity(0.82)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                            .opacity(isFormValid && !isSaving ? 1 : 0.45)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!isFormValid || isSaving)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
+            }
+            .background(Color(hex: "F3F7FB").ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancelar", action: onCancel)
+                }
+                ToolbarItem(placement: .principal) {
+                    Text(kind == .transfer ? "Nueva transferencia" : "Registrar movimiento")
+                        .font(.system(size: 18, weight: .bold))
                 }
             }
         }
@@ -744,60 +801,78 @@ private struct VistaRaizModalMovimiento: View {
         }
     }
 
-    private var header: some View {
-        HStack {
-            Button("Cancelar", action: onCancel)
-                .font(.system(size: 18, weight: .regular, design: .rounded))
-                .foregroundStyle(Color.blue)
+    private var heroCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(kind == .transfer ? "Mueve stock entre estaciones" : "Registra flujo de inventario")
+                        .font(.system(size: 22, weight: .black))
+                        .foregroundStyle(.white)
+                    Text(kind == .transfer
+                         ? "Verás el impacto inmediato en origen y destino antes de confirmar la transferencia."
+                         : "Controla ingresos y salidas con una lectura operativa clara del producto y del almacén.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.84))
+                }
+                Spacer()
+                Image(systemName: kind.iconName)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 54, height: 54)
+                    .background(Color.white.opacity(0.16))
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
 
-            Spacer()
-
-            Text("Registrar Movimiento")
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color(.label))
-
-            Spacer()
-
-            Color.clear.frame(width: 52, height: 1)
+            HStack(spacing: 10) {
+                metricChip(title: "TIPO", value: kind.title)
+                metricChip(title: "ORIGEN", value: selectedOrigin?.name ?? "Pendiente")
+                metricChip(title: "PRODUCTO", value: selectedProduct?.name ?? "Pendiente")
+            }
         }
-        .padding(.horizontal, 18)
-        .padding(.bottom, 14)
+        .padding(20)
+        .background(
+            LinearGradient(
+                colors: [Color(hex: "0F172A"), Color(uiColor: kind.accentColor)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
     }
 
     private var kindSelector: some View {
-        HStack(spacing: 10) {
-            ForEach(TipoMovimientoModal.allCases, id: \.rawValue) { option in
-                Button {
-                    kind = option
-                } label: {
-                    VStack(spacing: 6) {
-                        Image(systemName: option.iconName)
-                            .font(.system(size: 13, weight: .semibold))
-                        Text(option.title)
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Tipo de movimiento")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(Color(hex: "334155"))
+
+            HStack(spacing: 10) {
+                ForEach(TipoMovimientoModal.allCases, id: \.rawValue) { option in
+                    Button {
+                        kind = option
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: option.iconName)
+                            Text(option.title)
+                        }
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(option == kind ? .white : Color(uiColor: option.accentColor))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(option == kind ? Color(uiColor: option.accentColor) : Color(uiColor: option.accentColor).opacity(0.08))
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(option == kind ? Color(uiColor: option.accentColor) : Color(.systemGray6))
-                    )
-                    .foregroundStyle(option == kind ? .white : Color(.secondaryLabel))
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
     }
 
     private var routeSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(kind.routeTitle)
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(.secondaryLabel))
-
             switch kind {
             case .ingreso:
-                HStack(spacing: 10) {
+                VStack(spacing: 12) {
                     selectionCard(
                         title: "DEL PROVEEDOR",
                         value: selectedSupplier?.name ?? "Seleccionar proveedor...",
@@ -806,11 +881,6 @@ private struct VistaRaizModalMovimiento: View {
                     ) {
                         activePicker = .supplier
                     }
-
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: kind.accentColor))
-
                     selectionCard(
                         title: "AL ALMACÉN",
                         value: selectedOrigin?.name ?? "Seleccionar almacén...",
@@ -818,10 +888,11 @@ private struct VistaRaizModalMovimiento: View {
                     ) {
                         activePicker = .origin
                     }
+                    routeSummaryCard(leftLabel: "Proveedor", leftValue: selectedSupplier?.name ?? "Pendiente", rightLabel: "Destino", rightValue: selectedOrigin?.name ?? "Pendiente")
                 }
 
             case .salida:
-                HStack(spacing: 10) {
+                VStack(spacing: 12) {
                     selectionCard(
                         title: "DESDE",
                         value: selectedOrigin?.name ?? "Seleccionar almacén...",
@@ -829,16 +900,12 @@ private struct VistaRaizModalMovimiento: View {
                     ) {
                         activePicker = .origin
                     }
-
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: kind.accentColor))
-
                     fixedCard(title: "HACIA", value: "Operación")
+                    routeSummaryCard(leftLabel: "Salida desde", leftValue: selectedOrigin?.name ?? "Pendiente", rightLabel: "Destino", rightValue: "Operación")
                 }
 
             case .transfer:
-                HStack(spacing: 10) {
+                VStack(spacing: 12) {
                     selectionCard(
                         title: "DESDE",
                         value: selectedOrigin?.name ?? "Seleccionar origen...",
@@ -846,11 +913,6 @@ private struct VistaRaizModalMovimiento: View {
                     ) {
                         activePicker = .origin
                     }
-
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(uiColor: kind.accentColor))
-
                     selectionCard(
                         title: "ALMACÉN DESTINO",
                         value: selectedDestination?.name ?? "Seleccionar destino...",
@@ -858,6 +920,7 @@ private struct VistaRaizModalMovimiento: View {
                     ) {
                         activePicker = .destination
                     }
+                    routeSummaryCard(leftLabel: "Origen", leftValue: selectedOrigin?.name ?? "Pendiente", rightLabel: "Destino", rightValue: selectedDestination?.name ?? "Pendiente")
                 }
             }
         }
@@ -865,30 +928,45 @@ private struct VistaRaizModalMovimiento: View {
 
     private var productSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Producto")
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color(.secondaryLabel))
-
             Button {
                 activePicker = .product
             } label: {
                 HStack {
                     Text(productTitle)
-                        .font(.system(size: 15, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(.label))
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Color(hex: "0F172A"))
                     Spacer()
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(Color(.tertiaryLabel))
+                        .foregroundStyle(Color(hex: "94A3B8"))
                 }
                 .padding(.horizontal, 14)
-                .frame(height: 52)
-                .background(
+                .padding(.vertical, 14)
+                .background(Color(hex: "F8FAFC"))
+                .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Color(.systemGray6))
+                        .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
                 )
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    private var quickInsightRow: some View {
+        HStack(spacing: 10) {
+            metricBadge(
+                title: "Precio",
+                value: selectedProduct.map { "S/\(String(format: "%.2f", $0.price))" } ?? "Sin dato"
+            )
+            metricBadge(
+                title: "Total red",
+                value: "\(intString(selectedProduct?.totalStock ?? 0)) \(selectedProduct?.unit ?? "L")"
+            )
+            metricBadge(
+                title: "Responsable",
+                value: workerName
+            )
         }
     }
 
@@ -896,11 +974,11 @@ private struct VistaRaizModalMovimiento: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(stockTitle)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(.secondaryLabel))
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Color(hex: "64748B"))
                 Spacer()
                 Text("\(intString(currentWarehouseStock)) -> \(intString(projectedSourceStock)) \(selectedProduct?.unit ?? "L")")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(Color(uiColor: kind.accentColor))
             }
 
@@ -938,66 +1016,65 @@ private struct VistaRaizModalMovimiento: View {
                 )
             }
 
-            if kind == .transfer, let selectedDestination {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("\(selectedDestination.name) — Tras recibir")
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color(.secondaryLabel))
-                    HStack {
-                        Text("\(intString(destinationWarehouseStock)) -> \(intString(projectedDestinationStock)) \(selectedProduct?.unit ?? "L")")
-                            .font(.system(size: 13, weight: .bold, design: .rounded))
-                            .foregroundStyle(Color(uiColor: kind.accentColor))
-                        Spacer()
-                        Text(destinationWarehouseCapacity > 0 ? "Cap. \(intString(destinationWarehouseCapacity))" : "Sin límite")
-                            .font(.system(size: 12, weight: .medium, design: .rounded))
-                            .foregroundStyle(Color(.secondaryLabel))
-                    }
-                }
+            warehouseSnapshotCard(
+                title: selectedOrigin?.name ?? "Origen",
+                subtitle: "Stock operativo después del movimiento",
+                stockValue: projectedSourceStock,
+                capacityValue: currentWarehouseCapacity,
+                accent: Color(uiColor: kind.accentColor)
+            )
+
+            if kind == .transfer {
+                warehouseSnapshotCard(
+                    title: selectedDestination?.name ?? "Destino",
+                    subtitle: "Stock estimado después de recibir",
+                    stockValue: projectedDestinationStock,
+                    capacityValue: destinationWarehouseCapacity,
+                    accent: Color(hex: "8B5CF6")
+                )
             }
         }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
-        )
     }
 
     private var inputRow: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Cantidad (\(selectedProduct?.unit ?? "L"))")
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(.secondaryLabel))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color(hex: "64748B"))
 
                 TextField("0", text: $quantityText)
                     .keyboardType(.decimalPad)
-                    .font(.system(size: 22, weight: .semibold, design: .rounded))
+                    .font(.system(size: 22, weight: .semibold))
                     .padding(.horizontal, 14)
-                    .frame(height: 52)
-                    .background(
+                    .padding(.vertical, 14)
+                    .background(Color(hex: "F8FAFC"))
+                    .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(Color(.systemGray6))
+                            .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
                     )
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
 
             VStack(alignment: .leading, spacing: 8) {
                 Text("Trabajador")
-                    .font(.system(size: 14, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(.secondaryLabel))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color(hex: "64748B"))
 
                 HStack {
                     Text(workerName)
-                        .font(.system(size: 17, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(.label))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color(hex: "0F172A"))
                     Spacer()
                 }
                 .padding(.horizontal, 14)
-                .frame(height: 52)
-                .background(
+                .padding(.vertical, 16)
+                .background(Color(hex: "F8FAFC"))
+                .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Color(.systemGray6))
+                        .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
                 )
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
             }
         }
     }
@@ -1005,17 +1082,19 @@ private struct VistaRaizModalMovimiento: View {
     private var noteSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Nota (opcional)")
-                .font(.system(size: 14, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color(.secondaryLabel))
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color(hex: "64748B"))
 
             TextField(notePlaceholder, text: $note)
-                .font(.system(size: 16, weight: .regular, design: .rounded))
+                .font(.system(size: 16, weight: .regular))
                 .padding(.horizontal, 14)
-                .frame(height: 52)
-                .background(
+                .padding(.vertical, 14)
+                .background(Color(hex: "F8FAFC"))
+                .overlay(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(Color(.systemGray6))
+                        .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
                 )
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
     }
 
@@ -1024,37 +1103,6 @@ private struct VistaRaizModalMovimiento: View {
             && data.warehouses.isEmpty == false
             && data.products.isEmpty == false
             && (kind != .transfer || originWarehouseIndex != destinationWarehouseIndex)
-    }
-
-    private var saveButton: some View {
-        Button {
-            guard !isSaving else { return }
-            isSaving = true
-            onSave(
-                BorradorModalMovimiento(
-                    kind: kind,
-                    supplierIndex: supplierIndex,
-                    originWarehouseIndex: originWarehouseIndex,
-                    destinationWarehouseIndex: destinationWarehouseIndex,
-                    productIndex: productIndex,
-                    quantity: quantityValue,
-                    note: note
-                )
-            )
-        } label: {
-            Text(actionTitle)
-                .font(.system(size: 18, weight: .semibold, design: .rounded))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 58)
-                .background(
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(Color(uiColor: kind.accentColor).opacity(isFormValid && !isSaving ? 1 : 0.45))
-                )
-        }
-        .buttonStyle(.plain)
-        .disabled(!isFormValid || isSaving)
-        .padding(.top, 6)
     }
 
     private func selectionCard(
@@ -1067,30 +1115,30 @@ private struct VistaRaizModalMovimiento: View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
-                    .font(.system(size: 12, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(.secondaryLabel))
+                    .font(.system(size: 11, weight: .black))
+                    .foregroundStyle(Color(hex: "64748B"))
                 HStack {
                     Text(value)
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(.label))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color(hex: "0F172A"))
                         .multilineTextAlignment(.leading)
                     Spacer()
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(Color(.tertiaryLabel))
+                        .foregroundStyle(Color(hex: "94A3B8"))
                 }
             }
-            .padding(12)
+            .padding(14)
             .frame(maxWidth: .infinity, minHeight: 84, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color(.systemBackground))
+                    .fill(Color(hex: "F8FAFC"))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .strokeBorder(
                                 style: StrokeStyle(lineWidth: dashed ? 1.5 : 1, dash: dashed ? [5] : [])
                             )
-                            .foregroundStyle(Color(uiColor: accent).opacity(0.35))
+                            .foregroundStyle(Color(uiColor: accent).opacity(0.28))
                     )
             )
         }
@@ -1100,17 +1148,78 @@ private struct VistaRaizModalMovimiento: View {
     private func fixedCard(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.system(size: 12, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(.secondaryLabel))
+                .font(.system(size: 11, weight: .black))
+                .foregroundStyle(Color(hex: "64748B"))
             Text(value)
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(.label))
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Color(hex: "0F172A"))
         }
-        .padding(12)
+        .padding(14)
         .frame(maxWidth: .infinity, minHeight: 84, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color(.systemGray6))
+                .fill(Color(hex: "F8FAFC"))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
+                )
+        )
+    }
+
+    private func routeSummaryCard(leftLabel: String, leftValue: String, rightLabel: String, rightValue: String) -> some View {
+        HStack(spacing: 10) {
+            metricBadge(title: leftLabel, value: leftValue)
+            metricBadge(title: rightLabel, value: rightValue)
+        }
+    }
+
+    private func warehouseSnapshotCard(
+        title: String,
+        subtitle: String,
+        stockValue: Double,
+        capacityValue: Double,
+        accent: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 14, weight: .black))
+                        .foregroundStyle(Color(hex: "0F172A"))
+                    Text(subtitle)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Color(hex: "64748B"))
+                }
+                Spacer()
+                Text("\(intString(stockValue)) \(selectedProduct?.unit ?? "L")")
+                    .font(.system(size: 16, weight: .black))
+                    .foregroundStyle(accent)
+            }
+
+            let ratio = capacityValue > 0 ? min(stockValue / capacityValue, 1) : 0
+            GeometryReader { proxy in
+                let width = max(proxy.size.width, 1)
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(Color(hex: "E5E7EB"))
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(accent)
+                        .frame(width: width * ratio)
+                }
+            }
+            .frame(height: 8)
+
+            HStack(spacing: 10) {
+                metricBadge(title: "Capacidad", value: capacityValue > 0 ? "\(intString(capacityValue)) \(selectedProduct?.unit ?? "L")" : "Sin límite")
+                metricBadge(title: "Libre", value: capacityValue > 0 ? "\(intString(max(capacityValue - stockValue, 0))) \(selectedProduct?.unit ?? "L")" : "No aplica")
+            }
+        }
+        .padding(14)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(accent.opacity(0.16), lineWidth: 1)
         )
     }
 
@@ -1171,18 +1280,69 @@ private struct VistaRaizModalMovimiento: View {
     private func metricBadge(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title.uppercased())
-                .font(.system(size: 9, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(.tertiaryLabel))
+                .font(.system(size: 9, weight: .black))
+                .foregroundStyle(Color(hex: "94A3B8"))
             Text(value)
-                .font(.system(size: 11, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(.label))
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Color(hex: "0F172A"))
+                .lineLimit(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(.systemGray6))
+                .fill(Color(hex: "F8FAFC"))
+        )
+    }
+
+    private func sectionCard<Content: View>(title: String, subtitle: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 17, weight: .black))
+                    .foregroundStyle(Color(hex: "0F172A"))
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color(hex: "64748B"))
+            }
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: 4)
+    }
+
+    private func metricChip(title: String, value: String) -> some View {
+        VStack(spacing: 2) {
+            Text(title)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(Color.white.opacity(0.68))
+            Text(value.isEmpty ? "-" : value)
+                .font(.system(size: 13, weight: .black))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+private extension Color {
+    init(hex: String) {
+        let cleaned = hex.replacingOccurrences(of: "#", with: "")
+        var value: UInt64 = 0
+        Scanner(string: cleaned).scanHexInt64(&value)
+        self.init(
+            .sRGB,
+            red: Double((value >> 16) & 0xFF) / 255.0,
+            green: Double((value >> 8) & 0xFF) / 255.0,
+            blue: Double(value & 0xFF) / 255.0,
+            opacity: 1
         )
     }
 }
