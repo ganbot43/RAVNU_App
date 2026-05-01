@@ -1,8 +1,26 @@
 import CoreData
 import SwiftUI
 import UIKit
+#if canImport(FirebaseFirestore)
+import FirebaseFirestore
+#endif
 
 final class AlmaceneroViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+
+    private struct RemoteTankSnapshot: Identifiable {
+        let id: String
+        let warehouseId: String?
+        let warehouseName: String
+        let productId: String?
+        let productName: String
+        let currentLevel: Double
+        let minimumLevel: Double
+        let capacity: Double
+        let unit: String
+        let type: String
+
+        var isLow: Bool { currentLevel < minimumLevel }
+    }
 
     @IBOutlet private weak var lblTitulo: UILabel?
     @IBOutlet private weak var lblResumen: UILabel?
@@ -44,6 +62,10 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
     private var filas: [Fila] = []
     private var modo: Modo = .almacenes
     private var hostingController: UIHostingController<WarehouseDashboardView>?
+    private var remoteTanks: [RemoteTankSnapshot] = []
+    #if canImport(FirebaseFirestore)
+    private var tanksListener: ListenerRegistration?
+    #endif
 
     private let contexto = AppCoreData.viewContext
 
@@ -76,6 +98,9 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+        #if canImport(FirebaseFirestore)
+        tanksListener?.remove()
+        #endif
     }
 
     private func configurarUI() {
@@ -139,10 +164,12 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
             name: .remoteSyncStateDidChange,
             object: nil
         )
+        observeRemoteTanksIfNeeded()
     }
 
     @objc
     private func manejarCambioSincronizacionRemota() {
+        observeRemoteTanksIfNeeded()
         cargarDatos()
     }
 
@@ -175,7 +202,7 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
 
     private func crearDatosDashboard() -> DatosDashboardAlmacen {
         let valorTotal = productos.reduce(0.0) { $0 + ($1.stockLitros * $1.precioPorLitro) }
-        let bajoMinimo = stocks.filter { $0.stockActual < minimo(for: $0) }.count
+        let bajoMinimo = currentLowStockCount()
         let entradas = movimientos.filter { $0.tipo == "entrada" }.reduce(0.0) { $0 + max($1.cantidadLitros, 0) }
         let salidas = movimientos.filter { $0.tipo == "salida" }.reduce(0.0) { $0 + abs($1.cantidadLitros) }
         let transferencias = movimientos.filter { $0.tipo == "transfer" }.reduce(0.0) { $0 + abs($1.cantidadLitros) }
@@ -197,30 +224,23 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
 
         let warehouseCards = almacenes.enumerated().map { index, almacen in
             let warehouseStocks = stocks.filter { $0.almacen == almacen }
-            let totalLiters = warehouseStocks.reduce(0.0) { $0 + $1.stockActual }
-            let fallbackCapacity = warehouseStocks.reduce(0.0) { $0 + capacidad(for: $1) }
+            let remoteWarehouseTanks = tanksForWarehouse(almacen)
+            let totalLiters = remoteWarehouseTanks.isEmpty
+                ? warehouseStocks.reduce(0.0) { $0 + $1.stockActual }
+                : remoteWarehouseTanks.reduce(0.0) { $0 + $1.currentLevel }
+            let fallbackCapacity = remoteWarehouseTanks.isEmpty
+                ? warehouseStocks.reduce(0.0) { $0 + capacidad(for: $1) }
+                : remoteWarehouseTanks.reduce(0.0) { $0 + $1.capacity }
             let totalCapacity = capacidadConfigurada(for: almacen, fallback: fallbackCapacity)
-            let lowCount = warehouseStocks.filter { $0.stockActual < minimo(for: $0) }.count
+            let lowCount = remoteWarehouseTanks.isEmpty
+                ? warehouseStocks.filter { $0.stockActual < minimo(for: $0) }.count
+                : remoteWarehouseTanks.filter(\.isLow).count
             let warehouseValue = warehouseStocks.reduce(0.0) { partial, stock in
                 partial + (stock.stockActual * (stock.producto?.precioPorLitro ?? 0))
             }
             let availableSpace = espacioDisponible(for: almacen, totalLiters: totalLiters, fallbackCapacity: fallbackCapacity)
-
-            return DatosDashboardAlmacen.TarjetaAlmacen(
-                id: almacen.id?.uuidString ?? "\(index)",
-                name: almacen.nombre ?? "Almacén",
-                shortName: nombreCortoAlmacen(almacen.nombre ?? "Almacén"),
-                address: almacen.direccion ?? "Sin dirección",
-                colorHex: warehouseColorHex(for: index),
-                totalStockText: formatearValorLitros(totalLiters),
-                totalCapacityText: formatearValorLitros(totalCapacity),
-                fillRatio: totalCapacity > 0 ? min(totalLiters / totalCapacity, 1) : 0,
-                levelText: "Nivel — \(Int((totalCapacity > 0 ? totalLiters / totalCapacity : 0) * 100))%",
-                productsText: "\(warehouseStocks.count) productos",
-                lowStockText: lowCount > 0 ? "\(lowCount) bajo" : nil,
-                valueText: formatearMoneda(warehouseValue),
-                availableSpaceText: formatearValorLitros(availableSpace),
-                stocks: warehouseStocks.sorted { ($0.producto?.nombre ?? "") < ($1.producto?.nombre ?? "") }.enumerated().map { stockIndex, stock in
+            let warehouseStockCards: [DatosDashboardAlmacen.StockProductoPorAlmacen] = remoteWarehouseTanks.isEmpty
+                ? warehouseStocks.sorted { ($0.producto?.nombre ?? "") < ($1.producto?.nombre ?? "") }.map { stock in
                     DatosDashboardAlmacen.StockProductoPorAlmacen(
                         warehouseName: stock.producto?.nombre ?? "Producto",
                         colorHex: fuelMeta(for: stock.producto).colorHex,
@@ -230,32 +250,51 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                         isLow: stock.stockActual < minimo(for: stock)
                     )
                 }
+                : remoteWarehouseTanks.sorted { $0.productName < $1.productName }.map { tank in
+                    DatosDashboardAlmacen.StockProductoPorAlmacen(
+                        warehouseName: tank.productName,
+                        colorHex: fuelMeta(forRemoteType: tank.type, productName: tank.productName).colorHex,
+                        stockText: formatearCantidadRemota(tank.currentLevel, unit: tank.unit),
+                        detailText: "Min \(formatearCantidadRemota(tank.minimumLevel, unit: tank.unit)) · Cap \(formatearCantidadRemota(tank.capacity, unit: tank.unit))",
+                        fillRatio: tank.capacity > 0 ? min(tank.currentLevel / tank.capacity, 1) : 0,
+                        isLow: tank.isLow
+                    )
+                }
+
+            return DatosDashboardAlmacen.TarjetaAlmacen(
+                id: almacen.id?.uuidString ?? "\(index)",
+                name: almacen.nombre ?? "Almacén",
+                shortName: nombreCortoAlmacen(almacen.nombre ?? "Almacén"),
+                address: almacen.direccion ?? "Sin dirección",
+                colorHex: warehouseColorHex(for: index),
+                occupancyText: "Ocupado \(Int((totalCapacity > 0 ? (totalLiters / totalCapacity) * 100 : 0).rounded()))%",
+                totalStockText: formatearValorLitros(totalLiters),
+                totalCapacityText: formatearValorLitros(totalCapacity),
+                fillRatio: totalCapacity > 0 ? min(totalLiters / totalCapacity, 1) : 0,
+                levelText: "Nivel — \(Int((totalCapacity > 0 ? totalLiters / totalCapacity : 0) * 100))%",
+                productsText: "\(max(warehouseStocks.count, remoteWarehouseTanks.count)) productos",
+                lowStockText: lowCount > 0 ? "\(lowCount) bajo" : nil,
+                valueText: formatearMoneda(warehouseValue),
+                availableSpaceText: formatearValorLitros(availableSpace),
+                configuredSpaceText: "Máx \(formatearValorLitros(totalCapacity))",
+                stocks: warehouseStockCards
             )
         }
 
         let productCards = productos.map { producto in
             let productStocks = stocks.filter { $0.producto == producto }
-            let totalStock = productStocks.reduce(0.0) { $0 + $1.stockActual }
-            let totalCapacity = productStocks.reduce(0.0) { $0 + capacidad(for: $1) }
+            let remoteProductTanks = tanksForProduct(producto)
+            let totalStock = remoteProductTanks.isEmpty
+                ? productStocks.reduce(0.0) { $0 + $1.stockActual }
+                : remoteProductTanks.reduce(0.0) { $0 + $1.currentLevel }
+            let totalCapacity = remoteProductTanks.isEmpty
+                ? productStocks.reduce(0.0) { $0 + capacidad(for: $1) }
+                : remoteProductTanks.reduce(0.0) { $0 + $1.capacity }
             let totalValue = totalStock * producto.precioPorLitro
-            let isLow = totalStock < producto.stockMinimo
+            let isLow = remoteProductTanks.isEmpty ? totalStock < producto.stockMinimo : remoteProductTanks.contains(where: \.isLow)
             let meta = fuelMeta(for: producto)
-
-            return DatosDashboardAlmacen.TarjetaProducto(
-                id: producto.id?.uuidString ?? UUID().uuidString,
-                name: producto.nombre ?? "Producto",
-                priceText: "\(formatearMoneda(producto.precioPorLitro)) / \(producto.unidadMedida ?? "L")",
-                minimumText: formatearValorLitros(producto.stockMinimo),
-                totalStockText: formatearValorLitros(totalStock),
-                capacityText: formatearValorLitros(totalCapacity),
-                healthText: isLow ? "Reponer" : "Operativo",
-                totalValueText: formatearMoneda(totalValue),
-                fillRatio: totalCapacity > 0 ? min(totalStock / totalCapacity, 1) : 0,
-                colorHex: meta.colorHex,
-                bgHex: meta.bgHex,
-                symbolName: meta.symbolName,
-                isLow: isLow,
-                stocks: productStocks.enumerated().map { stockIndex, stock in
+            let productStockCards: [DatosDashboardAlmacen.StockProductoPorAlmacen] = remoteProductTanks.isEmpty
+                ? productStocks.enumerated().map { stockIndex, stock in
                     DatosDashboardAlmacen.StockProductoPorAlmacen(
                         warehouseName: nombreCortoAlmacen(stock.almacen?.nombre ?? "Almacén"),
                         colorHex: warehouseColorHex(for: stockIndex),
@@ -265,6 +304,33 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
                         isLow: stock.stockActual < minimo(for: stock)
                     )
                 }
+                : remoteProductTanks.map { tank in
+                    DatosDashboardAlmacen.StockProductoPorAlmacen(
+                        warehouseName: nombreCortoAlmacen(tank.warehouseName),
+                        colorHex: warehouseColorHex(for: warehouseIndex(for: tank.warehouseId, warehouseName: tank.warehouseName)),
+                        stockText: formatearCantidadRemota(tank.currentLevel, unit: tank.unit),
+                        detailText: "Mínimo tanque \(formatearCantidadRemota(tank.minimumLevel, unit: tank.unit)) · Cap. tanque \(formatearCantidadRemota(tank.capacity, unit: tank.unit))",
+                        fillRatio: tank.capacity > 0 ? min(tank.currentLevel / tank.capacity, 1) : 0,
+                        isLow: tank.isLow
+                    )
+                }
+
+            return DatosDashboardAlmacen.TarjetaProducto(
+                id: producto.id?.uuidString ?? UUID().uuidString,
+                name: producto.nombre ?? "Producto",
+                priceText: "\(formatearMoneda(producto.precioPorLitro)) / \(producto.unidadMedida ?? "L")",
+                minimumText: formatearValorLitros(producto.stockMinimo),
+                totalStockText: formatearValorLitros(totalStock),
+                capacityText: formatearValorLitros(totalCapacity),
+                warehouseCoverageText: "\(max(productStockCards.count, remoteProductTanks.count)) almacenes",
+                healthText: isLow ? "Reponer" : "Operativo",
+                totalValueText: formatearMoneda(totalValue),
+                fillRatio: totalCapacity > 0 ? min(totalStock / totalCapacity, 1) : 0,
+                colorHex: meta.colorHex,
+                bgHex: meta.bgHex,
+                symbolName: meta.symbolName,
+                isLow: isLow,
+                stocks: productStockCards
             )
         }
 
@@ -383,6 +449,35 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         return productStocks.reduce(0) { $0 + capacidad(for: $1) }
     }
 
+    private func currentLowStockCount() -> Int {
+        if remoteTanks.isEmpty == false {
+            return remoteTanks.filter(\.isLow).count
+        }
+        return stocks.filter { $0.stockActual < minimo(for: $0) }.count
+    }
+
+    private func tanksForWarehouse(_ almacen: AlmacenEntity) -> [RemoteTankSnapshot] {
+        let warehouseId = almacen.id?.uuidString
+        let warehouseName = almacen.nombre ?? ""
+        return remoteTanks.filter { tank in
+            if let warehouseId, tank.warehouseId == warehouseId {
+                return true
+            }
+            return tank.warehouseName.caseInsensitiveCompare(warehouseName) == .orderedSame
+        }
+    }
+
+    private func tanksForProduct(_ producto: ProductoEntity) -> [RemoteTankSnapshot] {
+        let productId = producto.id?.uuidString
+        let productName = producto.nombre ?? ""
+        return remoteTanks.filter { tank in
+            if let productId, tank.productId == productId {
+                return true
+            }
+            return tank.productName.caseInsensitiveCompare(productName) == .orderedSame
+        }
+    }
+
     private func capacidadConfigurada(for almacen: AlmacenEntity, fallback: Double) -> Double {
         almacen.stockEspacio > 0 ? almacen.stockEspacio : fallback
     }
@@ -416,9 +511,11 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
     }
 
     private func actualizarMetricas() {
-        let stockTotal = stocks.reduce(0.0) { $0 + $1.stockActual }
+        let stockTotal = remoteTanks.isEmpty
+            ? stocks.reduce(0.0) { $0 + $1.stockActual }
+            : remoteTanks.reduce(0.0) { $0 + $1.currentLevel }
         let valorTotal = productos.reduce(0.0) { $0 + ($1.stockLitros * $1.precioPorLitro) }
-        let bajoMinimo = stocks.filter { $0.stockActual < minimo(for: $0) }.count
+        let bajoMinimo = currentLowStockCount()
         let entradas = movimientos.filter { $0.tipo == "entrada" }.reduce(0.0) { $0 + max($1.cantidadLitros, 0) }
         let salidas = movimientos.filter { $0.tipo == "salida" }.reduce(0.0) { $0 + abs($1.cantidadLitros) }
         let transferencias = movimientos.filter { $0.tipo == "transfer" }.reduce(0.0) { $0 + abs($1.cantidadLitros) }
@@ -490,6 +587,12 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         Int(amount.rounded()).formatted()
     }
 
+    private func formatearCantidadRemota(_ amount: Double, unit: String) -> String {
+        let rounded = amount.rounded()
+        let number = rounded == amount ? String(Int(rounded)) : String(format: "%.1f", amount)
+        return "\(number) \(unit)"
+    }
+
     private static let formateadorFecha: DateFormatter = {
         let f = DateFormatter()
         f.locale = Locale(identifier: "es_PE")
@@ -510,6 +613,13 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
     private func warehouseColorHex(for index: Int) -> String {
         let palette = ["3B82F6", "22C55E", "F59E0B", "8B5CF6", "EF4444"]
         return palette[index % palette.count]
+    }
+
+    private func warehouseIndex(for warehouseId: String?, warehouseName: String) -> Int {
+        if let warehouseId, let index = almacenes.firstIndex(where: { $0.id?.uuidString == warehouseId }) {
+            return index
+        }
+        return almacenes.firstIndex(where: { ($0.nombre ?? "").caseInsensitiveCompare(warehouseName) == .orderedSame }) ?? 0
     }
 
     private func tipoMovimientoDashboard(for rawType: String) -> DatosDashboardAlmacen.TipoMovimiento {
@@ -545,6 +655,18 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         }
     }
 
+    private func fuelMeta(forRemoteType type: String, productName: String) -> (colorHex: String, bgHex: String, symbolName: String) {
+        let normalizedType = type.lowercased()
+        let normalizedName = productName.lowercased()
+        if normalizedType.contains("glp") || normalizedName.contains("glp") {
+            return ("22C55E", "ECFDF5", "flame.fill")
+        }
+        if normalizedName.contains("diesel") {
+            return ("F59E0B", "FFF7E6", "drop.fill")
+        }
+        return ("3B82F6", "E8F0FF", "fuelpump.fill")
+    }
+
     private func descripcionMovimiento(_ movimiento: MovimientoInventarioEntity) -> String {
         if let note = movimiento.nota, note.isEmpty == false {
             return note
@@ -552,6 +674,74 @@ final class AlmaceneroViewController: UIViewController, UITableViewDataSource, U
         let origen = movimiento.origen ?? "Origen"
         let destino = movimiento.destino ?? movimiento.almacen?.nombre ?? "Destino"
         return "\(origen) → \(destino)"
+    }
+
+    private func observeRemoteTanksIfNeeded() {
+        #if canImport(FirebaseFirestore)
+        tanksListener?.remove()
+        tanksListener = nil
+        remoteTanks = []
+        guard FirebaseBootstrap.shared.isConfigured, AppSession.shared.remoteDataEnabled else { return }
+        tanksListener = Firestore.firestore().collection("tanques").addSnapshotListener { [weak self] snapshot, _ in
+            guard let self else { return }
+            let documents = snapshot?.documents ?? []
+            self.remoteTanks = documents.compactMap { self.remoteTankSnapshot(from: $0) }
+            DispatchQueue.main.async {
+                self.cargarDatos()
+            }
+        }
+        #endif
+    }
+
+    #if canImport(FirebaseFirestore)
+    private func remoteTankSnapshot(from document: QueryDocumentSnapshot) -> RemoteTankSnapshot? {
+        let data = document.data()
+        let productName = stringValue(in: data, keys: ["productName", "nombreProducto", "productoNombre", "nombre", "fuelName"])
+        let warehouseName = stringValue(in: data, keys: ["warehouseName", "almacenNombre", "stationName", "almacen"])
+        guard productName.isEmpty == false || warehouseName.isEmpty == false else { return nil }
+        return RemoteTankSnapshot(
+            id: document.documentID,
+            warehouseId: stringValue(in: data, keys: ["warehouseId", "almacenId"]).nilIfEmpty,
+            warehouseName: warehouseName.isEmpty ? "Almacén" : warehouseName,
+            productId: stringValue(in: data, keys: ["productId", "productoId"]).nilIfEmpty,
+            productName: productName.isEmpty ? "Tanque" : productName,
+            currentLevel: numberValue(in: data, keys: ["currentLevel", "nivelActual", "stockActual", "litrosActuales", "quantity"]),
+            minimumLevel: numberValue(in: data, keys: ["minimumLevel", "stockMinimo", "minimo", "minimum"]),
+            capacity: numberValue(in: data, keys: ["capacity", "capacidadTotal", "maxLiters", "maximo", "capacidad"]),
+            unit: stringValue(in: data, keys: ["unit", "unidadMedida", "unidad"]).nonEmptyOr("L"),
+            type: stringValue(in: data, keys: ["type", "tipo", "productType"]).nonEmptyOr("Combustible")
+        )
+    }
+    #endif
+
+    private func stringValue(in data: [String: Any], keys: [String]) -> String {
+        for key in keys {
+            if let value = data[key] as? String {
+                let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                if trimmed.isEmpty == false {
+                    return trimmed
+                }
+            }
+        }
+        return ""
+    }
+
+    private func numberValue(in data: [String: Any], keys: [String]) -> Double {
+        for key in keys {
+            if let value = data[key] as? NSNumber {
+                return value.doubleValue
+            }
+            if let value = data[key] as? Double {
+                return value
+            }
+            if let value = data[key] as? Int {
+                return Double(value)
+            }
+            if let value = data[key] as? String, let number = Double(value) {
+                return number
+            }
+        }
+        return 0
     }
 
     private func textoActorMovimiento(_ movimiento: MovimientoInventarioEntity) -> String {
@@ -722,6 +912,17 @@ extension AlmaceneroViewController: ModalAlmacenViewControllerDelegate, ModalPro
 
     func modalMovimientoViewControllerDidSave(_ controller: ModalMovimientoViewController) {
         cargarDatos()
+    }
+}
+
+private extension String {
+    var nilIfEmpty: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    func nonEmptyOr(_ fallback: String) -> String {
+        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? fallback : self
     }
 }
 

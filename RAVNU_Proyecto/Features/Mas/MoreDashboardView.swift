@@ -45,6 +45,7 @@ struct MoreDashboardView: View {
     let onOpenCollections: () -> Void
     let onOpenPurchases: () -> Void
     let onOpenHumanResources: () -> Void
+    let onOpenMyRequests: () -> Void
     let onLogout: () -> Void
 
     var body: some View {
@@ -59,6 +60,8 @@ struct MoreDashboardView: View {
                     if data.visibleModules.tesoreria {
                         treasuryCard
                     }
+
+                    myRequestsCard
 
                     moduleGrid
 
@@ -223,6 +226,43 @@ struct MoreDashboardView: View {
         }
     }
 
+    private var myRequestsCard: some View {
+        Button(action: onOpenMyRequests) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("MIS SOLICITUDES")
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color(hex: "8E9AAD"))
+                        Text("Aprobaciones y comentarios")
+                            .font(.system(size: 12, weight: .medium, design: .rounded))
+                            .foregroundStyle(Color.secondary)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(Color(hex: "C5CBD4"))
+                }
+
+                HStack(spacing: 12) {
+                    miniStatusCard(title: "Pend.", color: Color(hex: "F59E0B"))
+                    miniStatusCard(title: "OK", color: Color(hex: "22C55E"))
+                    miniStatusCard(title: "No", color: Color(hex: "EF4444"))
+                }
+
+                Text("Consulta tus solicitudes pendientes, aceptadas o denegadas desde la app, igual que en la web.")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color(hex: "172033"))
+                    .multilineTextAlignment(.leading)
+            }
+            .padding(18)
+            .background(cardBackground)
+        }
+        .buttonStyle(.plain)
+    }
+
     private var hrCard: some View {
         Button(action: onOpenHumanResources) {
             VStack(alignment: .leading, spacing: 14) {
@@ -349,6 +389,21 @@ struct MoreDashboardView: View {
                 .font(.system(size: 12, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(hex: "8E9AAD"))
         }
+    }
+
+    private func miniStatusCard(title: String, color: Color) -> some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            Text(title)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(hex: "172033"))
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 30)
+        .background(Color(hex: "F8FAFC"))
+        .clipShape(Capsule())
     }
 
     private var cardBackground: some View {

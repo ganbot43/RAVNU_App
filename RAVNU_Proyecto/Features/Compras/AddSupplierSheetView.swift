@@ -33,7 +33,7 @@ struct AddSupplierSheetView: View {
 
     var body: some View {
         ZStack {
-            Color.white.ignoresSafeArea()
+            Color(hex: "F4F6FA").ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Capsule()
@@ -76,7 +76,7 @@ struct AddSupplierSheetView: View {
                                     } label: {
                                         Image(systemName: value <= rating ? "star.fill" : "star")
                                             .font(.system(size: 24, weight: .semibold))
-                                            .foregroundStyle(value <= rating ? Color(hex: "F5C22B") : Color(hex: "E3E8F0"))
+                                            .foregroundStyle(value <= rating ? Color(hex: "F59E0B") : Color(hex: "E3E8F0"))
                                     }
                                     .buttonStyle(.plain)
                                 }
@@ -131,7 +131,7 @@ struct AddSupplierSheetView: View {
             Spacer()
             Text("Agregar Proveedor")
                 .font(.system(size: 20, weight: .black, design: .rounded))
-                .foregroundStyle(Color(hex: "172033"))
+                .foregroundStyle(Color.primary)
             Spacer()
             Color.clear.frame(width: 56, height: 1)
         }
@@ -141,9 +141,9 @@ struct AddSupplierSheetView: View {
 
     private func fieldSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(hex: "6F7B8D"))
+                Text(title)
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.secondary)
             content()
         }
     }
@@ -174,10 +174,10 @@ struct AddSupplierSheetView: View {
                 Text(title)
                     .font(.system(size: 16, weight: .bold, design: .rounded))
             }
-            .foregroundStyle(isOn.wrappedValue ? Color(hex: "F59E0B") : Color(hex: "98A2B3"))
+            .foregroundStyle(isOn.wrappedValue ? Color(hex: "F59E0B") : Color.secondary)
             .frame(maxWidth: .infinity)
             .frame(height: 48)
-            .background(isOn.wrappedValue ? Color(hex: "FFF7E6") : Color.white)
+            .background(isOn.wrappedValue ? Color(hex: "FFF7ED") : Color.white)
             .overlay(
                 RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .stroke(isOn.wrappedValue ? Color(hex: "F5C561") : Color(hex: "E6EBF2"), lineWidth: 1)
@@ -200,10 +200,10 @@ private struct WrappingChips: View {
             } label: {
                 Text(item)
                     .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundStyle(selected == item ? .white : Color(hex: "6F7B8D"))
+                    .foregroundStyle(selected == item ? .white : Color.secondary)
                     .padding(.horizontal, 14)
                     .frame(height: 36)
-                    .background(selected == item ? Color(hex: "F59E0B") : Color(hex: "F1F4F8"))
+                    .background(selected == item ? Color(hex: "3B82F6") : Color(hex: "F1F4F8"))
                     .clipShape(Capsule())
             }
             .buttonStyle(.plain)

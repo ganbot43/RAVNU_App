@@ -247,40 +247,49 @@ final class ModalProductoViewController: UIViewController {
     }
 
     private func solicitarMotivoYEnviar() {
-        let alert = UIAlertController(
-            title: "Enviar solicitud",
-            message: "Se enviará una solicitud detallada para registrar el producto. Describe la necesidad operativa y el impacto esperado.",
-            preferredStyle: .alert
+        let config = AdminRequestComposerConfig(
+            title: productoExistente == nil ? "Solicitud de alta de producto" : "Solicitud de actualización de producto",
+            subtitle: "Esta información llegará al web admin en la pestaña Solicitudes junto con el resumen del producto y la ruta configurada.",
+            moduleLabel: "Almacén",
+            typeLabel: tipoSolicitudProducto(),
+            targetLabel: productoExistente?.nombre ?? "Producto nuevo",
+            accent: .blue,
+            primaryField: .init(
+                title: "Motivo principal",
+                placeholder: "Ej. ampliar portafolio o formalizar un producto ya usado en operación",
+                helper: "Resume en una frase por qué debe crearse o ajustarse este producto.",
+                isRequired: true
+            ),
+            secondaryField: .init(
+                title: "Necesidad operativa",
+                placeholder: "Explica dónde se venderá, almacenará o qué flujo depende de este producto",
+                helper: "Este campo ayuda al aprobador a entender el impacto real en ventas, compras y stock.",
+                isRequired: true
+            ),
+            tertiaryField: .init(
+                title: "Observación adicional",
+                placeholder: "Notas opcionales para precios, stock inicial o coordinación",
+                helper: "Úsalo para agregar contexto adicional si hace falta.",
+                isRequired: false
+            ),
+            summaryItems: [
+                .init(title: "Nombre", value: formState.name.trimmingCharacters(in: .whitespacesAndNewlines).fallback("Sin nombre")),
+                .init(title: "Precio/L", value: currencyText(parseDouble(formState.price))),
+                .init(title: "Unidad", value: formState.normalizedUnit),
+                .init(title: "Mínimo base", value: quantityText(parseDouble(formState.minimumStock), unit: formState.normalizedUnit)),
+                .init(title: "Capacidad base", value: quantityText(parseDouble(formState.capacity), unit: formState.normalizedUnit))
+            ],
+            endpointLabel: AdminRequestService.requestEndpointDescription()
         )
-        alert.addTextField { textField in
-            textField.placeholder = "Motivo principal"
-        }
-        alert.addTextField { textField in
-            textField.placeholder = "Uso operativo o necesidad"
-        }
-        alert.addTextField { textField in
-            textField.placeholder = "Observación adicional"
-        }
-        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+        presentAdminRequestComposer(config: config) { [weak self] result, presenter in
             guard let self else { return }
-            let motivo = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let necesidad = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let observacion = alert.textFields?[2].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard motivo.isEmpty == false else {
-                self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
-                return
-            }
-            guard necesidad.isEmpty == false else {
-                self.showAlert(title: "Validación", message: "Describe la necesidad operativa del producto.")
-                return
-            }
+            presenter.dismiss(animated: true)
             Task {
                 do {
                     try await self.enviarSolicitudProducto(
-                        motivo: motivo,
-                        necesidad: necesidad,
-                        observacion: observacion
+                        motivo: result.primaryText,
+                        necesidad: result.secondaryText,
+                        observacion: result.tertiaryText
                     )
                     await MainActor.run {
                         self.showAlertAndDismiss(
@@ -294,8 +303,7 @@ final class ModalProductoViewController: UIViewController {
                     }
                 }
             }
-        })
-        present(alert, animated: true)
+        }
     }
 
     private func enviarSolicitudProducto(
@@ -388,6 +396,25 @@ final class ModalProductoViewController: UIViewController {
             showAlert(title: "Permiso denegado", message: "Tu rol no puede solicitar nuevos productos.")
         }
     }
+
+    private func currencyText(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "PEN"
+        formatter.locale = Locale(identifier: "es_PE")
+        return formatter.string(from: NSNumber(value: value)) ?? "S/\(value)"
+    }
+
+    private func quantityText(_ value: Double, unit: String) -> String {
+        let number = value.rounded() == value ? String(Int(value)) : String(format: "%.2f", value)
+        return "\(number) \(unit)"
+    }
+}
+
+private extension String {
+    func fallback(_ value: String) -> String {
+        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? value : self
+    }
 }
 
 private final class ProductoFormState: ObservableObject {
@@ -399,7 +426,7 @@ private final class ProductoFormState: ObservableObject {
         var title: String { self == .fuel ? "Combustible" : "GLP" }
         var firestoreValue: String { self == .fuel ? "Combustible" : "GLP" }
         var iconName: String { self == .fuel ? "drop.fill" : "flame.fill" }
-        var accentColor: Color { self == .fuel ? Color(hex: "2563EB") : Color(hex: "10B981") }
+        var accentColor: Color { self == .fuel ? Color(hex: "3B82F6") : Color(hex: "22C55E") }
     }
 
     @Published var name = ""
@@ -454,7 +481,7 @@ private struct ProductoModalContentView: View {
                         .padding(.vertical, 16)
                         .background(
                             LinearGradient(
-                                colors: [Color(hex: "2563EB"), Color(hex: "1D4ED8")],
+                                colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -509,7 +536,7 @@ private struct ProductoModalContentView: View {
         .padding(20)
         .background(
             LinearGradient(
-                colors: [Color(hex: "0F172A"), Color(hex: "2563EB")],
+                colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -521,7 +548,7 @@ private struct ProductoModalContentView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Tipo de producto")
                 .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(Color(hex: "334155"))
+                .foregroundStyle(Color.secondary)
 
             HStack(spacing: 10) {
                 ForEach(ProductoFormState.ProductType.allCases) { type in
@@ -570,10 +597,10 @@ private struct ProductoModalContentView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 17, weight: .black))
-                    .foregroundStyle(Color(hex: "0F172A"))
+                    .foregroundStyle(Color.primary)
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
             }
             content()
         }
@@ -588,12 +615,12 @@ private struct ProductoModalContentView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
                 .font(.system(size: 11, weight: .black))
-                .foregroundStyle(Color(hex: "64748B"))
+                .foregroundStyle(Color.secondary)
 
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color(hex: "2563EB"))
+                    .foregroundStyle(Color(hex: "3B82F6"))
                     .frame(width: 18)
 
                 TextField(placeholder, text: text)

@@ -1015,6 +1015,7 @@ struct TrabajadorSheetView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 18) {
+                    heroCard
                     campoTexto(
                         titulo: "Nombre completo",
                         placeholder: "Ingresa el nombre completo",
@@ -1071,7 +1072,7 @@ struct TrabajadorSheetView: View {
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 .fill(
                                     LinearGradient(
-                                        colors: [Color(hex: "A855F7"), Color(hex: "9333EA")],
+                                        colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -1095,7 +1096,7 @@ struct TrabajadorSheetView: View {
                 .padding(.horizontal, 18)
                 .padding(.bottom, 24)
             }
-            .background(Color.white.ignoresSafeArea())
+            .background(Color(hex: "F4F6FA").ignoresSafeArea())
             .navigationTitle(modo.titulo)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -1104,7 +1105,7 @@ struct TrabajadorSheetView: View {
                         dismiss()
                     }
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color(hex: "6B7280"))
+                    .foregroundStyle(Color(hex: "3B82F6"))
                     .disabled(guardando)
                 }
             }
@@ -1116,11 +1117,64 @@ struct TrabajadorSheetView: View {
         }
     }
 
+    private var heroCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(modo.titulo)
+                        .font(.system(size: 22, weight: .black))
+                        .foregroundStyle(.white)
+                    Text("Gestiona identidad, rol, turno y acceso del trabajador con la misma paleta visual del resto del sistema.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.84))
+                }
+                Spacer()
+                Image(systemName: "person.text.rectangle.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 54, height: 54)
+                    .background(Color.white.opacity(0.16))
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
+
+            HStack(spacing: 10) {
+                heroChip(title: "ROL", value: borrador.rol.nombre)
+                heroChip(title: "TURNO", value: borrador.turno.nombre)
+                heroChip(title: "ESTADO", value: borrador.activo ? "Activo" : "Inactivo")
+            }
+        }
+        .padding(20)
+        .background(
+            LinearGradient(
+                colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+    }
+
+    private func heroChip(title: String, value: String) -> some View {
+        VStack(spacing: 2) {
+            Text(title)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(Color.white.opacity(0.68))
+            Text(value)
+                .font(.system(size: 13, weight: .black))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+        .background(Color.white.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+
     private var selectorRol: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Rol")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color(hex: "6B7280"))
+                .foregroundStyle(Color.secondary)
 
             HStack(spacing: 0) {
                 ForEach(BorradorTrabajador.Rol.allCases) { rol in
@@ -1162,7 +1216,7 @@ struct TrabajadorSheetView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Turno")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color(hex: "6B7280"))
+                .foregroundStyle(Color.secondary)
 
             Menu {
                 ForEach(BorradorTrabajador.Turno.allCases) { turno in
@@ -1176,10 +1230,10 @@ struct TrabajadorSheetView: View {
                 HStack(spacing: 10) {
                     Image(systemName: borrador.turno.icono)
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(Color(hex: "F3B341"))
+                        .foregroundStyle(Color(hex: "F59E0B"))
                     Text(borrador.turno.nombre)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(hex: "374151"))
+                        .foregroundStyle(Color.primary)
                     Spacer()
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .bold))
@@ -1199,15 +1253,15 @@ struct TrabajadorSheetView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Estado")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color(hex: "6B7280"))
+                    .foregroundStyle(Color.secondary)
                 Text("Permite o bloquea el ingreso del trabajador.")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color(hex: "9CA3AF"))
+                    .foregroundStyle(Color.secondary)
             }
             Spacer()
             Toggle("", isOn: $borrador.activo)
                 .labelsHidden()
-                .tint(Color(hex: "61C87A"))
+                .tint(Color(hex: "22C55E"))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
@@ -1227,7 +1281,7 @@ struct TrabajadorSheetView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(titulo)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color(hex: "6B7280"))
+                .foregroundStyle(Color.secondary)
 
             Group {
                 if secure {
@@ -1237,7 +1291,7 @@ struct TrabajadorSheetView: View {
                 }
             }
             .font(.system(size: 17, weight: .medium))
-            .foregroundStyle(Color(hex: "1F2937"))
+            .foregroundStyle(Color.primary)
             .textInputAutocapitalization(autocapitalization)
             .keyboardType(keyboardType)
             .autocorrectionDisabled()

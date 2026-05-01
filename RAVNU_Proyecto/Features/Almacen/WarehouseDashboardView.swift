@@ -20,6 +20,7 @@ struct DatosDashboardAlmacen {
         let shortName: String
         let address: String
         let colorHex: String
+        let occupancyText: String
         let totalStockText: String
         let totalCapacityText: String
         let fillRatio: Double
@@ -28,6 +29,7 @@ struct DatosDashboardAlmacen {
         let lowStockText: String?
         let valueText: String
         let availableSpaceText: String
+        let configuredSpaceText: String
         let stocks: [StockProductoPorAlmacen]
     }
 
@@ -48,6 +50,7 @@ struct DatosDashboardAlmacen {
         let minimumText: String
         let totalStockText: String
         let capacityText: String
+        let warehouseCoverageText: String
         let healthText: String
         let totalValueText: String
         let fillRatio: Double
@@ -314,9 +317,12 @@ struct WarehouseDashboardView: View {
                     Text(data.inventoryValueText)
                         .font(.system(size: 22, weight: .black))
                         .foregroundStyle(Color.white)
-                    Text("Valor total del stock")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color.white.opacity(0.72))
+                Text("Valor total del stock")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color.white.opacity(0.72))
+                Text("Capacidad, ocupación y espacio libre se calculan por almacén y por producto.")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Color.white.opacity(0.72))
                 }
                 Spacer()
                 Text(data.totalWarehousesText)
@@ -432,6 +438,11 @@ struct WarehouseDashboardView: View {
                     .foregroundStyle(Color(.label))
             }
 
+            HStack(spacing: 8) {
+                chip(text: warehouse.occupancyText, bgHex: "EEF2FF", fgHex: "4338CA", icon: "chart.bar.xaxis")
+                chip(text: warehouse.configuredSpaceText, bgHex: "F8FAFC", fgHex: "6B7280", icon: "gauge.with.dots.needle.50percent")
+            }
+
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     Capsule()
@@ -544,6 +555,7 @@ struct WarehouseDashboardView: View {
             HStack(spacing: 8) {
                 chip(text: "Min base \(product.minimumText)", bgHex: "F9FAFB", fgHex: "6B7280", icon: "arrow.down.to.line")
                 chip(text: "Cap red \(product.capacityText)", bgHex: "F9FAFB", fgHex: "6B7280", icon: "gauge.with.dots.needle.50percent")
+                chip(text: product.warehouseCoverageText, bgHex: "EEF2FF", fgHex: "2563EB", icon: "building.2")
                 Spacer()
                 Text(product.totalValueText)
                     .font(.system(size: 11, weight: .bold))

@@ -140,7 +140,7 @@ struct ClienteModalFormView: View {
                         .padding(.vertical, 16)
                         .background(
                             LinearGradient(
-                                colors: [Color(hex: "2563EB"), Color(hex: "1D4ED8")],
+                                colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -197,7 +197,7 @@ struct ClienteModalFormView: View {
         .padding(20)
         .background(
             LinearGradient(
-                colors: [Color(hex: "0F172A"), Color(hex: "2563EB")],
+                colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -210,19 +210,19 @@ struct ClienteModalFormView: View {
             HStack {
                 Text("Estado inicial")
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundStyle(Color(hex: "0F172A"))
+                    .foregroundStyle(Color.primary)
                 Spacer()
                 Text("Activo")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Capsule().fill(Color(hex: "16A34A")))
+                    .background(Capsule().fill(Color(hex: "22C55E")))
             }
 
             Text("El estado se actualizará automáticamente según el historial de pagos y el uso del crédito del cliente.")
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(Color(hex: "166534"))
+                .foregroundStyle(Color.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 10) {
@@ -244,10 +244,10 @@ struct ClienteModalFormView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 17, weight: .black))
-                    .foregroundStyle(Color(hex: "0F172A"))
+                    .foregroundStyle(Color.primary)
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
             }
             content()
         }
@@ -288,18 +288,18 @@ struct ClienteModalFormView: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color(hex: "2563EB"))
+                .foregroundStyle(Color(hex: "3B82F6"))
                 .frame(width: 20)
 
             if let prefix {
                 Text(prefix)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
             }
 
             TextField(placeholder, text: text)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(Color(hex: "0F172A"))
+                .foregroundStyle(Color.primary)
                 .keyboardType(keyboardType)
                 .textInputAutocapitalization(keyboardType == .emailAddress ? .never : .words)
                 .autocorrectionDisabled(true)

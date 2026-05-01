@@ -96,6 +96,7 @@ final class MasViewController: UIViewController {
             onOpenCollections: { [weak self] in self?.cobrosCardTapped() },
             onOpenPurchases: { [weak self] in self?.comprasCardTapped() },
             onOpenHumanResources: { [weak self] in self?.rrhhCardTapped() },
+            onOpenMyRequests: { [weak self] in self?.myRequestsTapped() },
             onLogout: { [weak self] in self?.performLogout() }
         )
     }
@@ -270,5 +271,16 @@ final class MasViewController: UIViewController {
 
     @objc private func rrhhCardTapped() {
         performSegue(withIdentifier: "mostrarPantallaRRHH", sender: nil)
+    }
+
+    @objc private func myRequestsTapped() {
+        let host = UIHostingController(rootView: MyRequestsView())
+        host.modalPresentationStyle = .pageSheet
+        if let sheet = host.sheetPresentationController {
+            sheet.detents = [.large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 28
+        }
+        present(host, animated: true)
     }
 }

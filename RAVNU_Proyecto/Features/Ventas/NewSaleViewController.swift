@@ -668,9 +668,9 @@ private struct FormularioNuevaVentaView: View {
 
                 sectionCard(title: "Impacto operativo", subtitle: "Confirma cómo afectará la venta al stock, tesorería y cuenta por cobrar antes de guardar.") {
                     VStack(alignment: .leading, spacing: 10) {
-                        filaImpacto("Total", moneda(total), accent: Color(hex: "2563EB"))
+                        filaImpacto("Total", moneda(total), accent: Color(hex: "3B82F6"))
                         filaImpacto("Almacén", "-\(quantity)\(unidadCompacta(selectedProduct?.unit ?? "L"))", accent: Color(hex: "DC2626"))
-                        filaImpacto("Tesorería", paymentType == "cash" ? "+\(moneda(total))" : "Pendiente", accent: Color(hex: "16A34A"))
+                        filaImpacto("Tesorería", paymentType == "cash" ? "+\(moneda(total))" : "Pendiente", accent: Color(hex: "22C55E"))
                         if paymentType == "credit" {
                             filaImpacto("Cobros", "Se generarán cuotas", accent: Color(hex: "D97706"))
                         }
@@ -698,8 +698,8 @@ private struct FormularioNuevaVentaView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
                     .background(
-                        LinearGradient(
-                            colors: [Color(hex: "2563EB"), Color(hex: "1D4ED8")],
+                            LinearGradient(
+                                colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -753,7 +753,7 @@ private struct FormularioNuevaVentaView: View {
         .padding(20)
         .background(
             LinearGradient(
-                colors: [Color(hex: "0F172A"), Color(hex: "2563EB")],
+                colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -766,10 +766,10 @@ private struct FormularioNuevaVentaView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 17, weight: .black))
-                    .foregroundStyle(Color(hex: "0F172A"))
+                    .foregroundStyle(Color.primary)
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
             }
             content()
         }
@@ -792,22 +792,22 @@ private struct FormularioNuevaVentaView: View {
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color(hex: "2563EB"))
+                    .foregroundStyle(Color(hex: "3B82F6"))
                     .frame(width: 18)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(value)
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Color(hex: "0F172A"))
+                        .foregroundStyle(Color.primary)
                     if let subtitle, subtitle.isEmpty == false {
                         Text(subtitle)
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color(hex: "64748B"))
+                            .foregroundStyle(Color.secondary)
                     }
                 }
                 Spacer()
                 picker()
-                    .tint(Color(hex: "2563EB"))
+                    .tint(Color(hex: "3B82F6"))
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 14)
@@ -823,13 +823,13 @@ private struct FormularioNuevaVentaView: View {
     private func tituloSeccion(_ text: String) -> some View {
         Text(text.uppercased())
             .font(.system(size: 11, weight: .black))
-            .foregroundStyle(Color(hex: "64748B"))
+            .foregroundStyle(Color.secondary)
     }
 
     private func filaImpacto(_ title: String, _ value: String, accent: Color) -> some View {
         HStack {
             Text(title)
-                .foregroundStyle(Color(hex: "64748B"))
+                .foregroundStyle(Color.secondary)
             Spacer()
             Text(value)
                 .font(.system(size: 15, weight: .bold))
@@ -841,10 +841,10 @@ private struct FormularioNuevaVentaView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title)
                 .font(.system(size: 9, weight: .black))
-                .foregroundStyle(Color(hex: "94A3B8"))
+                .foregroundStyle(Color.secondary)
             Text(value)
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(Color(hex: "0F172A"))
+                .foregroundStyle(Color.primary)
                 .lineLimit(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

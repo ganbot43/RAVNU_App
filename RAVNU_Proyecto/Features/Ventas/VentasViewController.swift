@@ -287,133 +287,118 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
 
     private func solicitarEdicionVenta(_ sale: DatosDashboardVentas.FilaVenta) {
         guard RoleAccessControl.canRequestSaleChanges else { return }
-        let alert = UIAlertController(
-            title: "Solicitar edición",
-            message: "Detalla con precisión qué debe corregirse, por qué y qué impacto operativo tendrá el cambio.",
-            preferredStyle: .alert
-        )
-        alert.addTextField { textField in
-            textField.placeholder = "Cambios solicitados"
-        }
-        alert.addTextField { textField in
-            textField.placeholder = "Motivo principal"
-        }
-        alert.addTextField { textField in
-            textField.placeholder = "Impacto operativo o comercial"
-        }
-        alert.addTextField { textField in
-            textField.placeholder = "Referencia adicional (opcional)"
-        }
-        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
-            guard let self else { return }
-            let changes = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let reason = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let impact = alert.textFields?[2].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let reference = alert.textFields?[3].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard changes.isEmpty == false else {
-                self.showErrorAlert(message: "Describe los cambios que deseas realizar.")
-                return
-            }
-            guard reason.isEmpty == false else {
-                self.showErrorAlert(message: "Ingresa el motivo de la solicitud.")
-                return
-            }
-            guard impact.isEmpty == false else {
-                self.showErrorAlert(message: "Describe el impacto operativo o comercial del cambio.")
-                return
-            }
-            Task {
-                do {
-                    try await self.enviarSolicitudVenta(
-                        type: "edit_sale",
-                        sale: sale,
-                        reason: reason,
-                        extraPayload: [
-                            "requestedChanges": .string(changes),
-                            "impactoOperativo": .string(impact),
-                            "referenciaAdicional": reference.isEmpty ? .null : .string(reference),
-                            "detalleSolicitud": .object([
-                                "accionSolicitada": .string("editar_venta"),
-                                "requiereRevisionStock": .bool(true),
-                                "requiereRevisionTesoreria": .bool(true)
-                            ])
-                        ]
-                    )
-                    await MainActor.run {
-                        self.showSuccessAndDismissAlert(title: "Solicitud enviada", message: "La solicitud de edición fue enviada al panel administrativo.")
-                    }
-                } catch {
-                    await MainActor.run {
-                        self.showErrorAlert(message: error.localizedDescription)
+        var host: UIHostingController<SaleRequestSheetView>!
+        host = UIHostingController(
+            rootView: SaleRequestSheetView(
+                mode: .edit,
+                sale: sale,
+                onCancel: { host.dismiss(animated: true) },
+                onSubmit: { [weak self] result in
+                    guard let self else { return }
+                    host.dismiss(animated: true)
+                    let reason = result.reasonLabel
+                    let requestedChanges = [result.changeArea, result.changeDetail]
+                        .filter { $0.isEmpty == false }
+                        .joined(separator: " · ")
+                    let impact = result.impactLabel
+                    let reference = result.reference
+                    Task {
+                        do {
+                            try await self.enviarSolicitudVenta(
+                                type: "edit_sale",
+                                sale: sale,
+                                reason: reason,
+                                extraPayload: [
+                                    "requestedChanges": .string(requestedChanges),
+                                    "impactoOperativo": .string(impact),
+                                    "referenciaAdicional": reference.isEmpty ? .null : .string(reference),
+                                    "detalleSolicitud": .object([
+                                        "accionSolicitada": .string("editar_venta"),
+                                        "areaCambio": .string(result.changeArea),
+                                        "detalleCambio": .string(result.changeDetail),
+                                        "impactoSeleccionado": .string(result.impactLabel),
+                                        "requiereRevisionStock": .bool(true),
+                                        "requiereRevisionTesoreria": .bool(true)
+                                    ])
+                                ]
+                            )
+                            await MainActor.run {
+                                self.showSuccessAndDismissAlert(title: "Solicitud enviada", message: "La solicitud de edición fue enviada al panel administrativo.")
+                            }
+                        } catch {
+                            await MainActor.run {
+                                self.showErrorAlert(message: error.localizedDescription)
+                            }
+                        }
                     }
                 }
-            }
-        })
-        present(alert, animated: true)
+            )
+        )
+        host.modalPresentationStyle = UIModalPresentationStyle.pageSheet
+        if let sheet = host.sheetPresentationController {
+            sheet.detents = [UISheetPresentationController.Detent.large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 28
+        }
+        present(host, animated: true)
     }
 
     private func solicitarAnulacionVenta(_ sale: DatosDashboardVentas.FilaVenta) {
         guard RoleAccessControl.canRequestSaleChanges else { return }
-        let alert = UIAlertController(
-            title: "Solicitar anulación",
-            message: "La venta no se anulará desde la app. Describe la causa, el contexto y el ajuste esperado.",
-            preferredStyle: .alert
-        )
-        alert.addTextField { textField in
-            textField.placeholder = "Motivo principal"
-        }
-        alert.addTextField { textField in
-            textField.placeholder = "Detalle del incidente"
-        }
-        alert.addTextField { textField in
-            textField.placeholder = "Ajuste esperado en stock/caja"
-        }
-        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Enviar", style: .destructive) { [weak self] _ in
-            guard let self else { return }
-            let reason = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let incident = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let expectedAdjustment = alert.textFields?[2].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard reason.isEmpty == false else {
-                self.showErrorAlert(message: "Ingresa el motivo de la anulación.")
-                return
-            }
-            guard incident.isEmpty == false else {
-                self.showErrorAlert(message: "Describe el incidente o la razón operativa.")
-                return
-            }
-            guard expectedAdjustment.isEmpty == false else {
-                self.showErrorAlert(message: "Indica qué ajuste esperas en stock o caja.")
-                return
-            }
-            Task {
-                do {
-                    try await self.enviarSolicitudVenta(
-                        type: "cancel_sale",
-                        sale: sale,
-                        reason: reason,
-                        extraPayload: [
-                            "detalleIncidente": .string(incident),
-                            "ajusteEsperado": .string(expectedAdjustment),
-                            "detalleSolicitud": .object([
-                                "accionSolicitada": .string("anular_venta"),
-                                "requiereReversionStock": .bool(true),
-                                "requiereReversionTesoreria": .bool(true)
-                            ])
-                        ]
-                    )
-                    await MainActor.run {
-                        self.showSuccessAndDismissAlert(title: "Solicitud enviada", message: "La solicitud de anulación fue enviada al panel administrativo.")
-                    }
-                } catch {
-                    await MainActor.run {
-                        self.showErrorAlert(message: error.localizedDescription)
+        var host: UIHostingController<SaleRequestSheetView>!
+        host = UIHostingController(
+            rootView: SaleRequestSheetView(
+                mode: .cancel,
+                sale: sale,
+                onCancel: { host.dismiss(animated: true) },
+                onSubmit: { [weak self] result in
+                    guard let self else { return }
+                    host.dismiss(animated: true)
+                    let reason = result.reasonLabel
+                    let incident = [result.changeArea, result.changeDetail]
+                        .filter { $0.isEmpty == false }
+                        .joined(separator: " · ")
+                    let expectedAdjustment = result.impactLabel
+                    let reference = result.reference
+                    Task {
+                        do {
+                            try await self.enviarSolicitudVenta(
+                                type: "cancel_sale",
+                                sale: sale,
+                                reason: reason,
+                                extraPayload: [
+                                    "detalleIncidente": .string(incident),
+                                    "ajusteEsperado": .string(expectedAdjustment),
+                                    "referenciaAdicional": reference.isEmpty ? .null : .string(reference),
+                                    "detalleSolicitud": .object([
+                                        "accionSolicitada": .string("anular_venta"),
+                                        "causalSeleccionada": .string(result.changeArea),
+                                        "detalleIncidente": .string(result.changeDetail),
+                                        "ajusteSeleccionado": .string(result.impactLabel),
+                                        "requiereReversionStock": .bool(true),
+                                        "requiereReversionTesoreria": .bool(true)
+                                    ])
+                                ]
+                            )
+                            await MainActor.run {
+                                self.showSuccessAndDismissAlert(title: "Solicitud enviada", message: "La solicitud de anulación fue enviada al panel administrativo.")
+                            }
+                        } catch {
+                            await MainActor.run {
+                                self.showErrorAlert(message: error.localizedDescription)
+                            }
+                        }
                     }
                 }
-            }
-        })
-        present(alert, animated: true)
+            )
+        )
+        host.modalPresentationStyle = UIModalPresentationStyle.pageSheet
+        if let sheet = host.sheetPresentationController {
+            sheet.detents = [UISheetPresentationController.Detent.large()]
+            sheet.prefersGrabberVisible = true
+            sheet.preferredCornerRadius = 28
+        }
+        present(host, animated: true)
     }
 
     private func enviarSolicitudVenta(
@@ -511,6 +496,293 @@ final class VentasViewController: UIViewController, UITableViewDataSource, UITab
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         UITableViewCell(style: .default, reuseIdentifier: "legacyEmptyCell")
+    }
+}
+
+private enum SaleRequestMode {
+    case edit
+    case cancel
+
+    var title: String {
+        switch self {
+        case .edit: return "Solicitar edición"
+        case .cancel: return "Solicitar anulación"
+        }
+    }
+
+    var actionTitle: String {
+        switch self {
+        case .edit: return "Enviar solicitud"
+        case .cancel: return "Solicitar anulación"
+        }
+    }
+
+    var accent: Color {
+        switch self {
+        case .edit: return Color(hex: "3B82F6")
+        case .cancel: return Color(hex: "EF4444")
+        }
+    }
+
+    var areaOptions: [String] {
+        switch self {
+        case .edit:
+            return ["Cantidad", "Precio", "Método de pago", "Cliente", "Producto", "Fecha", "Otra corrección"]
+        case .cancel:
+            return ["Error de registro", "Cliente duplicado", "Venta inválida", "Stock incorrecto", "Cobro incorrecto", "Solicitud del supervisor", "Otro motivo"]
+        }
+    }
+
+    var reasonOptions: [String] {
+        switch self {
+        case .edit:
+            return ["Corrección operativa", "Error de digitación", "Ajuste comercial", "Diferencia de stock", "Validación administrativa"]
+        case .cancel:
+            return ["Venta mal registrada", "Venta no ejecutada", "Duplicidad", "Incidente operativo", "Incidente financiero", "Error humano"]
+        }
+    }
+
+    var impactOptions: [String] {
+        switch self {
+        case .edit:
+            return ["Impacta stock", "Impacta caja", "Impacta cliente", "Impacta stock y caja", "Solo corrección visual"]
+        case .cancel:
+            return ["Revertir stock", "Revertir caja", "Revertir stock y caja", "Bloquear cobro asociado", "Solo anular registro"]
+        }
+    }
+}
+
+private struct SaleRequestSheetResult {
+    let changeArea: String
+    let changeDetail: String
+    let reasonLabel: String
+    let impactLabel: String
+    let reference: String
+}
+
+private struct SaleRequestSheetView: View {
+    let mode: SaleRequestMode
+    let sale: DatosDashboardVentas.FilaVenta
+    let onCancel: () -> Void
+    let onSubmit: (SaleRequestSheetResult) -> Void
+
+    @State private var selectedArea: String
+    @State private var selectedReason: String
+    @State private var selectedImpact: String
+    @State private var changeDetail = ""
+    @State private var reference = ""
+    @State private var validationMessage: String?
+
+    init(
+        mode: SaleRequestMode,
+        sale: DatosDashboardVentas.FilaVenta,
+        onCancel: @escaping () -> Void,
+        onSubmit: @escaping (SaleRequestSheetResult) -> Void
+    ) {
+        self.mode = mode
+        self.sale = sale
+        self.onCancel = onCancel
+        self.onSubmit = onSubmit
+        _selectedArea = State(initialValue: mode.areaOptions.first ?? "")
+        _selectedReason = State(initialValue: mode.reasonOptions.first ?? "")
+        _selectedImpact = State(initialValue: mode.impactOptions.first ?? "")
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 18) {
+                    headerCard
+                    saleSummaryCard
+                    formCard
+                    if let validationMessage {
+                        validationBanner(validationMessage)
+                    }
+                }
+                .padding(18)
+            }
+            .background(Color(hex: "F4F6FA").ignoresSafeArea())
+            .navigationTitle(mode.title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancelar", action: onCancel)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(mode.actionTitle) { submit() }
+                        .fontWeight(.bold)
+                        .foregroundStyle(mode.accent)
+                }
+            }
+        }
+    }
+
+    private var headerCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(mode.title)
+                .font(.system(size: 23, weight: .black, design: .rounded))
+                .foregroundStyle(.white)
+            Text(mode == .edit
+                 ? "Selecciona qué se quiere corregir, el motivo y el impacto antes de enviarlo al panel administrativo."
+                 : "Selecciona la causal de anulación y el ajuste esperado para evitar texto libre ambiguo.")
+                .font(.system(size: 13, weight: .medium, design: .rounded))
+                .foregroundStyle(Color.white.opacity(0.82))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [mode.accent, mode.accent.opacity(0.82)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+        )
+    }
+
+    private var saleSummaryCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Venta afectada")
+                .font(.system(size: 16, weight: .black, design: .rounded))
+                .foregroundStyle(Color(hex: "172033"))
+            summaryRow("Cliente", sale.clientName)
+            summaryRow("Producto", sale.productInfo)
+            summaryRow("Total", sale.total)
+            summaryRow("Pago", sale.paymentType)
+            summaryRow("Fecha", sale.date)
+        }
+        .padding(18)
+        .background(cardBackground)
+    }
+
+    private var formCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Datos de la solicitud")
+                .font(.system(size: 16, weight: .black, design: .rounded))
+                .foregroundStyle(Color(hex: "172033"))
+
+            menuField(title: mode == .edit ? "Qué se va a editar" : "Qué se va a anular", selection: $selectedArea, options: mode.areaOptions)
+            menuField(title: "Motivo principal", selection: $selectedReason, options: mode.reasonOptions)
+            menuField(title: mode == .edit ? "Impacto del cambio" : "Ajuste esperado", selection: $selectedImpact, options: mode.impactOptions)
+            textField(title: mode == .edit ? "Detalle del cambio" : "Detalle del incidente", text: $changeDetail, placeholder: mode == .edit ? "Ej. corregir litros, cambiar cliente o actualizar precio" : "Ej. venta duplicada, error de cobro o combustible incorrecto")
+            textField(title: "Referencia adicional", text: $reference, placeholder: "Ticket, observación, persona que reportó o dato extra")
+        }
+        .padding(18)
+        .background(cardBackground)
+    }
+
+    private func menuField(title: String, selection: Binding<String>, options: [String]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(hex: "6B7280"))
+            Menu {
+                ForEach(options, id: \.self) { option in
+                    Button(option) { selection.wrappedValue = option }
+                }
+            } label: {
+                HStack {
+                    Text(selection.wrappedValue)
+                        .font(.system(size: 14, weight: .semibold, design: .rounded))
+                        .foregroundStyle(Color(hex: "172033"))
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .foregroundStyle(Color(hex: "9CA3AF"))
+                }
+                .padding(14)
+                .background(Color(hex: "F8FAFC"))
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func textField(title: String, text: Binding<String>, placeholder: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(hex: "6B7280"))
+            TextField(placeholder, text: text, axis: .vertical)
+                .lineLimit(3, reservesSpace: true)
+                .padding(14)
+                .background(Color(hex: "F8FAFC"))
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color(hex: "DCE6F2"), lineWidth: 1)
+                )
+        }
+    }
+
+    private func summaryRow(_ title: String, _ value: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(Color(hex: "6B7280"))
+            Spacer()
+            Text(value)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color(hex: "172033"))
+        }
+    }
+
+    private func validationBanner(_ message: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(Color(hex: "F59E0B"))
+            Text(message)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color(hex: "92400E"))
+            Spacer()
+        }
+        .padding(14)
+        .background(Color(hex: "FFF7E6"))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 24, style: .continuous)
+            .fill(Color.white)
+            .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+
+    private func submit() {
+        let trimmedDetail = changeDetail.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedDetail.isEmpty == false else {
+            validationMessage = mode == .edit
+                ? "Describe el cambio exacto para que administración sepa qué corregir."
+                : "Describe el incidente para justificar la anulación."
+            return
+        }
+        validationMessage = nil
+        onSubmit(
+            SaleRequestSheetResult(
+                changeArea: selectedArea,
+                changeDetail: trimmedDetail,
+                reasonLabel: selectedReason,
+                impactLabel: selectedImpact,
+                reference: reference.trimmingCharacters(in: .whitespacesAndNewlines)
+            )
+        )
+    }
+}
+
+private extension Color {
+    init(hex: String) {
+        var sanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        sanitized = sanitized.replacingOccurrences(of: "#", with: "")
+        var int: UInt64 = 0
+        Scanner(string: sanitized).scanHexInt64(&int)
+        let r = Double((int & 0xFF0000) >> 16) / 255.0
+        let g = Double((int & 0x00FF00) >> 8) / 255.0
+        let b = Double(int & 0x0000FF) / 255.0
+        self.init(red: r, green: g, blue: b)
     }
 }
 

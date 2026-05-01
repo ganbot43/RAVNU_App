@@ -1871,6 +1871,10 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
                 "direccion": almacen.direccion ?? "",
                 "responsable": almacen.responsable ?? "",
                 "stockEspacio": almacen.stockEspacio,
+                "stockOcupado": warehouseOccupiedStock(almacen),
+                "stockDisponible": warehouseAvailableStock(almacen),
+                "productosActivos": warehouseActiveProducts(almacen),
+                "productosBajoMinimo": warehouseLowStockCount(almacen),
                 "activo": almacen.activo
             ], forDocument: firestore.collection("warehouses").document(almacenId), merge: true)
         }
@@ -1959,7 +1963,11 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
         if let almacen = stock.almacen {
             batch.setData([
                 "id": almacenId,
-                "stockEspacio": almacen.stockEspacio
+                "stockEspacio": almacen.stockEspacio,
+                "stockOcupado": warehouseOccupiedStock(almacen),
+                "stockDisponible": warehouseAvailableStock(almacen),
+                "productosActivos": warehouseActiveProducts(almacen),
+                "productosBajoMinimo": warehouseLowStockCount(almacen)
             ], forDocument: firestore.collection("warehouses").document(almacenId), merge: true)
         }
 
@@ -1973,6 +1981,22 @@ final class ComprasViewController: UIViewController, UITableViewDataSource, UITa
             }
         }
         #endif
+    }
+
+    private func warehouseOccupiedStock(_ almacen: AlmacenEntity) -> Double {
+        ((almacen.stocks as? Set<StockAlmacenEntity>) ?? []).reduce(0) { $0 + $1.stockActual }
+    }
+
+    private func warehouseAvailableStock(_ almacen: AlmacenEntity) -> Double {
+        max(almacen.stockEspacio - warehouseOccupiedStock(almacen), 0)
+    }
+
+    private func warehouseActiveProducts(_ almacen: AlmacenEntity) -> Int {
+        ((almacen.stocks as? Set<StockAlmacenEntity>) ?? []).filter { $0.stockActual > 0 }.count
+    }
+
+    private func warehouseLowStockCount(_ almacen: AlmacenEntity) -> Int {
+        ((almacen.stocks as? Set<StockAlmacenEntity>) ?? []).filter { $0.stockActual < $0.stockMinimo }.count
     }
 }
 

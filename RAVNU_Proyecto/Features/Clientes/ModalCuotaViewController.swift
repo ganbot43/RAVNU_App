@@ -359,7 +359,7 @@ private struct PaymentInstallmentSheetView: View {
             Spacer()
             Text("Registrar Pago")
                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(hex: "1F2937"))
+                .foregroundStyle(Color.primary)
             Spacer()
             Color.clear.frame(width: 48)
         }
@@ -369,7 +369,7 @@ private struct PaymentInstallmentSheetView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Seleccionar cliente")
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color(hex: "64748B"))
+                .foregroundStyle(Color.secondary)
             Menu {
                 ForEach(data.options) { option in
                     Button(action: { onSelectCuota(option.id) }) {
@@ -383,15 +383,15 @@ private struct PaymentInstallmentSheetView: View {
                 HStack {
                     Text(data.options.first(where: { $0.id == data.selectedID })?.title ?? "Sin cuotas pendientes")
                         .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundStyle(Color(hex: "334155"))
+                        .foregroundStyle(Color.primary)
                     Spacer()
                     Image(systemName: "chevron.down")
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundStyle(Color(hex: "94A3B8"))
+                        .foregroundStyle(Color.secondary)
                 }
                 .padding(.horizontal, 14)
                 .frame(height: 52)
-                .background(Color(hex: "EEF2F7"))
+                .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
             }
         }
@@ -402,7 +402,7 @@ private struct PaymentInstallmentSheetView: View {
             HStack {
                 Text(data.titleText)
                     .font(.system(size: 17, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color(hex: "1F2937"))
+                    .foregroundStyle(Color.primary)
                 Spacer()
                 Text(data.statusText)
                     .font(.system(size: 12, weight: .bold, design: .rounded))
@@ -414,17 +414,17 @@ private struct PaymentInstallmentSheetView: View {
             }
             Text(data.amountText)
                 .font(.system(size: 22, weight: .black, design: .rounded))
-                .foregroundStyle(Color(hex: "111827"))
+                .foregroundStyle(Color.primary)
             Text(data.dueText)
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundStyle(Color(hex: data.statusAccentHex))
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(hex: "EEF5FF"))
+        .background(Color(hex: "EFF6FF"))
         .overlay(
             RoundedRectangle(cornerRadius: 18)
-                .stroke(Color(hex: "93C5FD"), lineWidth: 2)
+                .stroke(Color(hex: "BFDBFE"), lineWidth: 2)
         )
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
@@ -433,14 +433,14 @@ private struct PaymentInstallmentSheetView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Monto a pagar (S/)")
                 .font(.system(size: 15, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color(hex: "64748B"))
+                .foregroundStyle(Color.secondary)
             TextField("0.00", text: $amount)
                 .keyboardType(.decimalPad)
                 .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(hex: "334155"))
+                .foregroundStyle(Color.primary)
                 .padding(.horizontal, 14)
                 .frame(height: 52)
-                .background(Color(hex: "EEF2F7"))
+                .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
         }
     }
@@ -448,7 +448,7 @@ private struct PaymentInstallmentSheetView: View {
     private var summaryCard: some View {
         VStack(spacing: 10) {
             summaryRow(title: "Saldo restante", value: data.remainingText, accentHex: "22C55E")
-            summaryRow(title: "Deuda después del pago", value: data.debtAfterText, accentHex: "111827")
+            summaryRow(title: "Deuda después del pago", value: data.debtAfterText, accentHex: "3B82F6")
         }
         .padding(16)
         .background(Color(hex: "F8FAFC"))
@@ -460,12 +460,12 @@ private struct PaymentInstallmentSheetView: View {
             Text("⚡")
             Text("El pago se registrará automáticamente en Tesorería")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(hex: "64748B"))
+                .foregroundStyle(Color.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(hex: "EEF5FF"))
+        .background(Color(hex: "EFF6FF"))
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
@@ -479,7 +479,7 @@ private struct PaymentInstallmentSheetView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
-                .background(data.isConfirmEnabled ? Color(hex: "4F83F6") : Color(hex: "A5B4FC"))
+                .background(data.isConfirmEnabled ? Color(hex: "3B82F6") : Color(hex: "93C5FD"))
                 .clipShape(RoundedRectangle(cornerRadius: 18))
         }
         .buttonStyle(.plain)
@@ -490,7 +490,7 @@ private struct PaymentInstallmentSheetView: View {
         HStack {
             Text(title)
                 .font(.system(size: 15, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(hex: "94A3B8"))
+                .foregroundStyle(Color.secondary)
             Spacer()
             Text(value)
                 .font(.system(size: 16, weight: .black, design: .rounded))

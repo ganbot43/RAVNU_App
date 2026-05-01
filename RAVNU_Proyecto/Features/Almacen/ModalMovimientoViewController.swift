@@ -408,6 +408,7 @@ final class ModalMovimientoViewController: UIViewController {
                 "capacidadTotal": producto.capacidadTotal,
                 "unidadMedida": producto.unidadMedida ?? "L"
             ], forDocument: origenDoc, merge: true)
+            batch.setData(self.remoteWarehouseSummaryPayload(for: origen), forDocument: self.firestore.collection("warehouses").document(origenId), merge: true)
 
             let destinoDoc = destinoRef ?? self.firestore.collection("warehouse_stock").document(UUID().uuidString)
             batch.setData([
@@ -418,6 +419,7 @@ final class ModalMovimientoViewController: UIViewController {
                 "capacidadTotal": producto.capacidadTotal,
                 "unidadMedida": producto.unidadMedida ?? "L"
             ], forDocument: destinoDoc, merge: true)
+            batch.setData(self.remoteWarehouseSummaryPayload(for: destino), forDocument: self.firestore.collection("warehouses").document(destinoId), merge: true)
 
             let movementId = UUID().uuidString
             batch.setData([
@@ -469,6 +471,9 @@ final class ModalMovimientoViewController: UIViewController {
                     "capacidadTotal": producto.capacidadTotal,
                     "unidadMedida": producto.unidadMedida ?? "L"
                 ], merge: true)
+                self.firestore.collection("warehouses")
+                    .document(almacenId)
+                    .setData(self.remoteWarehouseSummaryPayload(for: almacen), merge: true)
             }
         #endif
     }
@@ -499,6 +504,27 @@ final class ModalMovimientoViewController: UIViewController {
                 "fecha": Timestamp(date: Date())
             ], merge: true)
         #endif
+    }
+
+    private func remoteWarehouseSummaryPayload(for almacen: AlmacenEntity) -> [String: Any] {
+        let stockItems = ((almacen.stocks as? Set<StockAlmacenEntity>) ?? [])
+        let stockOcupado = stockItems.reduce(0.0) { $0 + $1.stockActual }
+        let stockDisponible = max(almacen.stockEspacio - stockOcupado, 0)
+        let productosActivos = stockItems.filter { $0.stockActual > 0 }.count
+        let productosBajoMinimo = stockItems.filter { $0.stockActual < $0.stockMinimo }.count
+        return [
+            "id": almacen.id?.uuidString ?? "",
+            "nombre": almacen.nombre ?? "Almacén",
+            "direccion": almacen.direccion ?? "",
+            "responsable": almacen.responsable ?? "",
+            "stockEspacio": almacen.stockEspacio,
+            "stockOcupado": stockOcupado,
+            "stockDisponible": stockDisponible,
+            "productosActivos": productosActivos,
+            "productosBajoMinimo": productosBajoMinimo,
+            "activo": almacen.activo,
+            "updatedAt": Timestamp(date: Date())
+        ]
     }
 }
 
@@ -832,7 +858,7 @@ private struct VistaRaizModalMovimiento: View {
         .padding(20)
         .background(
             LinearGradient(
-                colors: [Color(hex: "0F172A"), Color(uiColor: kind.accentColor)],
+                colors: [Color(uiColor: kind.accentColor), Color(uiColor: kind.accentColor)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -844,7 +870,7 @@ private struct VistaRaizModalMovimiento: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Tipo de movimiento")
                 .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(Color(hex: "334155"))
+                .foregroundStyle(Color.secondary)
 
             HStack(spacing: 10) {
                 ForEach(TipoMovimientoModal.allCases, id: \.rawValue) { option in
@@ -934,11 +960,11 @@ private struct VistaRaizModalMovimiento: View {
                 HStack {
                     Text(productTitle)
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Color(hex: "0F172A"))
+                        .foregroundStyle(Color.primary)
                     Spacer()
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(Color(hex: "94A3B8"))
+                        .foregroundStyle(Color.secondary)
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 14)
@@ -975,7 +1001,7 @@ private struct VistaRaizModalMovimiento: View {
             HStack {
                 Text(stockTitle)
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
                 Spacer()
                 Text("\(intString(currentWarehouseStock)) -> \(intString(projectedSourceStock)) \(selectedProduct?.unit ?? "L")")
                     .font(.system(size: 13, weight: .bold))
@@ -1030,7 +1056,7 @@ private struct VistaRaizModalMovimiento: View {
                     subtitle: "Stock estimado después de recibir",
                     stockValue: projectedDestinationStock,
                     capacityValue: destinationWarehouseCapacity,
-                    accent: Color(hex: "8B5CF6")
+                    accent: Color(hex: "3B82F6")
                 )
             }
         }
@@ -1041,7 +1067,7 @@ private struct VistaRaizModalMovimiento: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Cantidad (\(selectedProduct?.unit ?? "L"))")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
 
                 TextField("0", text: $quantityText)
                     .keyboardType(.decimalPad)
@@ -1059,12 +1085,12 @@ private struct VistaRaizModalMovimiento: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Trabajador")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
 
                 HStack {
                     Text(workerName)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(hex: "0F172A"))
+                        .foregroundStyle(Color.primary)
                     Spacer()
                 }
                 .padding(.horizontal, 14)
@@ -1083,7 +1109,7 @@ private struct VistaRaizModalMovimiento: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Nota (opcional)")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color(hex: "64748B"))
+                .foregroundStyle(Color.secondary)
 
             TextField(notePlaceholder, text: $note)
                 .font(.system(size: 16, weight: .regular))
@@ -1116,16 +1142,16 @@ private struct VistaRaizModalMovimiento: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
                     .font(.system(size: 11, weight: .black))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
                 HStack {
                     Text(value)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(hex: "0F172A"))
+                        .foregroundStyle(Color.primary)
                         .multilineTextAlignment(.leading)
                     Spacer()
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(Color(hex: "94A3B8"))
+                        .foregroundStyle(Color.secondary)
                 }
             }
             .padding(14)
@@ -1149,10 +1175,10 @@ private struct VistaRaizModalMovimiento: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.system(size: 11, weight: .black))
-                .foregroundStyle(Color(hex: "64748B"))
+                .foregroundStyle(Color.secondary)
             Text(value)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color(hex: "0F172A"))
+                .foregroundStyle(Color.primary)
         }
         .padding(14)
         .frame(maxWidth: .infinity, minHeight: 84, alignment: .leading)
@@ -1185,10 +1211,10 @@ private struct VistaRaizModalMovimiento: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .font(.system(size: 14, weight: .black))
-                        .foregroundStyle(Color(hex: "0F172A"))
+                        .foregroundStyle(Color.primary)
                     Text(subtitle)
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color(hex: "64748B"))
+                        .foregroundStyle(Color.secondary)
                 }
                 Spacer()
                 Text("\(intString(stockValue)) \(selectedProduct?.unit ?? "L")")
@@ -1281,10 +1307,10 @@ private struct VistaRaizModalMovimiento: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title.uppercased())
                 .font(.system(size: 9, weight: .black))
-                .foregroundStyle(Color(hex: "94A3B8"))
+                .foregroundStyle(Color.secondary)
             Text(value)
                 .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Color(hex: "0F172A"))
+                .foregroundStyle(Color.primary)
                 .lineLimit(2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1301,10 +1327,10 @@ private struct VistaRaizModalMovimiento: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 17, weight: .black))
-                    .foregroundStyle(Color(hex: "0F172A"))
+                    .foregroundStyle(Color.primary)
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
             }
             content()
         }

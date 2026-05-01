@@ -174,25 +174,51 @@ final class ModalClienteViewController: UIViewController {
     }
 
     private func solicitarMotivoYEnviar(form: ClienteModalFormData) {
-        let alert = UIAlertController(
-            title: "Enviar solicitud",
-            message: "Se enviará una solicitud al panel administrativo para crear el cliente.",
-            preferredStyle: .alert
+        let config = AdminRequestComposerConfig(
+            title: "Solicitud de alta de cliente",
+            subtitle: "La solicitud se registrará en el web admin para revisión, con los datos del cliente y el endpoint ya configurado.",
+            moduleLabel: "Clientes",
+            typeLabel: "create_customer",
+            targetLabel: form.nombre.trimmingCharacters(in: .whitespacesAndNewlines).fallback("Cliente nuevo"),
+            accent: .green,
+            primaryField: .init(
+                title: "Motivo principal",
+                placeholder: "Ej. alta por nuevo convenio, nuevo cliente crédito o regularización",
+                helper: "Explica por qué este cliente debe ser creado desde solicitudes.",
+                isRequired: true
+            ),
+            secondaryField: .init(
+                title: "Contexto comercial",
+                placeholder: "Indica canal, vendedor, frecuencia esperada o relación con ventas/cobros",
+                helper: "Sirve para que administración entienda el impacto y priorice la revisión.",
+                isRequired: true
+            ),
+            tertiaryField: .init(
+                title: "Observación adicional",
+                placeholder: "Notas opcionales sobre documento, crédito o contacto",
+                helper: "Puedes dejarlo vacío si no hace falta agregar más contexto.",
+                isRequired: false
+            ),
+            summaryItems: [
+                .init(title: "Cliente", value: form.nombre.trimmingCharacters(in: .whitespacesAndNewlines).fallback("Sin nombre")),
+                .init(title: "Documento", value: valorDocumento(desde: form)),
+                .init(title: "Teléfono", value: form.telefono.trimmingCharacters(in: .whitespacesAndNewlines).fallback("Sin teléfono")),
+                .init(title: "Dirección", value: form.direccion.trimmingCharacters(in: .whitespacesAndNewlines).fallback("Sin dirección")),
+                .init(title: "Límite crédito", value: currencyText(convertirCredito(form.limiteCredito)))
+            ],
+            endpointLabel: AdminRequestService.requestEndpointDescription()
         )
-        alert.addTextField { textField in
-            textField.placeholder = "Motivo de la solicitud"
-        }
-        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+        presentAdminRequestComposer(config: config) { [weak self] result, presenter in
             guard let self else { return }
-            let motivo = alert.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard motivo.isEmpty == false else {
-                self.mostrarAlerta(title: "Validación", message: "Ingresa el motivo de la solicitud.")
-                return
-            }
+            presenter.dismiss(animated: true)
             Task {
                 do {
-                    try await self.enviarSolicitudCliente(form: form, motivo: motivo)
+                    try await self.enviarSolicitudCliente(
+                        form: form,
+                        motivo: result.primaryText,
+                        contextoComercial: result.secondaryText,
+                        observacion: result.tertiaryText
+                    )
                     await MainActor.run {
                         self.mostrarAlertaYSalir(
                             title: "Solicitud enviada",
@@ -205,11 +231,15 @@ final class ModalClienteViewController: UIViewController {
                     }
                 }
             }
-        })
-        present(alert, animated: true)
+        }
     }
 
-    private func enviarSolicitudCliente(form: ClienteModalFormData, motivo: String) async throws {
+    private func enviarSolicitudCliente(
+        form: ClienteModalFormData,
+        motivo: String,
+        contextoComercial: String,
+        observacion: String
+    ) async throws {
         let requester = try AdminRequestService.currentRequester()
         let payload = AdminRequestPayload(
             requestId: UUID().uuidString,
@@ -223,7 +253,12 @@ final class ModalClienteViewController: UIViewController {
                 "documento": .string(valorDocumento(desde: form)),
                 "telefono": .string(form.telefono.trimmingCharacters(in: .whitespacesAndNewlines)),
                 "direccion": .string(form.direccion.trimmingCharacters(in: .whitespacesAndNewlines)),
-                "limiteCredito": .number(convertirCredito(form.limiteCredito))
+                "limiteCredito": .number(convertirCredito(form.limiteCredito)),
+                "detalleSolicitud": .object([
+                    "contextoComercial": .string(contextoComercial),
+                    "observacion": observacion.isEmpty ? .string("sin_observacion") : .string(observacion),
+                    "requiereValidacionCredito": .bool(convertirCredito(form.limiteCredito) > 0)
+                ])
             ],
             reason: motivo,
             createdAt: ISO8601DateFormatter().string(from: Date()),
@@ -248,5 +283,21 @@ final class ModalClienteViewController: UIViewController {
 
     @IBAction private func btnGuardarTapped(_ sender: UIButton) {
         // El flujo principal ya vive en SwiftUI. Mantengo la acción para no romper storyboard.
+    }
+}
+
+private extension ModalClienteViewController {
+    func currencyText(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "PEN"
+        formatter.locale = Locale(identifier: "es_PE")
+        return formatter.string(from: NSNumber(value: value)) ?? "S/\(value)"
+    }
+}
+
+private extension String {
+    func fallback(_ value: String) -> String {
+        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? value : self
     }
 }

@@ -73,7 +73,7 @@ struct PurchaseOrderSheetView: View {
 
     var body: some View {
         ZStack {
-            Color.white.ignoresSafeArea()
+            Color(hex: "F4F6FA").ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Capsule()
@@ -112,11 +112,11 @@ struct PurchaseOrderSheetView: View {
                             HStack {
                                 Text("Total de la orden")
                                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                    .foregroundStyle(Color(hex: "A1ADBD"))
+                                    .foregroundStyle(Color.secondary)
                                 Spacer()
                                 Text(String(format: "S/ %.2f", total))
                                     .font(.system(size: 20, weight: .black, design: .rounded))
-                                    .foregroundStyle(Color(hex: "4F7CF7"))
+                                    .foregroundStyle(Color(hex: "3B82F6"))
                             }
                             .padding(18)
                             .background(Color(hex: "F3F7FF"))
@@ -125,12 +125,12 @@ struct PurchaseOrderSheetView: View {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("IMPACTO GENERAL AL APROBAR Y PAGAR")
                                     .font(.system(size: 13, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Color(hex: "6F7B8D"))
+                                    .foregroundStyle(Color.secondary)
 
                                 HStack {
                                     Text("\(Int(stockGeneralActual.rounded()).formatted())")
                                         .font(.system(size: 14, weight: .bold, design: .rounded))
-                                        .foregroundStyle(Color(hex: "6F7B8D"))
+                                        .foregroundStyle(Color.secondary)
                                     Spacer()
                                     Text("\(Int(stockGeneralProyectado.rounded()).formatted()) L")
                                         .font(.system(size: 14, weight: .bold, design: .rounded))
@@ -141,7 +141,7 @@ struct PurchaseOrderSheetView: View {
                                     ZStack(alignment: .leading) {
                                         Capsule().fill(Color(hex: "DCE7F8"))
                                         Capsule()
-                                            .fill(Color(hex: "4F7CF7"))
+                                            .fill(Color(hex: "3B82F6"))
                                             .frame(width: proxy.size.width * ratioProyectado)
                                     }
                                 }
@@ -149,10 +149,10 @@ struct PurchaseOrderSheetView: View {
 
                                 Text("El stock no se asigna en este paso. Primero se registra la orden, luego se aprueba, se marca pagada y finalmente se distribuye a uno o varios almacenes.")
                                     .font(.system(size: 13, weight: .medium, design: .rounded))
-                                    .foregroundStyle(Color(hex: "6F7B8D"))
+                                    .foregroundStyle(Color.secondary)
                             }
                             .padding(14)
-                            .background(Color(hex: "F3FFF5"))
+                            .background(Color(hex: "F0FDF4"))
                             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         }
 
@@ -168,9 +168,9 @@ struct PurchaseOrderSheetView: View {
                         VStack(alignment: .leading, spacing: 10) {
                             Text("FLUJO DE LA ORDEN")
                                 .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color(hex: "A1ADBD"))
+                                .foregroundStyle(Color.secondary)
                             VStack(alignment: .leading, spacing: 8) {
-                                impactPill(text: "1. Registrar solicitud u orden", accent: "4F7CF7", background: "F3F7FF")
+                                impactPill(text: "1. Registrar solicitud u orden", accent: "3B82F6", background: "EFF6FF")
                                 impactPill(text: "2. Aprobar la compra", accent: "F59E0B", background: "FFF7ED")
                                 impactPill(text: "3. Marcar pago por S/\(Int(total.rounded()))", accent: "EF4444", background: "FEF2F2")
                                 impactPill(text: "4. Distribuir \(Int(cantidad.rounded()))L a uno o varios almacenes", accent: "22C55E", background: "F0FDF4")
@@ -195,7 +195,7 @@ struct PurchaseOrderSheetView: View {
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 58)
-                                .background(Color(hex: isOrderValid && !isSaving ? "F59E0B" : "D4A94E"))
+                                .background(Color(hex: isOrderValid && !isSaving ? "3B82F6" : "93C5FD"))
                                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                         }
                         .buttonStyle(.plain)
@@ -242,7 +242,7 @@ struct PurchaseOrderSheetView: View {
             Spacer()
             Text("Nueva Orden de Compra")
                 .font(.system(size: 20, weight: .black, design: .rounded))
-                .foregroundStyle(Color(hex: "172033"))
+                .foregroundStyle(Color.primary)
             Spacer()
             Color.clear.frame(width: 56, height: 1)
         }
@@ -254,7 +254,7 @@ struct PurchaseOrderSheetView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(hex: "6F7B8D"))
+                .foregroundStyle(Color.secondary)
             content()
         }
     }
@@ -264,10 +264,10 @@ struct PurchaseOrderSheetView: View {
             HStack {
                 Text(text)
                     .font(.system(size: 18, weight: .medium, design: .rounded))
-                    .foregroundStyle(Color(hex: "172033"))
+                    .foregroundStyle(Color.primary)
                 Spacer()
                 Image(systemName: "chevron.down")
-                    .foregroundStyle(Color(hex: "A1ADBD"))
+                    .foregroundStyle(Color.secondary)
             }
             .padding(.horizontal, 14)
             .frame(height: 52)
@@ -460,11 +460,11 @@ struct PurchaseOrderAllocationSheetView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(productName.uppercased())
                 .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(hex: "6F7B8D"))
+                .foregroundStyle(Color.secondary)
             HStack {
                 Text("Cantidad pagada")
                     .font(.system(size: 18, weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color(hex: "172033"))
+                    .foregroundStyle(Color.primary)
                 Spacer()
                 Text("\(Int(cantidadTotalOrden.rounded()).formatted()) L")
                     .font(.system(size: 22, weight: .black, design: .rounded))
@@ -472,10 +472,10 @@ struct PurchaseOrderAllocationSheetView: View {
             }
             Text("Distribuye la recepción entre uno o varios almacenes. El total asignado debe coincidir exactamente con la cantidad pagada.")
                 .font(.system(size: 14, weight: .medium, design: .rounded))
-                .foregroundStyle(Color(hex: "6F7B8D"))
+                .foregroundStyle(Color.secondary)
         }
         .padding(18)
-        .background(Color(hex: "F3F7FF"))
+        .background(Color(hex: "EFF6FF"))
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
@@ -534,7 +534,7 @@ struct PurchaseOrderAllocationSheetView: View {
                             Text(error)
                                 .font(.system(size: 13, weight: .bold, design: .rounded))
                         }
-                        .foregroundStyle(Color(hex: "EF4444"))
+                                .foregroundStyle(Color(hex: "EF4444"))
                     }
                 }
             }
@@ -565,11 +565,11 @@ struct PurchaseOrderAllocationSheetView: View {
         HStack {
             Text(titulo)
                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(hex: "6F7B8D"))
+                .foregroundStyle(Color.secondary)
             Spacer()
             Text(valor)
                 .font(.system(size: 14, weight: .bold, design: .rounded))
-                .foregroundStyle(Color(hex: "172033"))
+                .foregroundStyle(Color.primary)
         }
     }
 }

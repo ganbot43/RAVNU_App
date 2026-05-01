@@ -126,6 +126,10 @@ final class ModalAlmacenViewController: UIViewController {
             "direccion": formState.address.trimmingCharacters(in: .whitespacesAndNewlines),
             "responsable": formState.manager.trimmingCharacters(in: .whitespacesAndNewlines),
             "stockEspacio": parseDouble(formState.capacity),
+            "stockOcupado": almacenExistente.map(occupiedStock(for:)) ?? 0,
+            "stockDisponible": almacenExistente.map(availableStock(for:)) ?? parseDouble(formState.capacity),
+            "productosActivos": almacenExistente.map(activeProductsCount(for:)) ?? 0,
+            "productosBajoMinimo": almacenExistente.map(lowStockCount(for:)) ?? 0,
             "activo": true,
             "updatedAt": Timestamp(date: Date())
         ]
@@ -147,6 +151,22 @@ final class ModalAlmacenViewController: UIViewController {
             createInitialStocks(for: almacen)
         }
         try context.save()
+    }
+
+    private func occupiedStock(for almacen: AlmacenEntity) -> Double {
+        (almacen.stocks as? Set<StockAlmacenEntity>)?.reduce(0) { $0 + $1.stockActual } ?? 0
+    }
+
+    private func availableStock(for almacen: AlmacenEntity) -> Double {
+        max(almacen.stockEspacio - occupiedStock(for: almacen), 0)
+    }
+
+    private func activeProductsCount(for almacen: AlmacenEntity) -> Int {
+        (almacen.stocks as? Set<StockAlmacenEntity>)?.filter { $0.stockActual > 0 }.count ?? 0
+    }
+
+    private func lowStockCount(for almacen: AlmacenEntity) -> Int {
+        (almacen.stocks as? Set<StockAlmacenEntity>)?.filter { $0.stockActual < $0.stockMinimo }.count ?? 0
     }
 
     private func saveAlmacen() throws {
@@ -209,40 +229,48 @@ final class ModalAlmacenViewController: UIViewController {
     }
 
     private func solicitarMotivoYEnviar() {
-        let alert = UIAlertController(
-            title: "Enviar solicitud",
-            message: "Se enviará una solicitud detallada para registrar el almacén. Describe el motivo y el impacto operativo.",
-            preferredStyle: .alert
+        let config = AdminRequestComposerConfig(
+            title: almacenExistente == nil ? "Solicitud de alta de almacén" : "Solicitud de actualización de almacén",
+            subtitle: "Se enviará al panel web de Solicitudes con el resumen del almacén, su capacidad máxima y la ruta configurada.",
+            moduleLabel: "Almacén",
+            typeLabel: tipoSolicitudAlmacen(),
+            targetLabel: almacenExistente?.nombre ?? "Almacén nuevo",
+            accent: .orange,
+            primaryField: .init(
+                title: "Motivo principal",
+                placeholder: "Ej. apertura de nueva estación, reorganización o regularización operativa",
+                helper: "Describe por qué este almacén debe crearse o modificarse.",
+                isRequired: true
+            ),
+            secondaryField: .init(
+                title: "Cobertura operativa",
+                placeholder: "Indica qué zona, ruta o proceso cubrirá este almacén",
+                helper: "Ayuda a aprobar capacidad, responsable y necesidad logística.",
+                isRequired: true
+            ),
+            tertiaryField: .init(
+                title: "Observación adicional",
+                placeholder: "Notas opcionales sobre espacio, responsable o despliegue",
+                helper: "Campo opcional para aclaraciones adicionales.",
+                isRequired: false
+            ),
+            summaryItems: [
+                .init(title: "Nombre", value: formState.name.trimmingCharacters(in: .whitespacesAndNewlines).fallback("Sin nombre")),
+                .init(title: "Dirección", value: formState.address.trimmingCharacters(in: .whitespacesAndNewlines).fallback("Sin dirección")),
+                .init(title: "Responsable", value: formState.manager.trimmingCharacters(in: .whitespacesAndNewlines).fallback("Sin responsable")),
+                .init(title: "Capacidad máx.", value: quantityText(parseDouble(formState.capacity)))
+            ],
+            endpointLabel: AdminRequestService.requestEndpointDescription()
         )
-        alert.addTextField { textField in
-            textField.placeholder = "Motivo principal"
-        }
-        alert.addTextField { textField in
-            textField.placeholder = "Uso o cobertura operativa"
-        }
-        alert.addTextField { textField in
-            textField.placeholder = "Observación adicional"
-        }
-        alert.addAction(UIAlertAction(title: "Cancelar", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Enviar", style: .default) { [weak self] _ in
+        presentAdminRequestComposer(config: config) { [weak self] result, presenter in
             guard let self else { return }
-            let motivo = alert.textFields?[0].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let cobertura = alert.textFields?[1].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            let observacion = alert.textFields?[2].text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard motivo.isEmpty == false else {
-                self.showAlert(title: "Validación", message: "Ingresa el motivo de la solicitud.")
-                return
-            }
-            guard cobertura.isEmpty == false else {
-                self.showAlert(title: "Validación", message: "Describe la cobertura operativa del almacén.")
-                return
-            }
+            presenter.dismiss(animated: true)
             Task {
                 do {
                     try await self.enviarSolicitudAlmacen(
-                        motivo: motivo,
-                        cobertura: cobertura,
-                        observacion: observacion
+                        motivo: result.primaryText,
+                        cobertura: result.secondaryText,
+                        observacion: result.tertiaryText
                     )
                     await MainActor.run {
                         self.showAlertAndDismiss(
@@ -256,8 +284,7 @@ final class ModalAlmacenViewController: UIViewController {
                     }
                 }
             }
-        })
-        present(alert, animated: true)
+        }
     }
 
     private func enviarSolicitudAlmacen(
@@ -371,6 +398,17 @@ final class ModalAlmacenViewController: UIViewController {
     @IBAction private func btnGuardarTapped(_ sender: UIButton) {
         handleSaveTapped()
     }
+
+    private func quantityText(_ value: Double) -> String {
+        let number = value.rounded() == value ? String(Int(value)) : String(format: "%.2f", value)
+        return "\(number) L"
+    }
+}
+
+private extension String {
+    func fallback(_ value: String) -> String {
+        trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? value : self
+    }
 }
 
 private final class AlmacenFormState: ObservableObject {
@@ -422,7 +460,7 @@ private struct AlmacenModalContentView: View {
                         .padding(.vertical, 16)
                         .background(
                             LinearGradient(
-                                colors: [Color(hex: "2563EB"), Color(hex: "1D4ED8")],
+                                colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -488,7 +526,7 @@ private struct AlmacenModalContentView: View {
         .padding(20)
         .background(
             LinearGradient(
-                colors: [Color(hex: "0F172A"), Color(hex: "2563EB")],
+                colors: [Color(hex: "3B82F6"), Color(hex: "3B82F6")],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -500,7 +538,7 @@ private struct AlmacenModalContentView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("RESPONSABLE")
                 .font(.system(size: 11, weight: .black))
-                .foregroundStyle(Color(hex: "64748B"))
+                .foregroundStyle(Color.secondary)
 
             Button {
                 showManagerPicker = true
@@ -508,18 +546,18 @@ private struct AlmacenModalContentView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "person.crop.circle")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(Color(hex: "2563EB"))
+                        .foregroundStyle(Color(hex: "3B82F6"))
                         .frame(width: 18)
 
                     Text(state.manager.isEmpty ? "Selecciona un almacenero" : state.manager)
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(state.manager.isEmpty ? Color(hex: "94A3B8") : Color(hex: "0F172A"))
+                        .foregroundStyle(state.manager.isEmpty ? Color.secondary : Color.primary)
 
                     Spacer()
 
                     Image(systemName: "chevron.down")
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(Color(hex: "94A3B8"))
+                        .foregroundStyle(Color.secondary)
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 14)
@@ -559,10 +597,10 @@ private struct AlmacenModalContentView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 17, weight: .black))
-                    .foregroundStyle(Color(hex: "0F172A"))
+                    .foregroundStyle(Color.primary)
                 Text(subtitle)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color(hex: "64748B"))
+                    .foregroundStyle(Color.secondary)
             }
             content()
         }
@@ -577,12 +615,12 @@ private struct AlmacenModalContentView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
                 .font(.system(size: 11, weight: .black))
-                .foregroundStyle(Color(hex: "64748B"))
+                .foregroundStyle(Color.secondary)
 
             HStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color(hex: "2563EB"))
+                    .foregroundStyle(Color(hex: "3B82F6"))
                     .frame(width: 18)
 
                 TextField(placeholder, text: text)
